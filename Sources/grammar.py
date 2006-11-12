@@ -268,7 +268,7 @@ class Grammar(tpg.VerboseParser):
 								$ c = self.lf.createMethod("__init__")
 								Comment?
 								FunctionBody/fb
-								# TODO: Add body
+								$ c.addOperations(*fb)
 								enddecl EOL+
 		;
 
@@ -276,7 +276,7 @@ class Grammar(tpg.VerboseParser):
 								destructor EOL								
 								Comment?
 								FunctionBody/fb
-								# TODO: Add body
+								$ d.addOperations(*fb)
 								enddecl EOL+
 		;
 
@@ -287,7 +287,7 @@ class Grammar(tpg.VerboseParser):
 								$ d = self.lf.createMethod(name, p)
 								Comment?
 								FunctionBody/fb
-								# TODO
+								$ d.addOperations(*fb)
 								enddecl EOL+
 		;
 
@@ -295,7 +295,7 @@ class Grammar(tpg.VerboseParser):
 								$ d = self.lf.createClassMethod(name, p)
 								Comment?
 								FunctionBody/fb
-								# TODO
+								$ d.addOperations(*fb)
 								enddecl EOL+
 		;
 
@@ -305,7 +305,7 @@ class Grammar(tpg.VerboseParser):
 								# Function documentation
 								Comment?
 								FunctionBody/fb
-								# TODO
+								$ d.addOperations(*fb)
 								enddecl EOL+
 		;
 
@@ -314,7 +314,7 @@ class Grammar(tpg.VerboseParser):
 								( Comment )?
 								$ m = self.lf.createFunction("__main__",())
 								FunctionBody/fb
-								# TODO
+								$ m.addOperations(*fb)
 								(Comment | EOL)*
 								enddecl EOL+
 		;
