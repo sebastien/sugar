@@ -132,7 +132,7 @@ class Grammar(tpg.VerboseParser):
 
 		token const				'const';
 		token for				'for';
-		token foreach			'foreach';
+		token in				'in';
 		token if				'if';
 		token else				'else';
 		token elif				'elif';
@@ -141,6 +141,7 @@ class Grammar(tpg.VerboseParser):
 		token new				'new';
 		token release			'release';
 
+		token tab				'\t';
 		token equals			'\=';
 		token comma				',';
 		token dot				'\.';
@@ -152,6 +153,7 @@ class Grammar(tpg.VerboseParser):
 		token lbracket			'\{';
 		token rbracket			'\}';
 		token comment			'#.*';
+		token range				'\.\.';
 
 		token SYMBOL			'[A-Za-z0-9_]+';
 		token NUMBER			'[0-9]+(\.[0-9]+)?';
@@ -258,7 +260,7 @@ class Grammar(tpg.VerboseParser):
 		# Returns an array of Statements
 		FunctionBody/b		->	$ b = []
 								(	Statement/s
-									$ b.append(s)
+									$ b.extend(s)
 								)*
 		;
 
@@ -308,7 +310,6 @@ class Grammar(tpg.VerboseParser):
 								$ d.addOperations(*fb)
 								enddecl EOL+
 		;
-
 
 		MainDeclaration/m  ->	main colon EOL
 								( Comment )?
@@ -407,6 +408,7 @@ class Grammar(tpg.VerboseParser):
 										)*
 									)?
 									rparen
+								|	lparen Value/e rparen
 								|	Value/a InfixOperator/o Value/b
 									$ e = self.lf.compute(self.lf._op(o), a, b)
 								|	PrefixOperator/o Value/v
@@ -415,6 +417,8 @@ class Grammar(tpg.VerboseParser):
 								#	$ e = self.lf.compute(self.lf._op(o), v)
 								|	Value/v '\[' Expression/ie '\]'
 									# TODO
+								|	Value/start range Value/end
+									$ e = self.lf.enumerate(start, end)
 								|	Value/e
 								)
 		;
@@ -430,32 +434,39 @@ class Grammar(tpg.VerboseParser):
 								|	Declaration/s
 								|	Assignation/s
 								)  semicolon? EOL
-
+								$ if type(s) not in (tuple, list):s=[s]
 		;
 
-		Block/b				->	lbracket EOL?
-									$ b = self.pb.declareBlock()
-									( Statement/s		$ b.add(s) $	)*
-								rbracket
+		Block/b				->	EOL?
+									$ b = self.lf.createBlock()
+									( EOL
+									| Comment
+									| Statement/s $ b.addOperations(*s)
+									)*
+								
 		;
 
 		Declaration/v		->	TYPE/t SYMBOL/s
-								$ v = self.pb.allocate(self.pb.name(s), getAbstractType(t))
-								# TODO: Annotate the allocated slot with
-								# a type annotation
+								$ slot = self.lf._slot(s,t)
+								$ v    = self.lf.allocate(slot)
 								(	equals/e Expression/ex
-									$ v.add(self.pb.assign(self.pb.name(s), ex))
+									$ a = v
+									$ b = self.pb.assign(slot, ex)
+									$ v = [a, b]
 								)?
 		;
 
 		# TODO: Add LValue instead of Symbol
-		Assignation/v		-> Symbol/s ( '=\['/o | '=\]'/o | '='/o | '-='/o | '\+='/o ) Expression/e
+		Assignation/v		-> Symbol/s ( '=\['/o | '=\]'/o | '='/o | '\:='/o |'-='/o | '\+='/o ) Expression/e
 							   $ if o == '=':
-							   $     v = self.pb.assign(s, e)
+							   $     v = self.lf.assign(s, e)
+							   $ elif o == ':=':
+							   $     s = self.lf._slot(s.getReferenceName())
+							   $     v = [self.lf.allocate(s), self.lf.assign(s,e)]
 							   $ elif o == "-=":
-							   $     v = self.pb.assign(s, self.pb.compute("-", s, e))
+							   $     v = self.lf.assign(s, self.lf.compute("-", s, e))
 							   $ elif o == "+=":
-							   $     v = self.pb.assign(s, self.pb.compute("+", s, e))
+							   $     v = self.pb.assign(s, self.lf.compute("+", s, e))
 							   $ elif o == "=[":
 							   $     i = self.pb.invoke(self.pb.message(s, "prepend"))
 							   $     i.add(e)	
@@ -465,7 +476,7 @@ class Grammar(tpg.VerboseParser):
 							   $     i.add(e)	
 							   $     v = self.pb.assign(s, i)
 							   $ else:
-							   $     assert None, "Uknown assignation operator : " + o
+							   $     assert None, "Uknown assignation operator: " + o
 		;
 
 		Invocation/v		->	Symbol/func lparen
@@ -479,7 +490,6 @@ class Grammar(tpg.VerboseParser):
 								$ v = self.lf.invoke(func, *args)
 								rparen
 		;
-
 
 		# --------------------------------------------------------------------
 		#
@@ -496,19 +506,10 @@ class Grammar(tpg.VerboseParser):
 								) 
 		;
 
-		For/v				->	for lparen								
-								$ d = None
-								( Declaration/d	| Assignation/d ) semicolon
-								Value/a ComparisonOperator/o Value/b semicolon
-								Assignation/e
-								rparen EOL*
-								$ d.set("role", "initiator")
-								$ e.set("role", "iterator")
-								$ c = self.pb.condition(self.pb.compute(o, a, b))
-								$ v = self.pb.repeat(c, pre=d, iterate=e)
-								$ v.set("type", "for-loop")
+		For/v				->	for SYMBOL/s in Expression/iterator colon EOL
 								Block/bl
-								$ c.add(bl)
+								$ v = self.lf.iterate(self.lf._slot(s), iterator, bl)
+								enddecl
 		;
 
 		While/v				->	while lparen
@@ -521,31 +522,24 @@ class Grammar(tpg.VerboseParser):
 								$ v = self.pb.repeat(c) ; v.set("type", "while-loop")
 		;
 
-		If/v				->	if lparen
-									# TODO: I am not sure if this is the right
-									# structure for an If statement
-									$ v = self.pb.select() ; v.set("type", "if-select")
-									Expression/e
-								rparen EOL*
+		If/v				->	if Expression/e colon EOL*
 								(Comment | EOL)*
 								Block/b
-								$ c = self.pb.condition(e)
-								$ c.add(b)
-								$ v.add(c)
-								( EOL Comment* ElseIf/e $ v.add(e) $ ) *
-								( EOL Comment* Else/e   $ v.add(e) $ ) ?
+								$ v = self.lf.select()
+								$ v.addRule(self.lf.match(e, b))
+								( EOL? Comment* ElseIf/e $ v.addRule(e) $ ) *
+								( EOL? Comment* Else/e   $ v.addRule(e) $ ) ?
+								enddecl
 		;
 
-		ElseIf/v			->	elif lparen
-								(	Expression/e
-								) rparen EOL*
-								$ v = self.pb.condition(e)
+		ElseIf/v			->	else if Expression/e colon EOL*
 								Block/b	
-								$ v.add(b)
+								$ v = self.lf.match(e, b)
 		;
 
-		Else/b				->	else EOL*
+		Else/b				->	else colon EOL*
 								Block/b
+								$ b = self.lf.match(self.lf._ref("True"), b)
 		;
 
 
