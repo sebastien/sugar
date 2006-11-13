@@ -384,7 +384,7 @@ class Grammar(tpg.VerboseParser):
 		ComparisonOperator/o ->	( '=='/o   | '<[=]?'/o  | '>[=]?'/o )
 		;
 
-		InfixOperator/o		->	( '&&'/o | '\|\|'/o | '<<'/o | '>>'/o
+		InfixOperator/o		->	( '&&'/o | '\|\|'/o | '<<'/o | '>>'/o 
 								| '[/\*\+\-]'/o
 								| ComparisonOperator/o
 								)
@@ -408,7 +408,6 @@ class Grammar(tpg.VerboseParser):
 										)*
 									)?
 									rparen
-								|	lparen Value/e rparen
 								|	Value/a InfixOperator/o Value/b
 									$ e = self.lf.compute(self.lf._op(o), a, b)
 								|	PrefixOperator/o Value/v
@@ -419,6 +418,13 @@ class Grammar(tpg.VerboseParser):
 									# TODO
 								|	Value/start range Value/end
 									$ e = self.lf.enumerate(start, end)
+								# TODO: This is ugly, but it is the only way to
+								# make it work
+								|	lparen Value/start rparen range Value/end
+									$ e = self.lf.enumerate(start, end)
+								|	lparen Value/start rparen range lparen Value/end rparen
+									$ e = self.lf.enumerate(start, end)
+								|	lparen Value/e rparen 
 								|	Value/e
 								)
 		;

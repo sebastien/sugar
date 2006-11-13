@@ -28,6 +28,12 @@ function controlTest():
 
 	a := 0
 
+	for i in a..(a+10):
+	end
+
+	for i in (a)..(a+10):
+	end
+
 	# Iterates from 0 to 10
 	for i in (a)..(a+10):
 		print (i)
