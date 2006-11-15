@@ -133,6 +133,7 @@ class Grammar(tpg.VerboseParser):
 		token const				'const';
 		token for				'for';
 		token in				'in';
+		token step				'step';
 		token if				'if';
 		token else				'else';
 		token elif				'elif';
@@ -512,7 +513,11 @@ class Grammar(tpg.VerboseParser):
 								) 
 		;
 
-		For/v				->	for SYMBOL/s in Expression/iterator colon EOL
+		For/v				->	for SYMBOL/s in Expression/iterator
+								(  step Expression/step
+								   $ iterator.setStep(step)
+								)?
+								colon EOL
 								Block/bl
 								$ v = self.lf.iterate(self.lf._slot(s), iterator, bl)
 								enddecl

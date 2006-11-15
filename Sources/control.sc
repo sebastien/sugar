@@ -40,13 +40,14 @@ function controlTest():
 	end
 
 	# Iterates from 0 to 10, by step of 2
-	for i in (a)..(a+10)|2:
+	for i in (a)..(a+10) step 2:
 		print (i)
 	end
 
 	a = 0
-	while a < 10:
-		a = a + 1
-	end
+	#while a < 10:
+	#		a = a + 1
+	#end
 
 end
+
