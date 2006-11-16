@@ -1,6 +1,6 @@
 # Encoding: ISO-8859-1
 # vim: ts=4 textwidth=79
-# --------------------------------------------------@RisingSun//Python//1.0//EN
+# -----------------------------------------------------------------------------
 # Project           :   SweetC                       <http://www.ivy.fr/sweetc>
 # Author            :   Sebastien Pierre                     <sebastien@ivy.fr>
 # License           :   BSD License (revised)
@@ -523,14 +523,10 @@ class Grammar(tpg.VerboseParser):
 								enddecl
 		;
 
-		While/v				->	while lparen
-								(
-									Expression/e
-								) rparen EOL*
+		While/v				->	while Expression/e colon EOL*
 								Block/b
-								$ c = self.pb.condition(e)
-								$ c.add(b)
-								$ v = self.pb.repeat(c) ; v.set("type", "while-loop")
+								$ v = self.lf.repeat(e, b)
+								enddecl
 		;
 
 		If/v				->	if Expression/e colon EOL*
@@ -552,7 +548,6 @@ class Grammar(tpg.VerboseParser):
 								Block/b
 								$ b = self.lf.match(self.lf._ref("True"), b)
 		;
-
 
 		
 	"""

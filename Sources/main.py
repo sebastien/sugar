@@ -40,7 +40,7 @@ def run( args ):
 	sources     = [ args[0] ]
 	parser      = grammar.Parser(verbose=True)
 	source, module = parser.parse(sources[0])
-	from lambdafactory.modelwriter import JSWriter as Writer
+	from lambdafactory.modelwriter import Writer as Writer
 	w = Writer()
 	print w.write(module)
 
