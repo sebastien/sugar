@@ -20,6 +20,10 @@ F = model.Factory(model)
 #
 # ------------------------------------------------------------------------------
 
+KEYWORDS = "return yield if else for in while".split()
+def isKeyword( symbol ):
+	return symbol in KEYWORDS
+
 class Parser:
 	"""The parser is a simple API that can be used as an entry point
 	to manipulate SweetC source code."""
@@ -203,14 +207,16 @@ class Grammar(tpg.VerboseParser):
 
 
 		ModuleRequirements/r -> import SYMBOL/s
+								$ if isKeyword(s):raise tpg.WrongToken
 			      	            
 			      	            $ r = [] ; symbols = [s]
 								(	comma SYMBOL/s
+									$ if isKeyword(s):raise tpg.WrongToken
 									$ symbols.append(s)
 								)*
                                 	$ from_module = None
 								(	from SYMBOL/from_module
-									
+									$ if isKeyword(from_module):raise tpg.WrongToken
 								)?
 								# FIXME: These operations do not seem really appropriate
 								# Maybe there should be importModule and importSymbols operations
@@ -218,6 +224,7 @@ class Grammar(tpg.VerboseParser):
 		;
 		
 		ClassDeclaration/c ->	class SYMBOL/name colon EOL
+								$ if isKeyword(name):raise tpg.WrongToken
 								$ c = self.lf.createClass(name)
 								(	Comment
 								|	AttributeDeclaration/ad	$ c.setSlot(ad.getReferenceName(), ad)
@@ -232,6 +239,7 @@ class Grammar(tpg.VerboseParser):
 		;
 
 		AttributeDeclaration/a -> attribute (TYPE/t)? SYMBOL/s EOL
+								$ if isKeyword(s):raise tpg.WrongToken
 								$ a = self.lf._attr(s, t)
 		;
 		
@@ -247,12 +255,16 @@ class Grammar(tpg.VerboseParser):
 								$ p = []
 								$ name = None
 								(	TYPE/t (SYMBOL/name)?
+									$ if isKeyword(t):raise tpg.WrongToken
+									$ if isKeyword(name):raise tpg.WrongToken
 									$ if not name:
 									$   p.append(self.lf._arg(t))
 									$ else:
 									$   p.append(self.lf._arg(name, t))
 									(	$ name = None
 										comma TYPE/t (SYMBOL/name)?
+										$ if isKeyword(t):raise tpg.WrongToken
+										$ if isKeyword(name):raise tpg.WrongToken
 										$ if not name:
 										$   p.append(self.lf._arg(t))
 										$ else:
@@ -290,6 +302,7 @@ class Grammar(tpg.VerboseParser):
 		# a bad method name, or bad parameter expressions --> there should be 
 		# a method to do so
 		MethodDeclaration/d ->	method SYMBOL/name Parameters/p colon EOL
+								$ if isKeyword(name):raise tpg.WrongToken
 								$ d = self.lf.createMethod(name, p)
 								Comment?
 								FunctionBody/fb
@@ -298,6 +311,7 @@ class Grammar(tpg.VerboseParser):
 		;
 
 		ClassMethodDeclaration/d ->	operation SYMBOL/name Parameters/p colon EOL
+								$ if isKeyword(name):raise tpg.WrongToken
 								$ d = self.lf.createClassMethod(name, p)
 								Comment?
 								FunctionBody/fb
@@ -307,6 +321,7 @@ class Grammar(tpg.VerboseParser):
 
 
 		FunctionDeclaration/d -> function SYMBOL/name Parameters/p colon EOL
+								$ if isKeyword(name):raise tpg.WrongToken
 								$ d = self.lf.createFunction(name, p)
 								# Function documentation
 								Comment?
@@ -336,9 +351,11 @@ class Grammar(tpg.VerboseParser):
 		# Returns a string representing the symbol. You should call
 		# self.context.resolve() later to ensure that the symbol is accessible
 		Symbol/s			->	SYMBOL/sym
+								$ if isKeyword(sym): raise tpg.WrongToken
 								$ s = self.lf._ref(sym)
 								(
 									dot SYMBOL/s2
+									$ if isKeyword(s2): raise tpg.WrongToken
 									$ s = self.lf.resolve(s, self.lf._ref(s2))
 								)*
 		;
@@ -449,7 +466,7 @@ class Grammar(tpg.VerboseParser):
 		# is the case for the rest (operations), excepted for some languages
 		# where control flow operations do not directly raise a value.
 		Expression/e		->	(
-									new SYMBOL/s lparen
+									new Symbol/s lparen
 									#$ e = self.pb.instanciate(self.pb.resolve(s))
 									(	Expression/sube
 										#$ e.add(sube)
@@ -505,6 +522,8 @@ class Grammar(tpg.VerboseParser):
 		;
 
 		Declaration/v		->	TYPE/t SYMBOL/s
+								$ if isKeyword(t):raise tpg.WrongToken
+								$ if isKeyword(s):raise tpg.WrongToken
 								$ slot = self.lf._slot(s,t)
 								$ v    = self.lf.allocate(slot)
 								(	equals/e Expression/ex
@@ -565,6 +584,7 @@ class Grammar(tpg.VerboseParser):
 		;
 
 		For/v				->	for SYMBOL/s in Expression/iterator
+								$ if isKeyword(s):raise tpg.WrongToken
 								(  step Expression/step
 								   $ iterator.setStep(step)
 								)?
@@ -590,9 +610,9 @@ class Grammar(tpg.VerboseParser):
 								enddecl
 		;
 
-		ElseIf/v			->	else if Expression/e colon EOL*
-								Block/b	
-								$ v = self.lf.match(e, b)
+		ElseIf/b			->	else if Expression/e colon EOL*
+								Block/b
+								$ b = self.lf.match(e, b)
 		;
 
 		Else/b				->	else colon EOL*
