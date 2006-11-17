@@ -6,7 +6,7 @@
 # License           :   BSD License (revised)
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   11-Nov-2006
+# Last mod.         :   17-Nov-2006
 # -----------------------------------------------------------------------------
 
 import os, sys, tpg
@@ -227,6 +227,7 @@ class Grammar(tpg.VerboseParser):
 								$ if isKeyword(name):raise tpg.WrongToken
 								$ c = self.lf.createClass(name)
 								(	Comment
+								|	ClassAttributeDeclaration/ad	$ c.setSlot(ad.getReferenceName(), ad)
 								|	AttributeDeclaration/ad	$ c.setSlot(ad.getReferenceName(), ad)
 								)*
 								(	Constructor/cd			$ c.setSlot("__init__", cd) $	)?
@@ -235,12 +236,24 @@ class Grammar(tpg.VerboseParser):
 								|	MethodDeclaration/md 	$ c.setSlot(md.getName(), md) $	)*
 								(	ClassMethodDeclaration/cd	$ c.setSlot(cd.getName(), cd) $)*
 								enddecl EOL+
-
 		;
 
-		AttributeDeclaration/a -> attribute (TYPE/t)? SYMBOL/s EOL
+		ClassAttributeDeclaration/a -> $ s = None
+								class attribute TYPE/t (SYMBOL/s)? EOL
 								$ if isKeyword(s):raise tpg.WrongToken
-								$ a = self.lf._attr(s, t)
+								$ if s == None:
+								$   a = self.lf._classattr(t)
+								$ else:
+								$   a = self.lf._classattr(s, t)
+		;
+
+		AttributeDeclaration/a -> $ s = None 
+								attribute TYPE/t (SYMBOL/s)? EOL
+								$ if isKeyword(s):raise tpg.WrongToken
+								$ if s == None:
+								$   a = self.lf._attr(t)
+								$ else:
+								$   a = self.lf._attr(s, t)
 		;
 		
 		# --------------------------------------------------------------------
@@ -281,17 +294,16 @@ class Grammar(tpg.VerboseParser):
 		;
 
 		Constructor/c 		->	$ args = []
-								constructor Parameters/p EOL
-								$ args.add(p)
-								$ c = self.lf.createMethod("__init__")
+								constructor Parameters/p colon EOL
+								$ c = self.lf.createConstructor(p)
 								Comment?
 								FunctionBody/fb
 								$ c.addOperations(*fb)
 								enddecl EOL+
 		;
 
-		Destructor/d 		->	$ d = self.lf.createMethod("__destroy__")
-								destructor EOL								
+		Destructor/d 		->	$ d = self.lf.createDestructor()
+								destructor colon EOL
 								Comment?
 								FunctionBody/fb
 								$ d.addOperations(*fb)
@@ -356,7 +368,7 @@ class Grammar(tpg.VerboseParser):
 								(
 									dot SYMBOL/s2
 									$ if isKeyword(s2): raise tpg.WrongToken
-									$ s = self.lf.resolve(s, self.lf._ref(s2))
+									$ s = self.lf.resolve(self.lf._ref(s2), s)
 								)*
 		;
 		
@@ -482,7 +494,7 @@ class Grammar(tpg.VerboseParser):
 								#|	Value/v SuffixOperator/o
 								#	$ e = self.lf.compute(self.lf._op(o), v)
 								|	Value/v '\[' Expression/ie '\]'
-									# TODO
+									$ e = self.lf.slice(v, ie)
 								|	Value/start range Value/end
 									$ e = self.lf.enumerate(start, end)
 								# TODO: This is ugly, but it is the only way to
@@ -534,24 +546,24 @@ class Grammar(tpg.VerboseParser):
 		;
 
 		# TODO: Add LValue instead of Symbol
-		Assignation/v		-> Symbol/s ( '=\['/o | '=\]'/o | '='/o | '\:='/o |'-='/o | '\+='/o ) Expression/e
+		Assignation/v		-> Expression/s ( '=\['/o | '=\]'/o | '='/o | '\:='/o |'-='/o | '\+='/o ) Expression/e
 							   $ if o == '=':
 							   $     v = self.lf.assign(s, e)
 							   $ elif o == ':=':
 							   $     s = self.lf._slot(s.getReferenceName())
 							   $     v = [self.lf.allocate(s), self.lf.assign(s,e)]
 							   $ elif o == "-=":
-							   $     v = self.lf.assign(s, self.lf.compute("-", s, e))
+							   $     v = self.lf.assign(s, self.lf.compute(self.lf._op("-"), s, e))
 							   $ elif o == "+=":
-							   $     v = self.pb.assign(s, self.lf.compute("+", s, e))
+							   $     v = self.lf.assign(s, self.lf.compute(self.lf._op("+"), s, e))
 							   $ elif o == "=[":
-							   $     i = self.pb.invoke(self.pb.message(s, "prepend"))
+							   $     i = self.lf.invoke(self.pb.message(s, "prepend"))
 							   $     i.add(e)	
-							   $     v = self.pb.assign(s, i)
+							   $     v = self.lf.assign(s, i)
 							   $ elif o == "=]":
-							   $     i = self.pb.invoke(self.pb.message(s, "append"))
+							   $     i = self.lf.invoke(self.pb.message(s, "append"))
 							   $     i.add(e)	
-							   $     v = self.pb.assign(s, i)
+							   $     v = self.lf.assign(s, i)
 							   $ else:
 							   $     assert None, "Uknown assignation operator: " + o
 		;
