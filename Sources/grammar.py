@@ -141,6 +141,7 @@ class Grammar(tpg.VerboseParser):
 		token return			'return';
 		token new				'new';
 		token release			'release';
+		token application		'\-\>';
 
 		token tab				'\t';
 		token equals			'\=';
@@ -260,7 +261,7 @@ class Grammar(tpg.VerboseParser):
 
 		# Returns an array of Statements
 		FunctionBody/b		->	$ b = []
-								(	Statement/s
+								(	Statement/s (EOL|semicolon)+
 									$ b.extend(s)
 								)*
 		;
@@ -367,16 +368,33 @@ class Grammar(tpg.VerboseParser):
 								rparen
 		;
 
+		Closure/c			->	Parameters/p application lbracket EOL*
+								$ c = self.lf.createClosure(p)
+								(	Statement/s 
+									$ c.addOperations(*s)
+									(
+										( EOL | semicolon )
+										Statement/s
+										$ c.addOperations(*s)
+									)*
+								)?
+								EOL*
+								rbracket
+		;
+
 		Value/v				->	$ c= None
-								(	Cast/c
-								)
-								?
+								# I removed Cast, as I don't feeel is
+								# necessary
+								#(
+								#	Cast/c
+								#)
+								#?
 								(	Litteral/v
 								|	Invocation/v
 								|	Symbol/v
-								|	lparen Expression/v rparen
+								|	Closure/v
+								|	lparen Expression/v rparen 
 								)
-								$ if c: v = self.pb.cast(c, v)
 		;
 
 		PrefixOperator/o	->	( '-'/o  | '\ +'/o | '&'/o | '\*+'/o )
@@ -420,7 +438,9 @@ class Grammar(tpg.VerboseParser):
 								|	Value/start range Value/end
 									$ e = self.lf.enumerate(start, end)
 								# TODO: This is ugly, but it is the only way to
-								# make it work
+								# make it work. It seems like everything that
+								# starts with a paren has to be recalled here.
+								|	Closure/e
 								|	lparen Value/start rparen range Value/end
 									$ e = self.lf.enumerate(start, end)
 								|	lparen Value/start rparen range lparen Value/end rparen
@@ -440,7 +460,7 @@ class Grammar(tpg.VerboseParser):
 								|	Invocation/s
 								|	Declaration/s
 								|	Assignation/s
-								)  semicolon? EOL
+								) 
 								$ if type(s) not in (tuple, list):s=[s]
 		;
 
