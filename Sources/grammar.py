@@ -152,8 +152,10 @@ class Grammar(tpg.VerboseParser):
 		token dquote			'"';
 		token lparen			'\(';
 		token rparen			'\)';
-		token lbracket			'\{';
-		token rbracket			'\}';
+		token lbracket			'\[';
+		token rbracket			'\]';
+		token lbrace			'\{';
+		token rbrace			'\}';
 		token comment			'#.*';
 		token range				'\.\.';
 
@@ -355,6 +357,33 @@ class Grammar(tpg.VerboseParser):
 								)
 		;
 
+		List/l				->	lbracket
+								$ l = self.lf._list()
+								(
+									Expression/e $ l.addValue(e)
+									(
+										comma
+										Expression/e
+										$ l.addValue(e)
+									)*
+								)?
+								rbracket
+		;
+
+		Dict/d				->	lbrace
+								$ d = self.lf._dict()
+								(
+									Expression/k colon Expression/v
+									$ d.setValue(k, v) 
+									(
+										comma
+										Expression/k colon Expression/v 
+										$ d.setValue(k, v) 
+									)*
+								)?
+								rbrace
+		;
+
 		Cast/c				->	lparen
 								$ c = ""
 								(	const
@@ -368,7 +397,7 @@ class Grammar(tpg.VerboseParser):
 								rparen
 		;
 
-		Closure/c			->	Parameters/p application lbracket EOL*
+		Closure/c			->	Parameters/p application lbrace EOL*
 								$ c = self.lf.createClosure(p)
 								(	Statement/s 
 									$ c.addOperations(*s)
@@ -379,7 +408,7 @@ class Grammar(tpg.VerboseParser):
 									)*
 								)?
 								EOL*
-								rbracket
+								rbrace
 		;
 
 		Value/v				->	$ c= None
@@ -390,6 +419,8 @@ class Grammar(tpg.VerboseParser):
 								#)
 								#?
 								(	Litteral/v
+								|	List/v
+								|	Dict/v
 								|	Invocation/v
 								|	Symbol/v
 								|	Closure/v
