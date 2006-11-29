@@ -14,14 +14,24 @@ end
 
 function asyncTest():
 
-	future := @compute()
+	# SYNTAXES:
+	#  @invocation()
+	#  invocation@()
+	#  invocation->()
+	#  invocation...()
+	#  invocation()...
+	#  &invocation()
+	#  invocation&()
+	#  invocation()&
+
+	future := compute...()
 	# The future value is lazily evaluated. When the future is passed, it is not
 	# evaluated, but when it is used, it will be evaluated, and will then block
 	# the process waiting for the value
 	print (future)
 
 	# 
-	cont := continuations()
+	cont := continuations...()
 	print (cont.next())
 
 end

@@ -39,9 +39,9 @@ def run( args ):
 		return
 	# Otherwise, we are in interpreter mode
 	sources     = [ args[0] ]
-	parser      = grammar.Parser(verbose=True)
+	parser      = grammar.Parser(verbose=False)
 	source, module = parser.parse(sources[0])
-	from lambdafactory.modelwriter import Writer as Writer
+	from lambdafactory.javascript import Writer
 	w = Writer()
 	print w.write(module)
 
