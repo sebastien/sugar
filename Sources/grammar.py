@@ -1,12 +1,12 @@
 # Encoding: ISO-8859-1
 # vim: ts=4 textwidth=79
 # -----------------------------------------------------------------------------
-# Project           :   SweetC                       <http://www.ivy.fr/sweetc>
+# Project           :   Sugar                         <http://www.ivy.fr/sugar>
 # Author            :   Sebastien Pierre                     <sebastien@ivy.fr>
-# License           :   BSD License (revised)
+# License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   17-Nov-2006
+# Last mod.         :   01-Dec-2006
 # -----------------------------------------------------------------------------
 
 import os, sys, tpg
