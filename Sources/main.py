@@ -41,8 +41,11 @@ def run( args ):
 	sources     = [ args[0] ]
 	parser      = grammar.Parser(verbose=False)
 	source, module = parser.parse(sources[0])
-	from lambdafactory.javascript import Writer
+	from lambdafactory.javascript import Writer, Resolver
+	resolver    = Resolver()
 	w = Writer()
+	r = Resolver()
+	r.flow(module)
 	print w.write(module)
 
 # ------------------------------------------------------------------------------
