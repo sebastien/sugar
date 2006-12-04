@@ -1,3 +1,3 @@
 main:
-	a.b = True
+	a = 1
 end

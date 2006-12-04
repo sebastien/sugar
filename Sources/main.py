@@ -18,6 +18,7 @@ __version__ = "0.5.0"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
+OPT_VERBOSE    = "Verbose parsing output (useful for debugging)"
 DESCRIPTION    = """\
 Sugar is a meta-language that can be easily converted to other languages such
 as C, JavaScript or Python. Programs written in sugar are entirely accessible
@@ -48,6 +49,8 @@ def run( args ):
 		help=OPT_LANG)
 	oparser.add_option("-o", "--output", action="store", dest="output",
 		help=OPT_OUTPUT)
+	oparser.add_option("-v", "--verbose", action="store_true", dest="verbose",
+		help=OPT_VERBOSE)
 	# We parse the options and arguments
 	options, args = oparser.parse_args(args=args)
 	# If no argument is given, we simply print the description
@@ -55,7 +58,7 @@ def run( args ):
 		oparser.print_help()
 		return
 	# Otherwise, we are in interpreter mode
-	parser           = grammar.Parser(verbose=False)
+	parser           = grammar.Parser(verbose=options.verbose)
 	writer, resolver = None, None
 	if options.lang == "js":
 		from lambdafactory.javascript import Writer, Resolver
