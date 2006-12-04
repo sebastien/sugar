@@ -365,11 +365,11 @@ class Grammar(tpg.VerboseParser):
 		Symbol/s			->	SYMBOL/sym
 								$ if isKeyword(sym): raise tpg.WrongToken
 								$ s = self.lf._ref(sym)
-								(
-									dot SYMBOL/s2
-									$ if isKeyword(s2): raise tpg.WrongToken
-									$ s = self.lf.resolve(self.lf._ref(s2), s)
-								)*
+								#(
+								#	dot SYMBOL/s2
+								#	$ if isKeyword(s2): raise tpg.WrongToken
+								#	$ s = self.lf.resolve(self.lf._ref(s2), s)
+								#	)*
 		;
 		
 		Litteral/c			->	(	NUMBER/n
@@ -440,8 +440,18 @@ class Grammar(tpg.VerboseParser):
 								rbrace
 		;
 
+		Arguments/a			->	$ a = []
+								(
+									Expression/e
+									$ a.append(e)
+									(	comma Expression/e
+										$ a.append(e)
+									)*
+								) ?
+		;
+
 		Value/v				->	$ c= None
-								# I removed Cast, as I don't feeel is
+								# I removed Cast, as I don't feeel it is
 								# necessary
 								#(
 								#	Cast/c
@@ -450,11 +460,37 @@ class Grammar(tpg.VerboseParser):
 								(	Litteral/v
 								|	List/v
 								|	Dict/v
-								|	Invocation/v
 								|	Symbol/v
 								|	Closure/v
 								|	lparen Expression/v rparen 
 								)
+								( lbracket Expression/e rbracket
+								|	lparen Arguments/args rparen
+									$ v = self.lf.invoke(v, *args)
+								)*
+								# The following may look a bit awkward, but
+								# it's the simplest way I got it to work
+								(
+									dot Symbol/w
+									$ v = self.lf.resolve(w, v)
+									( lbracket Expression/e rbracket
+									|	lparen Arguments/args rparen
+										$ v = self.lf.invoke(v, *args)
+									)*
+								)*
+		;
+
+		DotValue/v			->	Symbol/v
+								(
+									lparen Arguments/args rparen
+									$ v = self.lf.invoke(v, *args)
+								|	lbracket Expression/e rbracket
+									# TODO
+								)?
+								(
+									dot DotValue/w
+									$ v = self.lf.resolve(w, v)
+								) ?
 		;
 
 		PrefixOperator/o	->	( '-'/o  | '\ +'/o | '&'/o | '\*+'/o )
@@ -487,6 +523,8 @@ class Grammar(tpg.VerboseParser):
 										)*
 									)?
 									rparen
+								|	Value/e dot DotValue/b
+								#	IMPL
 								|	Value/a InfixOperator/o Value/b
 									$ e = self.lf.compute(self.lf._op(o), a, b)
 								|	PrefixOperator/o Value/v
@@ -517,9 +555,10 @@ class Grammar(tpg.VerboseParser):
 		# different possibilities.
 		Statement/s			->	( Comment | EOL ) *
 								(	Control/s
-								|	Invocation/s
 								|	Declaration/s
 								|	Assignation/s
+								|	Value/s
+								$	s = self.lf.evaluate(s)
 								) 
 								$ if type(s) not in (tuple, list):s=[s]
 		;
@@ -568,7 +607,7 @@ class Grammar(tpg.VerboseParser):
 							   $     assert None, "Uknown assignation operator: " + o
 		;
 
-		Invocation/v		->	Symbol/func lparen
+		Invocation/v		->	Expression/v
 								$ args = []
 								(	Expression/e
 									$ args.append(e)
