@@ -462,6 +462,7 @@ class Grammar(tpg.VerboseParser):
 								|	lparen Expression/v rparen 
 								)
 								( lbracket Expression/e rbracket
+									$ v = self.lf.slice(v, e)
 								|	lparen Arguments/args rparen
 									$ v = self.lf.invoke(v, *args)
 								)*
@@ -470,7 +471,8 @@ class Grammar(tpg.VerboseParser):
 								(
 									dot Symbol/w
 									$ v = self.lf.resolve(w, v)
-									( lbracket Expression/e rbracket
+									(	lbracket Expression/e rbracket
+										$ v = self.lf.slice(v, e)
 									|	lparen Arguments/args rparen
 										$ v = self.lf.invoke(v, *args)
 									)*
@@ -571,6 +573,7 @@ class Grammar(tpg.VerboseParser):
 							   $     v = self.lf.assign(s, e)
 							   $ elif o == ':=':
 							   $     s = self.lf._slot(s.getReferenceName())
+							   $ #	FIXME: Assert s sis a slot
 							   $     v = [self.lf.allocate(s), self.lf.assign(s,e)]
 							   $ elif o == "-=":
 							   $     v = self.lf.assign(s, self.lf.compute(self.lf._op("-"), s, e))
