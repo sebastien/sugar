@@ -6,7 +6,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   01-Dec-2006
+# Last mod.         :   06-Dec-2006
 # -----------------------------------------------------------------------------
 
 import os, sys, tpg
@@ -20,7 +20,9 @@ F = model.Factory(model)
 #
 # ------------------------------------------------------------------------------
 
-KEYWORDS = "return yield if else for in while".split()
+KEYWORDS = """return yield if else for in while method function class attribute
+constructor destructor end""".replace("\n"," ").split()
+
 def isKeyword( symbol ):
 	return symbol in KEYWORDS
 
@@ -365,11 +367,6 @@ class Grammar(tpg.VerboseParser):
 		Symbol/s			->	SYMBOL/sym
 								$ if isKeyword(sym): raise tpg.WrongToken
 								$ s = self.lf._ref(sym)
-								(
-									dot SYMBOL/s2
-									$ if isKeyword(s2): raise tpg.WrongToken
-									$ s = self.lf.resolve(self.lf._ref(s2), s)
-								)*
 		;
 		
 		Litteral/c			->	(	NUMBER/n
@@ -440,6 +437,16 @@ class Grammar(tpg.VerboseParser):
 								rbrace
 		;
 
+		Arguments/a			->	$ a = []
+								(
+									Expression/e
+									$ a.append(e)
+									(	comma Expression/e
+										$ a.append(e)
+									)*
+								) ?
+		;
+
 		Value/v				->	$ c= None
 								# I removed Cast, as I don't feeel is
 								# necessary
@@ -450,11 +457,24 @@ class Grammar(tpg.VerboseParser):
 								(	Litteral/v
 								|	List/v
 								|	Dict/v
-								|	Invocation/v
 								|	Symbol/v
 								|	Closure/v
 								|	lparen Expression/v rparen 
 								)
+								( lbracket Expression/e rbracket
+								|	lparen Arguments/args rparen
+									$ v = self.lf.invoke(v, *args)
+								)*
+								# The following may look a bit awkward, but
+								# it's the simplest way I got it to work
+								(
+									dot Symbol/w
+									$ v = self.lf.resolve(w, v)
+									( lbracket Expression/e rbracket
+									|	lparen Arguments/args rparen
+										$ v = self.lf.invoke(v, *args)
+									)*
+								)*
 		;
 
 		PrefixOperator/o	->	( '-'/o  | '\ +'/o | '&'/o | '\*+'/o )
@@ -511,15 +531,15 @@ class Grammar(tpg.VerboseParser):
 		;
 		
 
-
 		# Statements represent many kind of operations, so the Statement
 		# grammar rule simply acts as a switch to dispatch between the
 		# different possibilities.
 		Statement/s			->	( Comment | EOL ) *
 								(	Control/s
-								|	Invocation/s
 								|	Declaration/s
 								|	Assignation/s
+								|	Value/s
+								$	s = self.lf.evaluate(s)
 								) 
 								$ if type(s) not in (tuple, list):s=[s]
 		;
@@ -566,18 +586,6 @@ class Grammar(tpg.VerboseParser):
 							   $     v = self.lf.assign(s, i)
 							   $ else:
 							   $     assert None, "Uknown assignation operator: " + o
-		;
-
-		Invocation/v		->	Symbol/func lparen
-								$ args = []
-								(	Expression/e
-									$ args.append(e)
-									(	comma Expression/e
-										$ args.append(e)
-									)*
-								)?
-								$ v = self.lf.invoke(func, *args)
-								rparen
 		;
 
 		# --------------------------------------------------------------------

@@ -60,7 +60,7 @@ def run( args ):
 	# Otherwise, we are in interpreter mode
 	parser           = grammar.Parser(verbose=options.verbose)
 	writer, resolver = None, None
-	if options.lang == "js":
+	if options.lang == "js" or not options.lang:
 		from lambdafactory.javascript import Writer, Resolver
 		writer   = Writer()
 		resolver = Resolver()
