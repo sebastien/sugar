@@ -6,7 +6,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   01-Dec-2006
+# Last mod.         :   06-Dec-2006
 # -----------------------------------------------------------------------------
 
 import os, sys, tpg
@@ -20,7 +20,9 @@ F = model.Factory(model)
 #
 # ------------------------------------------------------------------------------
 
-KEYWORDS = "return yield if else for in while".split()
+KEYWORDS = """return yield if else for in while method function class attribute
+constructor destructor end""".replace("\n"," ").split()
+
 def isKeyword( symbol ):
 	return symbol in KEYWORDS
 
@@ -365,11 +367,6 @@ class Grammar(tpg.VerboseParser):
 		Symbol/s			->	SYMBOL/sym
 								$ if isKeyword(sym): raise tpg.WrongToken
 								$ s = self.lf._ref(sym)
-								#(
-								#	dot SYMBOL/s2
-								#	$ if isKeyword(s2): raise tpg.WrongToken
-								#	$ s = self.lf.resolve(self.lf._ref(s2), s)
-								#	)*
 		;
 		
 		Litteral/c			->	(	NUMBER/n
@@ -451,7 +448,7 @@ class Grammar(tpg.VerboseParser):
 		;
 
 		Value/v				->	$ c= None
-								# I removed Cast, as I don't feeel it is
+								# I removed Cast, as I don't feeel is
 								# necessary
 								#(
 								#	Cast/c
@@ -478,19 +475,6 @@ class Grammar(tpg.VerboseParser):
 										$ v = self.lf.invoke(v, *args)
 									)*
 								)*
-		;
-
-		DotValue/v			->	Symbol/v
-								(
-									lparen Arguments/args rparen
-									$ v = self.lf.invoke(v, *args)
-								|	lbracket Expression/e rbracket
-									# TODO
-								)?
-								(
-									dot DotValue/w
-									$ v = self.lf.resolve(w, v)
-								) ?
 		;
 
 		PrefixOperator/o	->	( '-'/o  | '\ +'/o | '&'/o | '\*+'/o )
@@ -523,8 +507,6 @@ class Grammar(tpg.VerboseParser):
 										)*
 									)?
 									rparen
-								|	Value/e dot DotValue/b
-								#	IMPL
 								|	Value/a InfixOperator/o Value/b
 									$ e = self.lf.compute(self.lf._op(o), a, b)
 								|	PrefixOperator/o Value/v
@@ -548,7 +530,6 @@ class Grammar(tpg.VerboseParser):
 								)
 		;
 		
-
 
 		# Statements represent many kind of operations, so the Statement
 		# grammar rule simply acts as a switch to dispatch between the
@@ -605,18 +586,6 @@ class Grammar(tpg.VerboseParser):
 							   $     v = self.lf.assign(s, i)
 							   $ else:
 							   $     assert None, "Uknown assignation operator: " + o
-		;
-
-		Invocation/v		->	Expression/v
-								$ args = []
-								(	Expression/e
-									$ args.append(e)
-									(	comma Expression/e
-										$ args.append(e)
-									)*
-								)?
-								$ v = self.lf.invoke(func, *args)
-								rparen
 		;
 
 		# --------------------------------------------------------------------
