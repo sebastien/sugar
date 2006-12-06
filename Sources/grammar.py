@@ -20,8 +20,8 @@ F = model.Factory(model)
 #
 # ------------------------------------------------------------------------------
 
-KEYWORDS = """return yield if else for in while method function class attribute
-constructor destructor end""".replace("\n"," ").split()
+KEYWORDS = """return yield if else for in while method function class extends
+attribute constructor destructor end""".replace("\n"," ").split()
 
 def isKeyword( symbol ):
 	return symbol in KEYWORDS
@@ -126,6 +126,7 @@ class Grammar(tpg.VerboseParser):
 		token import			'import';
 		token from				'from';
 		token class				'class';
+		token extends			'extends';
 		token attribute			'attribute';
 		token constructor		'constructor';
 		token destructor		'destructor';
@@ -165,7 +166,7 @@ class Grammar(tpg.VerboseParser):
 		token comment			'#.*';
 		token range				'\.\.';
 
-		token SYMBOL			'[A-Za-z0-9_]+';
+		token SYMBOL			'[A-Za-z0-9_\$]+';
 		token NUMBER			'[0-9]+(\.[0-9]+)?';
 		token TYPE				'(const\s+)?[A-Za-z0-9_]+(\[\]|\*)*';
 
@@ -225,9 +226,19 @@ class Grammar(tpg.VerboseParser):
 								EOL+
 		;
 		
-		ClassDeclaration/c ->	class SYMBOL/name colon EOL
+		ClassDeclaration/c ->	class SYMBOL/name 
+								$ parents = []
+								(	extends
+									DotSymbol/s
+									$ parents.append(s)
+									(	comma
+										DotSymbol/s
+										$ parents.append(s)
+									)*
+								)?
+								colon EOL
 								$ if isKeyword(name):raise tpg.WrongToken
-								$ c = self.lf.createClass(name)
+								$ c = self.lf.createClass(name, parents)
 								(	Comment
 								|	ClassAttributeDeclaration/ad	$ c.setSlot(ad.getReferenceName(), ad)
 								|	AttributeDeclaration/ad	$ c.setSlot(ad.getReferenceName(), ad)
@@ -368,7 +379,14 @@ class Grammar(tpg.VerboseParser):
 								$ if isKeyword(sym): raise tpg.WrongToken
 								$ s = self.lf._ref(sym)
 		;
-		
+
+		DotSymbol/s			->	Symbol/s
+								(	dot
+									Symbol/s2
+									$ s = self.lf.resolve(s2, s)
+								) *
+		;
+
 		Litteral/c			->	(	NUMBER/n
 									$ if n.find(".") != -1: c = self.lf._number(float(n))
 									$ else: c = self.lf._number(int(n))
