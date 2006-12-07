@@ -7,12 +7,14 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   01-Dec-2006
+# Last mod.         :   06-Dec-2006
 # -----------------------------------------------------------------------------
-
 
 import os, sys, shutil
 import grammar
+
+from lambdafactory.reporter import DefaultReporter
+from lambdafactory import javascript
 
 __version__ = "0.5.0"
 
@@ -35,6 +37,24 @@ USAGE          = "%prog [options] SOURCE..."
 # Run method
 #
 # ------------------------------------------------------------------------------
+
+def sourceFileToJavaScript( path ):
+	parser           = grammar.Parser()
+	reporter         = DefaultReporter
+	writer   = javascript.Writer(reporter=reporter)
+	resolver = javascript.Resolver(reporter=reporter)
+	source, module = parser.parse(source)
+	resolver.flow(module)
+	return writer.write(module), reporter
+
+def sourceToJavaScript( name, text ):
+	parser   = grammar.Parser()
+	reporter = DefaultReporter
+	writer   = javascript.Writer(reporter=reporter)
+	resolver = javascript.Resolver(reporter=reporter)
+	source, module = parser.parseModule(name, text)
+	resolver.flow(module)
+	return writer.write(module), reporter
 
 def run( args ):
 	"""The run method can be used to execute a SweetC command from another
@@ -60,10 +80,10 @@ def run( args ):
 	# Otherwise, we are in interpreter mode
 	parser           = grammar.Parser(verbose=options.verbose)
 	writer, resolver = None, None
+	reporter         = DefaultReporter
 	if options.lang == "js" or not options.lang:
-		from lambdafactory.javascript import Writer, Resolver
-		writer   = Writer()
-		resolver = Resolver()
+		writer   = javascript.Writer(reporter=reporter)
+		resolver = javascript.Resolver(reporter=reporter)
 	else:
 		print "Please specify a language."
 		return -1

@@ -20,7 +20,7 @@ F = model.Factory(model)
 #
 # ------------------------------------------------------------------------------
 
-KEYWORDS = """return yield if else for in while method function class extends
+KEYWORDS = """new return yield if else for in while method function class extends
 attribute constructor destructor end""".replace("\n"," ").split()
 
 def isKeyword( symbol ):
@@ -51,17 +51,21 @@ class Parser:
 		stands for ProgramBuilder, which is the factory object that constructs
 		the program)."""
 		text = open(filepath, 'r').read()
+		return self.parseModule(self.pathToModuleName(filepath), text, filepath)
+
+	def parseModule( self, name, text, sourcepath=None ):
 		# We trim the EOF
 		text = text[:-1]
 		# And ensure that there is an EOL
 		if text[-1] != "\n":
-			self.warn("No trailing EOL in file: " + filepath)
+			self.warn("No trailing EOL in given code")
 			text += "\n"
 		# We try to parse the file
 		try:
-			res = self.parser.parseModule(self.pathToModuleName(filepath), text)
+			res = self.parser.parseModule(name, text)
 			# We set the module file path (for informative purpose only)
-			res.setSource("file://" + os.path.abspath(filepath))
+			if sourcepath:
+				res.setSource("file://" + os.path.abspath(sourcepath))
 			return ( text, res )
 		# And catch possible exceptions
 		except tpg.SyntacticError:
@@ -76,7 +80,9 @@ class Parser:
 		will return the fully qualified name of the module pointed by the
 		given file."""
 		# FIXME: For now, we have a single-level
-		return os.path.splitext(os.path.basename(modulePath))[0]
+		res = os.path.splitext(os.path.basename(modulePath))[0]
+		res = res.replace("-", "_")
+		return res
 
 	def warn( self, message ):
 		"""Adds a warning to the self._warnings list."""
@@ -518,15 +524,16 @@ class Grammar(tpg.VerboseParser):
 		# is the case for the rest (operations), excepted for some languages
 		# where control flow operations do not directly raise a value.
 		Expression/e		->	(
-									new Symbol/s lparen
-									#$ e = self.pb.instanciate(self.pb.resolve(s))
+									new DotSymbol/s lparen
+									$ args= []
 									(	Expression/sube
-										#$ e.add(sube)
+										$ args.append(sube)
 										(	comma Expression/sube
-										#	$ e.add(sube)
+											$ args.append(sube)
 										)*
 									)?
 									rparen
+									$ e = self.lf.instanciate(s, *args)
 								|	Value/a InfixOperator/o Value/b
 									$ e = self.lf.compute(self.lf._op(o), a, b)
 								|	PrefixOperator/o Value/v
