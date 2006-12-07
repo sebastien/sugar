@@ -69,10 +69,10 @@ class Parser:
 			return ( text, res )
 		# And catch possible exceptions
 		except tpg.SyntacticError:
-			self.syntaxError(filepath)
+			self.syntaxError(sourcepath)
 			return ( text, None )
 		except tpg.SemanticError:
-			self.semanticError(filepath)
+			self.semanticError(sourcepath)
 			return ( text, None )
 
 	def pathToModuleName(self, modulePath):
