@@ -63,8 +63,8 @@ def run( args ):
 	if type(args) not in (type([]), type(())): args = [args]
 	from optparse import OptionParser
 	# We create the parse and register the options
-	oparser = OptionParser(prog="sdoc", description=DESCRIPTION,
-	usage=USAGE, version="SDoc " + __version__)
+	oparser = OptionParser(prog="sugar", description=DESCRIPTION,
+	usage=USAGE, version="Sugar " + __version__)
 	oparser.add_option("-l", "--lang", action="store", dest="lang",
 		help=OPT_LANG)
 	oparser.add_option("-o", "--output", action="store", dest="output",
