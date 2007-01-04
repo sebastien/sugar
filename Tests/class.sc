@@ -26,7 +26,7 @@
 @class Rectangle:Shape
 
 	@constructor ()
-		[0..4] do { points.add(new Point()) }
+		0..4 do { points add(new Point()) }
 	@end
 
 @end

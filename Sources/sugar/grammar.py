@@ -109,7 +109,7 @@ def d_Function(t):
 
 def d_Class(t):
 	# FIXME: Change Name to Reference
-	'''Class: '@class' NAME (LP Name (',' Name)* RP)? EOL
+	'''Class: '@class' NAME (':' Name (',' Name)* )? EOL
 	      (   ClassAttribute
 	      |   ClassMethod
 	      |   Attribute
@@ -121,6 +121,9 @@ def d_Class(t):
 	'''
 	# TODO: Parents support
 	parents = []
+	parents.extend(t[2])
+	parents = t_filterOut(":", parents)
+	parents = t_filterOut(",", parents)
 	f = F.createClass(t[1] , parents)
 	t_setCode(None, t[4], f)
 	return f
@@ -231,9 +234,15 @@ def d_Slicing(t):
 	return F.slice(t[0], t[2])
 
 def d_Invocation(t):
-	'''Invocation: Expression LP (Expression ("," Expression)*)? RP '''
-	p = t_filterOut(",", t[2])
-	return F.invoke(t[0], *p)
+	'''Invocation: Expression (Expression | LP (Expression ("," Expression)*)?  RP) '''
+	p = t[1]
+	if len(p) == 1:
+		return F.invoke(t[0], *p)
+	elif len(p) == 2:
+		return F.invoke(t[0])
+	else:
+		p = t_filterOut(",", p[1:-1])
+		return F.invoke(t[0], *p)
 
 # ----------------------------------------------------------------------------
 # Closures
