@@ -1,30 +1,32 @@
-# This is a SweetC example program
-# Yeeaahhh
 
-import this, that
+@class Point
 
-class Shape:
+	@property x:double
+	@property y:double
+@end
 
-	class attribute int POUET
-	attribute int pouet
+@class Shape
 
-	constructor ():
-	end
+	@shared    COUNT:int
+	@property  points:List
+	
+	@constructor ()
+	@end
 
-	method doThis( param, int pouet, string bidule ):
-		return something
-	end
+	@method addPoint( point:Point )
+		return points append(point)
+	@end
 
-	operation classMethod( a, b, c ):
-		return "Pouet"
-	end
+	@operation shapeCount()
+		return COUNT
+	@end
 
-end
+@end
 
-function helloWorld():
-	print ("helloWorld" + 1)
-end
+@class Rectangle:Shape
 
-main:
-	print ("I am the main")
-end
+	@constructor ()
+		[0..4] do { points.add(new Point()) }
+	@end
+
+@end

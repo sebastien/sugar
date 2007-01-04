@@ -126,8 +126,8 @@ def d_Class(t):
 	return f
 
 def d_ClassAttribute(t):
-	'''ClassAttribute: '@shared' Type? NAME EOL '''
-	return F._attr(t[2], t[1])
+	'''ClassAttribute: '@shared' NAME (':' Type)? EOL '''
+	return F._classattr(t[1], t[2] and t[2][1] or None)
 
 def d_ClassMethod(t):
 	'''ClassMethod: '@operation' NAME LP Arguments? RP EOL
@@ -139,8 +139,8 @@ def d_ClassMethod(t):
 	return m
 
 def d_Attribute(t):
-	'''Attribute: '@property' Type? NAME EOL '''
-	return F._attr(t[2], t[1])
+	'''Attribute: '@property' NAME (':' Type)? EOL '''
+	return F._attr(t[1], t[2] and t[2][1] or None)
 
 def d_Method(t):
 	'''Method: '@method' NAME LP Arguments? RP EOL
@@ -190,12 +190,12 @@ def d_Allocation(t):
 	return t[0]
 
 def d_AllocationS(t):
-	'''AllocationS: 'var' Type? NAME '''
-	return F.allocate(F._slot(t[2],t[1]))
+	'''AllocationS: 'var' NAME (':' Type)?  '''
+	return F.allocate(F._slot(t[1],t[2] and t[2][1] or None))
 
 def d_AllocationD(t):
-	''' AllocationD: Type? NAME ':=' Expression? '''
-	return F.allocate(F._slot(t[1],t[0]), t[3] and t[3][0] or None)
+	''' AllocationD: NAME (':' Type)? ':=' Expression? '''
+	return F.allocate(F._slot(t[0],t[1] and t[1][1] or None), t[3] and t[3][0] or None)
 
 # ----------------------------------------------------------------------------
 # Expressions
@@ -223,8 +223,8 @@ def d_Instanciation(t):
 	return F.instanciate(t[1], *p)
 
 def d_Resolution(t):
-	'''Resolution: Expression '.' Name '''
-	return F.resolve(t[2], t[0])
+	'''Resolution: Expression Name '''
+	return F.resolve(t[1], t[0])
 
 def d_Slicing(t):
 	'''Slicing: Expression LB Expression RB '''
@@ -240,10 +240,10 @@ def d_Invocation(t):
 # ----------------------------------------------------------------------------
 
 def d_Closure(t):
-	'''Closure: LP Arguments? RP '->' LC (Line|Code) RC '''
+	'''Closure: LC (Arguments '|')? (Line|Code)? RC '''
 	a = t[1] and t[1][0] or ()
 	c = F.createClosure(a)
-	t_setCode(c, t[5][0])
+	t_setCode(c, t[2] and t[2][0] or ())
 	return c
 
 def d_Arguments(t):
@@ -253,8 +253,8 @@ def d_Arguments(t):
 	return r
 
 def d_Argument(t):
-	'''Argument: Type? NAME '''
-	return F._arg(t[1], t[0])
+	'''Argument: NAME (':' Type)? '''
+	return F._arg(t[0], t[1] and t[1][1] or None)
 
 def d_Type(t):
 	'''Type: NAME '''
