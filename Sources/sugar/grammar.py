@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Encoding: ISO-8859-1
 # vim: ts=4 textwidth=79
 # -----------------------------------------------------------------------------
@@ -6,25 +7,407 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   06-Dec-2006
+# Last mod.         :   03-Jan-2007
 # -----------------------------------------------------------------------------
 
-import os, sys, tpg
+import os
+from dparser import Parser
 from lambdafactory import modelbase as model
+from lambdafactory import interfaces
+
+__doc__ = """
+This module implements a Sugar syntax driver for the LambdaFactory program model
+library. This module uses the fantastic D parser Python library.
+"""
+
+# We instanciate LambdaFactory default factory, which will be used in the
+# grammar production rules to create model elements.
 
 F = model.Factory(model)
 
+# ----------------------------------------------------------------------------
+# Common utilities
+# ----------------------------------------------------------------------------
+
+def t_filterOut( c, l ):
+	return filter(lambda e:e!=c, l)
+
+def t_setCode( process, code, context=None ):
+	for o in code:
+		#print "SETTING",o,
+		if isinstance(o, interfaces.IOperation):
+		#	print "as operation"
+			process.addOperation(o)
+		elif context \
+		and  isinstance(o, interfaces.IAssignable) \
+		and  isinstance(o, interfaces.IReferencable):
+		#	print "as slot"
+			context.setSlot(o.getName(), o)
+		else:
+		#	print "not recognized"
+			pass
+
+# ----------------------------------------------------------------------------
+# Statements
+# ----------------------------------------------------------------------------
+
+def d_Program(t):
+	'''Program: Code'''
+	# FIXME: Add a notion of Module = Slots + Process
+	m = F.createModule(F.CurrentModule)
+	f = F.createFunction(F.ModuleInit, ())
+	# FIXME: Rename to addStatements
+	t_setCode(f,t[0],m)
+	m.setSlot(F.ModuleInit, f)
+	return m
+
+def d_Code(t):
+	'''Code : (Declaration|Statement|Comment|EOL)* '''
+	# FIXME: Declarations should not go into code
+	return t[0]
+
+def d_Line(t):
+	'''Line : (Allocation|Termination|Expression) ( ';' Line )* '''
+	r = [t[0][0]]
+	r.extend(t[1])
+	r = t_filterOut(";", r)
+	return r
+
+def d_Comment(t):
+	'''Comment : '#' "[^\\n]*" EOL'''
+	return F.comment(t[1])
+
+def d_Statement(t):
+	'''Statement : (Allocation|Termination|Expression) ( ';' | '\\n' ) '''
+	return t[0][0]
+
+def d_Declaration(t):
+	'''Declaration : (Main|Function|Class) EOL '''
+	return t[0][0]
+
+# ----------------------------------------------------------------------------
+# Declarations
+# ----------------------------------------------------------------------------
+
+def d_Main(t):
+	'''Main: '@main' EOL
+	      Code
+	   '@end'
+	'''
+	f = F.createFunction(F.MainFunction , ())
+	t_setCode(f, t[2])
+	return f
+
+def d_Function(t):
+	'''Function: '@function' NAME LP Arguments? RP EOL
+	      Code
+	   '@end'
+	'''
+	f = F.createFunction(t[1] , t[3] and t[3][0] or ())
+	t_setCode(f, t[6])
+	return f
+
+def d_Class(t):
+	# FIXME: Change Name to Reference
+	'''Class: '@class' NAME (LP Name (',' Name)* RP)? EOL
+	      (   ClassAttribute
+	      |   ClassMethod
+	      |   Attribute
+	      |   Method
+	      |   Constructor
+	      |   EOL
+	      )*
+	  '@end'
+	'''
+	# TODO: Parents support
+	parents = []
+	f = F.createClass(t[1] , parents)
+	t_setCode(None, t[4], f)
+	return f
+
+def d_ClassAttribute(t):
+	'''ClassAttribute: '@shared' Type? NAME EOL '''
+	return F._attr(t[2], t[1])
+
+def d_ClassMethod(t):
+	'''ClassMethod: '@operation' NAME LP Arguments? RP EOL
+	       Code
+	  '@end'
+	'''
+	m = F.createClassMethod(t[1], t[3] and t[3][0] or ())
+	t_setCode(m, t[6])
+	return m
+
+def d_Attribute(t):
+	'''Attribute: '@property' Type? NAME EOL '''
+	return F._attr(t[2], t[1])
+
+def d_Method(t):
+	'''Method: '@method' NAME LP Arguments? RP EOL
+	       Code
+	  '@end'
+	'''
+	m = F.createMethod(t[1], t[3] and t[3][0] or ())
+	t_setCode(m, t[6])
+	return m
+
+def d_Constructor(t):
+	'''Constructor: '@constructor' LP Arguments? RP EOL
+	       Code
+	  '@end'
+	'''
+	m = F.createMethod(F.Constructor, t[2] and t[2][0] or ())
+	t_setCode(m, t[5])
+	return m
+
+# ----------------------------------------------------------------------------
+# Operations
+# ----------------------------------------------------------------------------
+
+def d_Termination(t):
+	'''Termination : 'return' Expression'''
+	return F.returns(t[1])
+
+def d_Comparison(t):
+	'''Comparison : Expression ('<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
+	                 |'in' |'not' 'in'  | 'is' |'is' 'not') Expression
+	'''
+	# FIXME: Normalize operators
+	# FIXME: t[1] may be a list (not in, is not)
+	return F.compute(F._op(" ".join(t[1])),t[0],t[2])
+
+def d_Computation(t):
+	'''Computation: Expression ('+'|'-'|'*'|'/'|'%'|'//') Expression '''
+	# FIXME: Normalize operators
+	return F.compute(F._op(t[1][0]),t[0],t[2])
+
+def d_Assignation(t):
+	''' Assignation: Expression '='  Expression '''
+	return F.assign(t[0], t[2])
+
+def d_Allocation(t):
+	'''Allocation : AllocationD | AllocationS'''
+	return t[0]
+
+def d_AllocationS(t):
+	'''AllocationS: 'var' Type? NAME '''
+	return F.allocate(F._slot(t[2],t[1]))
+
+def d_AllocationD(t):
+	''' AllocationD: Type? NAME ':=' Expression? '''
+	return F.allocate(F._slot(t[1],t[0]), t[3] and t[3][0] or None)
+
+# ----------------------------------------------------------------------------
+# Expressions
+# ----------------------------------------------------------------------------
+
+def d_Expression(t):
+	'''Expression : Instanciation | Invocation | Resolution | Slicing | Assignation | Comparison
+	              | Computation |   Value | LP Expression RP
+	'''
+	if len(t) == 1: return t[0]
+	else: return t[1]
+
+def d_Value(t):
+	'''Value : Litteral|List|Dict|Range|Closure'''
+	return t[0]
+
+# ----------------------------------------------------------------------------
+# Operations
+# ----------------------------------------------------------------------------
+
+def d_Instanciation(t):
+	'''Instanciation: 'new' Expression LP (Expression ("," Expression)*)? RP
+	'''
+	p = t_filterOut(",", t[3])
+	return F.instanciate(t[1], *p)
+
+def d_Resolution(t):
+	'''Resolution: Expression '.' Name '''
+	return F.resolve(t[2], t[0])
+
+def d_Slicing(t):
+	'''Slicing: Expression LB Expression RB '''
+	return F.slice(t[0], t[2])
+
+def d_Invocation(t):
+	'''Invocation: Expression LP (Expression ("," Expression)*)? RP '''
+	p = t_filterOut(",", t[2])
+	return F.invoke(t[0], *p)
+
+# ----------------------------------------------------------------------------
+# Closures
+# ----------------------------------------------------------------------------
+
+def d_Closure(t):
+	'''Closure: LP Arguments? RP '->' LC (Line|Code) RC '''
+	a = t[1] and t[1][0] or ()
+	c = F.createClosure(a)
+	t_setCode(c, t[5][0])
+	return c
+
+def d_Arguments(t):
+	'''Arguments: Argument (',' Argument)* '''
+	r = [t[0]] ; r.extend(t[1])
+	r = filter(lambda e:e!=',', r)
+	return r
+
+def d_Argument(t):
+	'''Argument: Type? NAME '''
+	return F._arg(t[1], t[0])
+
+def d_Type(t):
+	'''Type: NAME '''
+	return t[0]
+
+# ----------------------------------------------------------------------------
+# Litterals
+# ----------------------------------------------------------------------------
+
+def d_Litteral(t):
+	'''Litteral : Integer|Float|String|Name '''
+	return t[0]
+
+def d_Integer(t):
+	'''Integer : "-?[0-9]+" '''
+	return F._number(int(t[0]))
+
+def d_Float(t):
+	'''Float : "-?[0-9]+\.[0-9]+" '''
+	return F._number(float(t[0]))
+
+def d_String(t):
+	'''String : StringSQ|StringDQ '''
+	return F._string(t[0])
+
+
+def d_StringSQ(t):
+	'''StringSQ : "'" (STR_NOT_SQUOTE|STR_ESC)* "'" '''
+	return "".join(t[1])
+
+def d_StringDQ(t):
+	'''StringDQ : '"' (STR_NOT_DQUOTE|STR_ESC)* '"' '''
+	return "".join(t[1])
+
+def d_Name(t):
+	'''Name : NAME '''
+	# FIXME: Maybe add a "_name" to LF
+	return F._ref(t[0])
+
+# ----------------------------------------------------------------------------
+# Compound
+# ----------------------------------------------------------------------------
+
+def d_Range(t):
+	'''Range: Expression '..' Expression '''
+	return F.enumerate(t[0], t[2])
+
+def d_List(t):
+	'''List : LB (Expression ("," Expression)*)? RB '''
+	r = t_filterOut(",", t[1])
+	l = F._list(*r)
+	return l
+
+def d_Dict(t):
+	'''Dict : LC (DictPair ("," DictPair)*)? RC '''
+	p = t_filterOut(",", t[1])
+	d = F._dict()
+	for k,v in p:
+		d.setValue(k,v)
+	return d
+
+def d_DictPair(t):
+	'''DictPair : Expression ':' Expression '''
+	return t[0], t[2]
+
+# ----------------------------------------------------------------------------
+# Punctuation
+# ----------------------------------------------------------------------------
+
+def d_LP(t):
+	''' LP : '(' '''
+	return str(t)
+
+def d_RP(t):
+	''' RP : ')' '''
+	return str(t)
+
+def d_LB(t):
+	''' LB : '[' '''
+	return str(t)
+
+def d_RB(t):
+	''' RB : ']' '''
+	return str(t)
+
+def d_LC(t):
+	''' LC : '{' '''
+	return str(t)
+
+def d_RC(t):
+	''' RC : '}' '''
+	return str(t)
+
+def d_NAME(t):
+	''' NAME: "[$0-9A-Za-z_]+" '''
+	return t[0]
+
+def d_EOL(t):
+	''' EOL: '\\n' '''
+	return
+
+def d_STR_ESC(t):
+	r'''STR_ESC: "\\[^]"'''
+	return t[0]
+
+def d_STR_NOT_SQUOTE(t):
+	r'''STR_NOT_SQUOTE: "[^\\\n\']" '''
+	return t[0]
+
+def d_STR_NOT_DQUOTE(t):
+	r'''STR_NOT_DQUOTE: "[^\\\n\"]" '''
+	return t[0]
+
+def d_whitespace(t):
+	'whitespace : "[ \t]*"'
+	# FIXME: Implement specific Python whitespace function
+	return
+
+# ----------------------------------------------------------------------------
+#
+# PARSER OPERATIONS
+#
+# ----------------------------------------------------------------------------
+
+def disambiguate( nodes ):
+	print "***** ambiguity", nodes[0]
+	return nodes[0]
+
+# ----------------------------------------------------------------------------
+#
+# EXTERNAL API
+#
+# ----------------------------------------------------------------------------
+
+_PARSER = Parser(make_grammar_file=1)
+
+def parse( text ):
+	res = _PARSER.parse(text, ambiguity_fn=disambiguate,print_debug_info=0)
+	return res
+
+def parseFile( path ):
+	f = file(path, 'r') ; t = f.read() ; f.close()
+	return parse(t)
+
+def parseModule( name, text ):
+	res = parse(text)
+	res.setName(name)
+	return res
 # ------------------------------------------------------------------------------
 #
 # Parser
 #
 # ------------------------------------------------------------------------------
-
-KEYWORDS = """new return yield if else for in while method function class extends
-attribute constructor destructor end""".replace("\n"," ").split()
-
-def isKeyword( symbol ):
-	return symbol in KEYWORDS
 
 class Parser:
 	"""The parser is a simple API that can be used as an entry point
@@ -32,8 +415,6 @@ class Parser:
 
 	def __init__( self, verbose = 0 ):
 		"""Creates a new interpreter."""
-		Grammar.verbose = verbose
-		self.parser    = Grammar()
 		self._warnings = []
 
 	def parse( self, filepath ):
@@ -61,19 +442,20 @@ class Parser:
 			self.warn("No trailing EOL in given code")
 			text += "\n"
 		# We try to parse the file
-		try:
-			res = self.parser.parseModule(name, text)
+		#try:
+		if True:
+			res = parseModule(name, text)
 			# We set the module file path (for informative purpose only)
 			if sourcepath:
 				res.setSource("file://" + os.path.abspath(sourcepath))
 			return ( text, res )
 		# And catch possible exceptions
-		except tpg.SyntacticError:
-			self.syntaxError(sourcepath)
-			return ( text, None )
-		except tpg.SemanticError:
-			self.semanticError(sourcepath)
-			return ( text, None )
+		#except tpg.SyntacticError:
+		#	self.syntaxError(sourcepath)
+		#	return ( text, None )
+		#except tpg.SemanticError:
+		#	self.semanticError(sourcepath)
+		#	return ( text, None )
 
 	def pathToModuleName(self, modulePath):
 		"""The given path must point to a SweetC source file. This method
@@ -114,657 +496,31 @@ class Parser:
 		res += " \t%s\n"  %  (self.parser._errorContext[2])
 		sys.stderr.write(res)
 
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #
-# Grammar
+# MAIN
 #
-# ------------------------------------------------------------------------------
-
-class Grammar(tpg.VerboseParser):
-	r"""
-		set lexer = ContextSensitiveLexer
-
-		separator spaces		'[ \t]+';
-
-		token EOL				'\n+';
-		token ANY				'[^\n]+';
-
-		token import			'import';
-		token from				'from';
-		token class				'class';
-		token extends			'extends';
-		token attribute			'attribute';
-		token constructor		'constructor';
-		token destructor		'destructor';
-		token method			'method';
-		token operation			'operation';
-		token function			'function';
-		token main				'main';
-		token enddecl			'end';
-		token lambda			'lambda';
-
-		token const				'const';
-		token for				'for';
-		token in				'in';
-		token step				'step';
-		token if				'if';
-		token else				'else';
-		token elif				'elif';
-		token while				'while';
-		token return			'return';
-		token new				'new';
-		token release			'release';
-		token application		'\-\>';
-
-		token tab				'\t';
-		token equals			'\=';
-		token comma				',';
-		token dot				'\.';
-		token semicolon			';';
-		token colon				'\:';
-		token dquote			'"';
-		token lparen			'\(';
-		token rparen			'\)';
-		token lbracket			'\[';
-		token rbracket			'\]';
-		token lbrace			'\{';
-		token rbrace			'\}';
-		token comment			'#.*';
-		token range				'\.\.';
-
-		token SYMBOL			'[A-Za-z0-9_\$]+';
-		token NUMBER			'[0-9]+(\.[0-9]+)?';
-		token TYPE				'(const\s+)?[A-Za-z0-9_]+(\[\]|\*)*';
-
-		# --------------------------------------------------------------------
-		#
-		# Start and comments
-		#
-		# --------------------------------------------------------------------
-		
-		START/m			-> Module/m
-		;
-
-		Comment/c		->  $ text = ""
-							(
-								comment/line EOL
-								$ text += line
-							)+
-							$ c = self.lf.comment(text)
-		;
-
-		# --------------------------------------------------------------------
-		#
-		# Module and Classes declarations
-		#
-		# --------------------------------------------------------------------
-		
-		Module/m		->	$ m = self.lf.createModule(self.moduleName)
-							
-							(   Comment/cm           |
-							  EOL
-							) *
-# TODO: Support value assignation
-							(   ModuleRequirements/mr   ) *
-							(   Comment/cm             )*
-							(   ClassDeclaration/cd     $ m.setSlot(cd.getName(), cd)    $    )*
-							(   Comment
-							|   FunctionDeclaration/fd  $ m.setSlot(fd.getName(), fd) $    )*
-							(   Comment
-							|   MainDeclaration/md      $ m.setSlot("__main__", md) $    )?
-	;
+# ----------------------------------------------------------------------------
 
 
-		ModuleRequirements/r -> import SYMBOL/s
-								$ if isKeyword(s):raise tpg.WrongToken
-			      	            
-			      	            $ r = [] ; symbols = [s]
-								(	comma SYMBOL/s
-									$ if isKeyword(s):raise tpg.WrongToken
-									$ symbols.append(s)
-								)*
-                                	$ from_module = None
-								(	from SYMBOL/from_module
-									$ if isKeyword(from_module):raise tpg.WrongToken
-								)?
-								# FIXME: These operations do not seem really appropriate
-								# Maybe there should be importModule and importSymbols operations
-								EOL+
-		;
-		
-		ClassDeclaration/c ->	class SYMBOL/name 
-								$ parents = []
-								(	extends
-									DotSymbol/s
-									$ parents.append(s)
-									(	comma
-										DotSymbol/s
-										$ parents.append(s)
-									)*
-								)?
-								colon EOL
-								$ if isKeyword(name):raise tpg.WrongToken
-								$ c = self.lf.createClass(name, parents)
-								(	Comment
-								|	ClassAttributeDeclaration/ad	$ c.setSlot(ad.getReferenceName(), ad)
-								|	AttributeDeclaration/ad	$ c.setSlot(ad.getReferenceName(), ad)
-								)*
-								(	Constructor/cd			$ c.setSlot("__init__", cd) $	)?
-								(	Destructor/dd			$ c.setSlot("__destroy__", dd) $ 	)?
-								(	Comment
-								|	MethodDeclaration/md 	$ c.setSlot(md.getName(), md) $	)*
-								(	ClassMethodDeclaration/cd	$ c.setSlot(cd.getName(), cd) $)*
-								enddecl EOL+
-		;
-
-		ClassAttributeDeclaration/a -> $ s = None
-								class attribute TYPE/t (SYMBOL/s)? EOL
-								$ if isKeyword(s):raise tpg.WrongToken
-								$ if s == None:
-								$   a = self.lf._classattr(t)
-								$ else:
-								$   a = self.lf._classattr(s, t)
-		;
-
-		AttributeDeclaration/a -> $ s = None 
-								attribute TYPE/t (SYMBOL/s)? EOL
-								$ if isKeyword(s):raise tpg.WrongToken
-								$ if s == None:
-								$   a = self.lf._attr(t)
-								$ else:
-								$   a = self.lf._attr(s, t)
-		;
-		
-		# --------------------------------------------------------------------
-		#
-		# Methods and function declarations
-		#
-		# --------------------------------------------------------------------
-
-		# Returns a "Parameter" element with the code attribute filled with
-		# the list of arguments
-		Parameters/p		->	lparen
-								$ p = []
-								$ name = None
-								(	TYPE/t (SYMBOL/name)?
-									$ if isKeyword(t):raise tpg.WrongToken
-									$ if isKeyword(name):raise tpg.WrongToken
-									$ if not name:
-									$   p.append(self.lf._arg(t))
-									$ else:
-									$   p.append(self.lf._arg(name, t))
-									(	$ name = None
-										comma TYPE/t (SYMBOL/name)?
-										$ if isKeyword(t):raise tpg.WrongToken
-										$ if isKeyword(name):raise tpg.WrongToken
-										$ if not name:
-										$   p.append(self.lf._arg(t))
-										$ else:
-										$   p.append(self.lf._arg(name, t))
-									)*
-								)? rparen
-		;
-
-		# Returns an array of Statements
-		FunctionBody/b		->	$ b = []
-								(	Statement/s (EOL|semicolon)+
-									$ b.extend(s)
-								)*
-		;
-
-		Constructor/c 		->	$ args = []
-								constructor Parameters/p colon EOL
-								$ c = self.lf.createConstructor(p)
-								Comment?
-								FunctionBody/fb
-								$ c.addOperations(*fb)
-								enddecl EOL+
-		;
-
-		Destructor/d 		->	$ d = self.lf.createDestructor()
-								destructor colon EOL
-								Comment?
-								FunctionBody/fb
-								$ d.addOperations(*fb)
-								enddecl EOL+
-		;
-
-		# If there is an error here, it is probably an omission of return value,
-		# a bad method name, or bad parameter expressions --> there should be 
-		# a method to do so
-		MethodDeclaration/d ->	method SYMBOL/name Parameters/p colon EOL
-								$ if isKeyword(name):raise tpg.WrongToken
-								$ d = self.lf.createMethod(name, p)
-								Comment?
-								FunctionBody/fb
-								$ d.addOperations(*fb)
-								enddecl EOL+
-		;
-
-		ClassMethodDeclaration/d ->	operation SYMBOL/name Parameters/p colon EOL
-								$ if isKeyword(name):raise tpg.WrongToken
-								$ d = self.lf.createClassMethod(name, p)
-								Comment?
-								FunctionBody/fb
-								$ d.addOperations(*fb)
-								enddecl EOL+
-		;
+if __name__ == "__main__":
+	import sys
+	from lambdafactory.reporter import DefaultReporter
+	from lambdafactory import javascript
 
 
-		FunctionDeclaration/d -> function SYMBOL/name Parameters/p colon EOL
-								$ if isKeyword(name):raise tpg.WrongToken
-								$ d = self.lf.createFunction(name, p)
-								# Function documentation
-								Comment?
-								FunctionBody/fb
-								$ d.addOperations(*fb)
-								enddecl EOL+
-		;
+	if sys.argv[1] == "--":
+		t        = "\n".join(sys.argv[2:]) + '\n'
+		print 'Parsing:' + repr(t)
+		res      = parse(t)
+	else:
+		res      = parseFile(sys.argv[1])
 
-		MainDeclaration/m  ->	main colon EOL
-								( Comment )?
-								$ m = self.lf.createFunction("__main__",())
-								FunctionBody/fb
-								$ m.addOperations(*fb)
-								(Comment | EOL)*
-								enddecl EOL+
-		;
+	reporter = DefaultReporter
+	writer   = javascript.Writer(reporter=reporter)
+	resolver = javascript.Resolver(reporter=reporter)
+	resolver.flow(res)
 
-		# --------------------------------------------------------------------
-		#
-		# Statements
-		#
-		# --------------------------------------------------------------------
-		# This set of rules tries to parse a subset of the C language extended
-		# with SweetC additional keywords and operators. This is where symbol
-		# resolution and type checking is done.
-		
-		# Returns a string representing the symbol. You should call
-		# self.context.resolve() later to ensure that the symbol is accessible
-		Symbol/s			->	SYMBOL/sym
-								$ if isKeyword(sym): raise tpg.WrongToken
-								$ s = self.lf._ref(sym)
-		;
-
-		DotSymbol/s			->	Symbol/s
-								(	dot
-									Symbol/s2
-									$ s = self.lf.resolve(s2, s)
-								) *
-		;
-
-		Litteral/c			->	(	NUMBER/n
-									$ if n.find(".") != -1: c = self.lf._number(float(n))
-									$ else: c = self.lf._number(int(n))
-								|	dquote
-									@beginning
-									(	'\\"'/v
-									|	'[^"]'/v
-									)*
-									@end
-									dquote
-									$ c = self.lf._string(self.extract(beginning, end))
-								)
-		;
-
-		List/l				->	lbracket
-								$ l = self.lf._list()
-								(
-									Expression/e $ l.addValue(e)
-									(
-										comma
-										Expression/e
-										$ l.addValue(e)
-									)*
-								)?
-								rbracket
-		;
-
-		Dict/d				->	lbrace
-								$ d = self.lf._dict()
-								(
-									Expression/k colon Expression/v
-									$ d.setValue(k, v) 
-									(
-										comma
-										Expression/k colon Expression/v 
-										$ d.setValue(k, v) 
-									)*
-								)?
-								rbrace
-		;
-
-		Cast/c				->	lparen
-								$ c = ""
-								(	const
-									$ c += "const "
-								)?
-								TYPE/t
-								$ c += t
-								(	'\*'
-									$ c += "*"
-								)*
-								rparen
-		;
-
-		Closure/c			->	Parameters/p application lbrace EOL*
-								$ c = self.lf.createClosure(p)
-								(	Statement/s 
-									$ c.addOperations(*s)
-									(
-										( EOL | semicolon )
-										Statement/s
-										$ c.addOperations(*s)
-									)*
-								)?
-								EOL*
-								rbrace
-		;
-
-		Arguments/a			->	$ a = []
-								(
-									Expression/e
-									$ a.append(e)
-									(	comma Expression/e
-										$ a.append(e)
-									)*
-								) ?
-		;
-
-		Value/v				->	$ c= None
-								# I removed Cast, as I don't feeel is
-								# necessary
-								#(
-								#	Cast/c
-								#)
-								#?
-								(	Litteral/v
-								|	List/v
-								|	Dict/v
-								|	Symbol/v
-								|	Closure/v
-								|	lparen Expression/v rparen 
-								)
-								( lbracket Expression/e rbracket
-									$ v = self.lf.slice(v, e)
-								|	lparen Arguments/args rparen
-									$ v = self.lf.invoke(v, *args)
-								)*
-								# The following may look a bit awkward, but
-								# it's the simplest way I got it to work
-								(
-									dot Symbol/w
-									$ v = self.lf.resolve(w, v)
-									(	lbracket Expression/e rbracket
-										$ v = self.lf.slice(v, e)
-									|	lparen Arguments/args rparen
-										$ v = self.lf.invoke(v, *args)
-									)*
-								)*
-		;
-
-		PrefixOperator/o	->	( '-'/o  | '\ +'/o | '&'/o | '\*+'/o )
-		;
-
-		ComparisonOperator/o ->	( '=='/o   | '<[=]?'/o  | '>[=]?'/o )
-		;
-
-		InfixOperator/o		->	( '&&'/o | '\|\|'/o | '<<'/o | '>>'/o 
-								| '[/\*\+\-]'/o
-								| ComparisonOperator/o
-								)
-		;
-
-		# This was disabled, but suffix operators will be "[xx..xx]
-		# SuffixOperator/o	-> ( '--'/o | '\+\+'/o )
-		# ;
-
-		# An expression can be substituted to a value, either directly
-		# (which is the case for litterals), or after evaluation, which
-		# is the case for the rest (operations), excepted for some languages
-		# where control flow operations do not directly raise a value.
-		Expression/e		->	(
-									new DotSymbol/s lparen
-									$ args= []
-									(	Expression/sube
-										$ args.append(sube)
-										(	comma Expression/sube
-											$ args.append(sube)
-										)*
-									)?
-									rparen
-									$ e = self.lf.instanciate(s, *args)
-								|	Value/a InfixOperator/o Value/b
-									$ e = self.lf.compute(self.lf._op(o), a, b)
-								|	PrefixOperator/o Value/v
-									$ e = self.lf.compute(self.lf._op(o), v)
-								#|	Value/v SuffixOperator/o
-								#	$ e = self.lf.compute(self.lf._op(o), v)
-								|	Value/v '\[' Expression/ie '\]'
-									$ e = self.lf.slice(v, ie)
-								|	Value/start range Value/end
-									$ e = self.lf.enumerate(start, end)
-								# TODO: This is ugly, but it is the only way to
-								# make it work. It seems like everything that
-								# starts with a paren has to be recalled here.
-								|	Closure/e
-								|	lparen Value/start rparen range Value/end
-									$ e = self.lf.enumerate(start, end)
-								|	lparen Value/start rparen range lparen Value/end rparen
-									$ e = self.lf.enumerate(start, end)
-								|	lparen Value/e rparen 
-								|	Value/e
-								)
-		;
-		
-
-		# Statements represent many kind of operations, so the Statement
-		# grammar rule simply acts as a switch to dispatch between the
-		# different possibilities.
-		Statement/s			->	( Comment | EOL ) *
-								(	Control/s
-								|	Declaration/s
-								|	Assignation/s
-								|	Value/s
-								$	s = self.lf.evaluate(s)
-								) 
-								$ if type(s) not in (tuple, list):s=[s]
-		;
-
-		Block/b				->	EOL?
-									$ b = self.lf.createBlock()
-									( EOL
-									| Comment
-									| Statement/s $ b.addOperations(*s)
-									)*
-								
-		;
-
-		Declaration/v		->	TYPE/t SYMBOL/s
-								$ if isKeyword(t):raise tpg.WrongToken
-								$ if isKeyword(s):raise tpg.WrongToken
-								$ slot = self.lf._slot(s,t)
-								$ v    = self.lf.allocate(slot)
-								(	equals/e Expression/ex
-									$ a = v
-									$ b = self.pb.assign(slot, ex)
-									$ v = [a, b]
-								)?
-		;
-
-		# TODO: Add LValue instead of Symbol
-		Assignation/v		-> Expression/s ( '=\['/o | '=\]'/o | '='/o | '\:='/o |'-='/o | '\+='/o ) Expression/e
-							   $ if o == '=':
-							   $     v = self.lf.assign(s, e)
-							   $ elif o == ':=':
-							   $     s = self.lf._slot(s.getReferenceName())
-							   $ #	FIXME: Assert s sis a slot
-							   $     v = [self.lf.allocate(s), self.lf.assign(s,e)]
-							   $ elif o == "-=":
-							   $     v = self.lf.assign(s, self.lf.compute(self.lf._op("-"), s, e))
-							   $ elif o == "+=":
-							   $     v = self.lf.assign(s, self.lf.compute(self.lf._op("+"), s, e))
-							   $ elif o == "=[":
-							   $     i = self.lf.invoke(self.pb.message(s, "prepend"))
-							   $     i.add(e)	
-							   $     v = self.lf.assign(s, i)
-							   $ elif o == "=]":
-							   $     i = self.lf.invoke(self.pb.message(s, "append"))
-							   $     i.add(e)	
-							   $     v = self.lf.assign(s, i)
-							   $ else:
-							   $     assert None, "Uknown assignation operator: " + o
-		;
-
-		# --------------------------------------------------------------------
-		#
-		# Control
-		#
-		# --------------------------------------------------------------------
-		# Control structures describe the program runtime behaviour
-		
-		Control/v			->	(	return Expression/e
-									$ v = self.lf.returns(e)
-								|	For/v
-								|	While/v
-								|	If/v
-								) 
-		;
-
-		For/v				->	for SYMBOL/s in Expression/iterator
-								$ if isKeyword(s):raise tpg.WrongToken
-								(  step Expression/step
-								   $ iterator.setStep(step)
-								)?
-								colon EOL
-								Block/bl
-								$ v = self.lf.iterate(self.lf._slot(s), iterator, bl)
-								enddecl
-		;
-
-		While/v				->	while Expression/e colon EOL*
-								Block/b
-								$ v = self.lf.repeat(e, b)
-								enddecl
-		;
-
-		If/v				->	if Expression/e colon EOL*
-								(Comment | EOL)*
-								Block/b
-								$ v = self.lf.select()
-								$ v.addRule(self.lf.match(e, b))
-								( EOL? Comment* ElseIf/e $ v.addRule(e) $ ) *
-								( EOL? Comment* Else/e   $ v.addRule(e) $ ) ?
-								enddecl
-		;
-
-		ElseIf/b			->	else if Expression/e colon EOL*
-								Block/b
-								$ b = self.lf.match(e, b)
-		;
-
-		Else/b				->	else colon EOL*
-								Block/b
-								$ b = self.lf.match(self.lf._ref("True"), b)
-		;
-
-		
-	"""
-
-	def __init__( self ):
-		"""The SweetC parser is a verbose parser that allows to keep track of
-		the last unmatched rules, which is useful when you want to report the
-		location of a syntax error."""
-		tpg.VerboseParser.__init__(self)
-		self._errorContext = None
-		self._errorLine    = -1
-		self._log          = []
-		self._warnings     = []
-		self._error        = None
-		self.lf            = F
-    
-	def parseModule( self, name, body ):
-		"""Parses a module with the given name, with the given text."""
-		# TODO: Ensure that module name follows the naming convention
-		self.moduleName = name
-		return self(body)
-		
-	def warning( self, message ):
-		"""Adds a triple (message, line number, line text) to the _warnings
-		property of the parser."""
-		self._warnings.append((message, self.currentLine(), self.currentLineText() ))
-
-	def error( self, message ):
-		"""Sets _errorContext to be the current context, _error to the given
-		message, and raises a SemanticError exception with the message as
-		argument."""
-		self._errorContext = self.errorContext()
-		self._error        = message
-		raise tpg.SemanticError(message)
-
-	def eat(self, name):
-		"""Refefinition of the TPG VerboseParser eat method to handle better
-		logging."""
-		try:
-			value = tpg.VerboseParser.eatCSL(self, name)
-			self._log  = []
-			self._errorContext = None
-			return value
-		except tpg.WrongToken:
-			raise
-
-	def eatCSL(self, name):
-		"""Redefines this to keep track of the last unmatched set of rules."""
-		try:
-			value = tpg.VerboseParser.eatCSL(self, name)
-			self._log  = []
-			self._errorContext = None
-			return value
-		except tpg.WrongToken:
-			if self._errorContext == None:
-				self._errorContext = self.errorContext()
-				self._errorLine    = self.currentLine()
-			text = self.lexer.input[self.lexer.pos:self.lexer.pos+10].replace('\n', ' ')
-			self._log.append("%s:%s\t%s\t%s != %s" % (
-				self.lexer.line, self.lexer.row, name, self.stackInfo(), text
-			))
-			raise
-	
-	def stackInfo( self ):
-		"""Returns a string representing the current call stack, with each
-		frame name separated by a dot."""
-		name        = None
-		callernames = []
-		stackdepth  = 0
-		while name != self.axiom:
-			stackdepth += 1
-			name        = sys._getframe(stackdepth+1).f_code.co_name
-			if len(callernames) < 10:
-				callernames.insert(0, name)
-		callernames = '.'.join(callernames)
-		return callernames
-	
-	def currentLineText( self ):
-		"""Returns the text of the currently parsed line."""
-		return self.getLineAtPos(self.lexer.pos)[2]
-
-	def currentLine( self ):
-		"""Returns the number of the currenlty parsed line."""
-		return self.lexer.input.count("\n", 0, self.lexer.pos)
-	
-	def getLineAtPos( self, pos ):
-		"""Retruns the (line start, line end, line text) of the line containing
-		the given position."""
-		start = self.lexer.input.rfind("\n", 0, pos)
-		end   = self.lexer.input.find("\n",  pos)
-		return (start+1, end, self.lexer.input[start+1:end].strip())
-
-	def errorContext( self ):
-		"""Returns the lines surrounding the current line"""
-		start, end, second = self.getLineAtPos(self.lexer.pos)
-		if start > 0: a, b, first  = self.getLineAtPos(start - 1)
-		else: first = ""       
-		a, b,       third  = self.getLineAtPos(end   + 1)
-		return (first, second, third)
+	print writer.write(res)
 
 # EOF
