@@ -11,7 +11,7 @@
 # -----------------------------------------------------------------------------
 
 import os
-from dparser import Parser
+from dparser import Parser, Reject
 from lambdafactory import modelbase as model
 from lambdafactory import interfaces
 
@@ -24,6 +24,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
+KEYWORDS = "return yield".split()
 
 # ----------------------------------------------------------------------------
 # Common utilities
@@ -115,6 +116,7 @@ def d_Class(t):
 	      |   Attribute
 	      |   Method
 	      |   Constructor
+	      |   Destructor
 	      |   EOL
 	      )*
 	  '@end'
@@ -159,7 +161,16 @@ def d_Constructor(t):
 	       Code
 	  '@end'
 	'''
-	m = F.createMethod(F.Constructor, t[2] and t[2][0] or ())
+	m = F.createConstructor(t[2] and t[2][0])
+	t_setCode(m, t[5])
+	return m
+
+def d_Destructor(t):
+	'''Destructor: '@destructor' EOL
+	       Code
+	  '@end'
+	'''
+	m = F.createDestructor()
 	t_setCode(m, t[5])
 	return m
 
@@ -357,9 +368,12 @@ def d_RC(t):
 	''' RC : '}' '''
 	return str(t)
 
-def d_NAME(t):
+def d_NAME(t, spec):
 	''' NAME: "[$0-9A-Za-z_]+" '''
-	return t[0]
+	if spec and t[0] in KEYWORDS:
+		return Reject
+	else:
+		return t[0]
 
 def d_EOL(t):
 	''' EOL: '\\n' '''
@@ -389,7 +403,7 @@ def d_whitespace(t):
 # ----------------------------------------------------------------------------
 
 def disambiguate( nodes ):
-	print "***** ambiguity", nodes[0]
+	# FIXME: This may not be the best way...
 	return nodes[0]
 
 # ----------------------------------------------------------------------------
@@ -511,12 +525,11 @@ class Parser:
 #
 # ----------------------------------------------------------------------------
 
-
 if __name__ == "__main__":
+	# This is a simple debug code that is useful for quickly parsing input
 	import sys
 	from lambdafactory.reporter import DefaultReporter
 	from lambdafactory import javascript
-
 
 	if sys.argv[1] == "--":
 		t        = "\n".join(sys.argv[2:]) + '\n'
