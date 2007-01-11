@@ -14,9 +14,9 @@ import os, sys, shutil
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
-from lambdafactory import javascript
+from lambdafactory import javascript, c
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
@@ -56,7 +56,7 @@ def sourceToJavaScript( name, text ):
 	resolver.flow(module)
 	return writer.write(module), reporter
 
-def run( args ):
+def run( args, output=sys.stdout ):
 	"""The run method can be used to execute a SweetC command from another
 	Python script without having to spawn a shell."""
 	"""Runs SDoc as a command line tool"""
@@ -91,7 +91,7 @@ def run( args ):
 	for source in args:
 		source, module = parser.parse(source)
 		resolver.flow(module)
-		print writer.write(module)
+		output.write( writer.write(module) + "\n")
 
 # ------------------------------------------------------------------------------
 #

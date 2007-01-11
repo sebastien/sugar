@@ -31,7 +31,7 @@ KEYWORDS = "return yield".split()
 # ----------------------------------------------------------------------------
 
 def t_filterOut( c, l ):
-	return filter(lambda e:e!=c, l)
+	return filter(lambda e:e!=None and e!=c, l)
 
 def t_setCode( process, code, context=None ):
 	for o in code:
@@ -216,7 +216,7 @@ def d_AllocationD(t):
 # ----------------------------------------------------------------------------
 
 def d_Expression(t):
-	'''Expression : Instanciation | Invocation | Resolution | Slicing | Assignation | Comparison
+	'''Expression : Instanciation | InvocationOrResolution | Slicing | Assignation | Comparison
 	              | Computation |   Value | LP Expression RP
 	'''
 	if len(t) == 1: return t[0]
@@ -236,19 +236,21 @@ def d_Instanciation(t):
 	p = t_filterOut(",", t[3])
 	return F.instanciate(t[1], *p)
 
-def d_Resolution(t):
-	'''Resolution: Expression Name '''
-	return F.resolve(t[1], t[0])
-
 def d_Slicing(t):
 	'''Slicing: Expression LB Expression RB '''
 	return F.slice(t[0], t[2])
 
-def d_Invocation(t):
-	'''Invocation: Expression (Expression | LP (Expression ("," Expression)*)?  RP) '''
+def d_InvocationOrResolution(t):
+	'''InvocationOrResolution: Expression ( Name | Expression | LP (Expression ("," Expression)*)?  RP) '''
 	p = t[1]
+	# NOTE: In some cases (and I don't get why this happens), Invocation
+	# matches but Resoltuion doesn't. So we check if expression is a
+	# reference (a name) and we make the invocation fail
 	if len(p) == 1:
-		return F.invoke(t[0], *p)
+		if isinstance(p[0], interfaces.IReference):
+			return F.resolve(p[0], t[0])
+		else:
+			return F.invoke(t[0], *p)
 	elif len(p) == 2:
 		return F.invoke(t[0])
 	else:
@@ -329,7 +331,7 @@ def d_List(t):
 	return l
 
 def d_Dict(t):
-	'''Dict : LC (DictPair ("," DictPair)*)? RC '''
+	'''Dict : LC ( EOL* DictPair EOL* ( EOL* "," EOL* DictPair EOL*)*)? RC '''
 	p = t_filterOut(",", t[1])
 	d = F._dict()
 	for k,v in p:
@@ -404,6 +406,7 @@ def d_whitespace(t):
 
 def disambiguate( nodes ):
 	# FIXME: This may not be the best way...
+	print "********AMIBUITY", nodes
 	return nodes[0]
 
 # ----------------------------------------------------------------------------
@@ -414,16 +417,17 @@ def disambiguate( nodes ):
 
 _PARSER = Parser(make_grammar_file=1)
 
-def parse( text ):
-	res = _PARSER.parse(text, ambiguity_fn=disambiguate,print_debug_info=0)
+def parse( text, verbose=True ):
+	#res = _PARSER.parse(text, ambiguity_fn=disambiguate,print_debug_info=1)
+	res = _PARSER.parse(text,ambiguity_fn=disambiguate, print_debug_info=(verbose and 1 or 0))
 	return res
 
-def parseFile( path ):
+def parseFile( path, verbose=False ):
 	f = file(path, 'r') ; t = f.read() ; f.close()
-	return parse(t)
+	return parse(t, verbose)
 
-def parseModule( name, text ):
-	res = parse(text)
+def parseModule( name, text, verbose=False ):
+	res = parse(text, verbose)
 	res.setName(name)
 	return res
 # ------------------------------------------------------------------------------
@@ -436,9 +440,10 @@ class Parser:
 	"""The parser is a simple API that can be used as an entry point
 	to manipulate SweetC source code."""
 
-	def __init__( self, verbose = 0 ):
+	def __init__( self, verbose = False ):
 		"""Creates a new interpreter."""
 		self._warnings = []
+		self.verbose   = verbose
 
 	def parse( self, filepath ):
 		"""Reads and parses the content given of the given file and returns a
@@ -467,7 +472,7 @@ class Parser:
 		# We try to parse the file
 		#try:
 		if True:
-			res = parseModule(name, text)
+			res = parseModule(name, text, self.verbose)
 			# We set the module file path (for informative purpose only)
 			if sourcepath:
 				res.setSource("file://" + os.path.abspath(sourcepath))
