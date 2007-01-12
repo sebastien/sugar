@@ -24,7 +24,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "new return yield".split()
+KEYWORDS = "new return yield and or not is".split()
 
 # ----------------------------------------------------------------------------
 # Common utilities
@@ -237,7 +237,7 @@ def d_Comparison(t):
 	return F.compute(F._op(" ".join(t[1])),t[0],t[2])
 
 def d_Computation(t):
-	'''Computation: Expression ('+'|'-'|'*'|'/'|'%'|'//') Expression '''
+	'''Computation: Expression ('+'|'-'|'*'|'/'|'%'|'//'|'and'|'or') Expression '''
 	# FIXME: Normalize operators
 	return F.compute(F._op(t[1][0]),t[0],t[2])
 
@@ -353,7 +353,6 @@ def d_Float(t):
 def d_String(t):
 	'''String : StringSQ|StringDQ '''
 	return F._string(t[0])
-
 
 def d_StringSQ(t):
 	'''StringSQ : "'" (STR_NOT_SQUOTE|STR_ESC)* "'" '''
