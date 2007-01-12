@@ -24,7 +24,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "return yield".split()
+KEYWORDS = "new return yield".split()
 
 # ----------------------------------------------------------------------------
 # Common utilities
@@ -78,6 +78,10 @@ def d_Comment(t):
 	'''Comment : '#' "[^\\n]*" EOL'''
 	return F.comment(t[1])
 
+def d_Documentation(t):
+	'''Documentation : '!' "[^\\n]*" EOL Documentation? '''
+	return t
+
 def d_Statement(t):
 	'''Statement : (Allocation|Termination|Expression) ( ';' | '\\n' ) '''
 	return t[0][0]
@@ -100,12 +104,13 @@ def d_Main(t):
 	return f
 
 def d_Function(t):
-	'''Function: '@function' NAME LP Arguments? RP EOL
+	'''Function: '@function' NAME Arguments? EOL
+		  Documentation?
 	      Code
 	   '@end'
 	'''
-	f = F.createFunction(t[1] , t[3] and t[3][0] or ())
-	t_setCode(f, t[6])
+	f = F.createFunction(t[1] , t[2] and t[2][0] or ())
+	t_setCode(f, t[5])
 	return f
 
 def d_Class(t):
@@ -135,12 +140,13 @@ def d_ClassAttribute(t):
 	return F._classattr(t[1], t[2] and t[2][1] or None)
 
 def d_ClassMethod(t):
-	'''ClassMethod: '@operation' NAME LP Arguments? RP EOL
+	'''ClassMethod: '@operation' NAME Arguments? EOL
+		   Documentation?
 	       Code
 	  '@end'
 	'''
-	m = F.createClassMethod(t[1], t[3] and t[3][0] or ())
-	t_setCode(m, t[6])
+	m = F.createClassMethod(t[1], t[2] and t[2][0] or ())
+	t_setCode(m, t[5])
 	return m
 
 def d_Attribute(t):
@@ -148,30 +154,33 @@ def d_Attribute(t):
 	return F._attr(t[1], t[2] and t[2][1] or None)
 
 def d_Method(t):
-	'''Method: '@method' NAME LP Arguments? RP EOL
+	'''Method: '@method' NAME Arguments? EOL
+	       Documentation?
 	       Code
 	  '@end'
 	'''
-	m = F.createMethod(t[1], t[3] and t[3][0] or ())
-	t_setCode(m, t[6])
+	m = F.createMethod(t[1], t[2] and t[2][0] or ())
+	t_setCode(m, t[5])
 	return m
 
 def d_Constructor(t):
-	'''Constructor: '@constructor' LP Arguments? RP EOL
+	'''Constructor: '@constructor'  Arguments? EOL
+	       Documentation?
 	       Code
 	  '@end'
 	'''
-	m = F.createConstructor(t[2] and t[2][0])
-	t_setCode(m, t[5])
+	m = F.createConstructor(t[1] and t[1][0])
+	t_setCode(m, t[4])
 	return m
 
 def d_Destructor(t):
 	'''Destructor: '@destructor' EOL
+	       Documentation?
 	       Code
 	  '@end'
 	'''
 	m = F.createDestructor()
-	t_setCode(m, t[5])
+	t_setCode(m, t[6])
 	return m
 
 # ----------------------------------------------------------------------------
@@ -231,17 +240,23 @@ def d_Value(t):
 # ----------------------------------------------------------------------------
 
 def d_Instanciation(t):
-	'''Instanciation: 'new' Expression LP (Expression ("," Expression)*)? RP
+	'''Instanciation: 'new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
 	'''
-	p = t_filterOut(",", t[3])
-	return F.instanciate(t[1], *p)
+	p = t[2]
+	if len(p) == 1:
+		return F.instanciate(t[1], *p)
+	elif len(p) == 2:
+		return F.invoke(t[1])
+	else:
+		p = t_filterOut(",", p[1:-1])
+		return F.invoke(t[1], *p)
 
 def d_Slicing(t):
 	'''Slicing: Expression LB Expression RB '''
 	return F.slice(t[0], t[2])
 
 def d_InvocationOrResolution(t):
-	'''InvocationOrResolution: Expression ( Name | Expression | LP (Expression ("," Expression)*)?  RP) '''
+	'''InvocationOrResolution: Expression ( Name | Value | LP (EOL* Expression EOL* ( (EOL|",") EOL* Expression EOL*)*)?  RP) '''
 	p = t[1]
 	# NOTE: In some cases (and I don't get why this happens), Invocation
 	# matches but Resoltuion doesn't. So we check if expression is a
@@ -331,7 +346,7 @@ def d_List(t):
 	return l
 
 def d_Dict(t):
-	'''Dict : LC ( EOL* DictPair EOL* ( EOL* "," EOL* DictPair EOL*)*)? RC '''
+	'''Dict : LC ( EOL* DictPair EOL* ( (EOL |"," ) EOL* DictPair EOL*)*)? RC '''
 	p = t_filterOut(",", t[1])
 	d = F._dict()
 	for k,v in p:
@@ -386,11 +401,11 @@ def d_STR_ESC(t):
 	return t[0]
 
 def d_STR_NOT_SQUOTE(t):
-	r'''STR_NOT_SQUOTE: "[^\\\n\']" '''
+	r'''STR_NOT_SQUOTE: "[^\\\n\']+" '''
 	return t[0]
 
 def d_STR_NOT_DQUOTE(t):
-	r'''STR_NOT_DQUOTE: "[^\\\n\"]" '''
+	r'''STR_NOT_DQUOTE: "[^\\\n\"]+" '''
 	return t[0]
 
 def d_whitespace(t):
@@ -406,7 +421,7 @@ def d_whitespace(t):
 
 def disambiguate( nodes ):
 	# FIXME: This may not be the best way...
-	print "********AMIBUITY", nodes
+	print "********AMIBGUITY", nodes
 	return nodes[0]
 
 # ----------------------------------------------------------------------------
