@@ -47,7 +47,21 @@ def t_setCode( process, code, context=None ):
 		else:
 		#	print "not recognized"
 			pass
+	return process
 
+def t_split( array, element ):
+	res = []
+	cur = None
+	for a in array:
+		if element == a:
+			if cur!=None: res.append(cur)
+			cur = [a]
+		else:
+			if cur is None: cur = []
+			cur.append(a)
+	if cur != None:	res.append(cur)
+	return res
+	
 # ----------------------------------------------------------------------------
 # Statements
 # ----------------------------------------------------------------------------
@@ -83,7 +97,7 @@ def d_Documentation(t):
 	return t
 
 def d_Statement(t):
-	'''Statement : (Allocation|Termination|Expression) ( ';' | '\\n' ) '''
+	'''Statement : (ControlIf|Allocation|Termination|Expression) ( ';' | '\\n' ) '''
 	return t[0][0]
 
 def d_Declaration(t):
@@ -182,6 +196,29 @@ def d_Destructor(t):
 	m = F.createDestructor()
 	t_setCode(m, t[6])
 	return m
+
+def d_ControlIf(t):
+	'''ControlIf: '@if' Expression (':'|EOL)
+	       Code
+	  (
+	  	'@elif' Expression (':'|EOL)
+	  	 Code
+	  	
+	  )*
+	  (
+	  	'@else'
+	  	Code
+	  )?
+	  '@end'
+	'''
+	res = F.select()
+	res.addRule(F.match(t[1], t_setCode(F.createBlock(), t[3])))
+	for m in t_split(t[4], "@elif"):
+		res.addRule(F.match(m[1], t_setCode(F.createBlock(), m[3])))
+	if t[5]:
+		# FIMXE: Add 'otherwise'
+		res.addRule(F._res("true",  t_setCode(F.createBlock(),t[5][1])))
+	return res
 
 # ----------------------------------------------------------------------------
 # Operations
