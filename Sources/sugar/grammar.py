@@ -163,18 +163,29 @@ def d_ClassMethod(t):
 	t_setCode(m, t[5])
 	return m
 
+def d_Annotation(t):
+	'''Annotation: WhenAnnotation'''
+	return t[0]
+
+def d_WhenAnnotation(t):
+	'''WhenAnnotation: '@when' Expression EOL'''
+	return F.annotation('when', t[1])
+
 def d_Attribute(t):
 	'''Attribute: '@property' NAME (':' Type)? ('=' Value)?  EOL '''
 	return F._attr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 
 def d_Method(t):
 	'''Method: '@method' NAME Arguments? EOL
+	       Annotation*
 	       Documentation?
 	       Code
 	  '@end'
 	'''
 	m = F.createMethod(t[1], t[2] and t[2][0] or ())
-	t_setCode(m, t[5])
+	for ann in t[4]:
+		m.annotate(ann)
+	t_setCode(m, t[6])
 	return m
 
 def d_Constructor(t):
@@ -228,6 +239,10 @@ def d_Termination(t):
 	'''Termination : 'return' Expression'''
 	return F.returns(t[1])
 
+def d_Iteration(t):
+	'''Iteration : Expression '::' Expression'''
+	return F.iterate(t[0], t[2])
+
 def d_Comparison(t):
 	'''Comparison : Expression ('<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
 	                 |'in' |'not' 'in'  | 'is' |'is' 'not') Expression
@@ -242,7 +257,7 @@ def d_Computation(t):
 	return F.compute(F._op(t[1][0]),t[0],t[2])
 
 def d_Assignation(t):
-	''' Assignation: Expression '='  Expression '''
+	''' Assignation: Expression '=' Expression '''
 	return F.assign(t[0], t[2])
 
 def d_Allocation(t):
@@ -262,7 +277,7 @@ def d_AllocationD(t):
 # ----------------------------------------------------------------------------
 
 def d_Expression(t):
-	'''Expression : Instanciation | InvocationOrResolution | Slicing | Assignation | Comparison
+	'''Expression : Iteration | Instanciation | InvocationOrResolution | Slicing | Assignation | Comparison
 	              | Computation |   Value | LP Expression RP
 	'''
 	if len(t) == 1: return t[0]
@@ -423,7 +438,7 @@ def d_RC(t):
 	return str(t)
 
 def d_NAME(t, spec):
-	''' NAME: "[$0-9A-Za-z_]+" '''
+	''' NAME: "[$A-Za-z_]+[$0-9A-Za-z_]*" '''
 	if spec and t[0] in KEYWORDS:
 		return Reject
 	else:
