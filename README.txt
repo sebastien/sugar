@@ -24,3 +24,11 @@ Todo:
 	# @when Prototype
 	
 	Problem: 
+	
+BUGS:
+
+	@property position
+	
+	@constructor position
+		this position = position
+	@end

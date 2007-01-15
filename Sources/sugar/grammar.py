@@ -164,8 +164,8 @@ def d_ClassMethod(t):
 	return m
 
 def d_Attribute(t):
-	'''Attribute: '@property' NAME (':' Type)? EOL '''
-	return F._attr(t[1], t[2] and t[2][1] or None)
+	'''Attribute: '@property' NAME (':' Type)? ('=' Value)?  EOL '''
+	return F._attr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 
 def d_Method(t):
 	'''Method: '@method' NAME Arguments? EOL
