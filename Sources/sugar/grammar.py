@@ -150,8 +150,8 @@ def d_Class(t):
 	return f
 
 def d_ClassAttribute(t):
-	'''ClassAttribute: '@shared' NAME (':' Type)? EOL '''
-	return F._classattr(t[1], t[2] and t[2][1] or None)
+	'''ClassAttribute: '@shared' NAME (':' Type)?  ('=' Value)? EOL '''
+	return F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 
 def d_ClassMethod(t):
 	'''ClassMethod: '@operation' NAME Arguments? EOL
@@ -283,10 +283,11 @@ def d_Instanciation(t):
 	if len(p) == 1:
 		return F.instanciate(t[1], *p)
 	elif len(p) == 2:
-		return F.invoke(t[1])
+		return F.instanciate(t[1])
 	else:
+		print len(p), p
 		p = t_filterOut(",", p[1:-1])
-		return F.invoke(t[1], *p)
+		return F.instanciate(t[1], *p)
 
 def d_Slicing(t):
 	'''Slicing: Expression LB Expression RB '''
