@@ -1,15 +1,15 @@
 1 -> { print 'One' }
 
-@match
+:match
 	1 -> { print 'One' }
 	2 -> { print 'Two' }
 	3 -> { print 'Three' }
-@end
+:end
 
-@match 
+:match 
 	1 -> { print 'One'}
 	  -- { print 'Not one' }
-@end
+:end
 
 @function pouet
 	print 'Pouet'

@@ -133,6 +133,7 @@ def d_Function(t):
 def d_Class(t):
 	# FIXME: Change Name to Reference
 	'''Class: '@class' NAME (':' Name (',' Name)* )? EOL
+		  Documentation?
 	      (   ClassAttribute
 	      |   ClassMethod
 	      |   Attribute
@@ -149,7 +150,8 @@ def d_Class(t):
 	parents = t_filterOut(":", parents)
 	parents = t_filterOut(",", parents)
 	f = F.createClass(t[1] , parents)
-	t_setCode(None, t[4], f)
+	if t[4]: f.setDocumentation(t[4] and t[4][0])
+	t_setCode(None, t[5], f)
 	return f
 
 def d_Annotation(t):
@@ -201,6 +203,7 @@ def d_Constructor(t):
 	  '@end'
 	'''
 	m = F.createConstructor(t[1] and t[1][0])
+	if t[3]: m.setDocumentation(t[3] and t[3][0])
 	t_setCode(m, t[4])
 	return m
 
@@ -211,6 +214,7 @@ def d_Destructor(t):
 	  '@end'
 	'''
 	m = F.createDestructor()
+	if t[2]: m.setDocumentation(t[2] and t[2][0])
 	t_setCode(m, t[6])
 	return m
 
@@ -222,12 +226,12 @@ def d_Condition(t):
 	return res
 
 def d_Match(t):
-	''' Match: '@match' (EOL|':') 
+	''' Match: ':match' (EOL|':') 
 	           Condition
 	           ( EOL Condition )*
 	           ( EOL '--' Expression)?
 	           EOL
-	           '@end'
+	           ':end'
 	'''
 	conds = []
 	conds.append(t[2])
@@ -245,7 +249,7 @@ def d_Match(t):
 # ----------------------------------------------------------------------------
 
 def d_Termination(t):
-	'''Termination : 'return' Expression'''
+	'''Termination : ':return' Expression'''
 	return F.returns(t[1])
 
 def d_Iteration(t):

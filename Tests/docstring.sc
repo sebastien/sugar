@@ -7,10 +7,10 @@
 @class A
 	@method a
 	| This is the documentation for the method
-		return 0
+		:return 0
 	@end
 	@operation b
 	| This is the documentation for the operation
-		return 0
+		:return 0
 	@end
 @end
