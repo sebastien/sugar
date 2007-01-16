@@ -93,8 +93,10 @@ def d_Comment(t):
 	return F.comment(t[1])
 
 def d_Documentation(t):
-	'''Documentation : '!' "[^\\n]*" EOL Documentation? '''
-	return t
+	'''Documentation : ('|' "[^\\n]*" EOL)+'''
+	d = t[0]
+	d = t_filterOut('|',d)
+	return F.doc("\n".join(d))
 
 def d_Statement(t):
 	'''Statement : (Match|Allocation|Termination|Expression) ( ';' | '\\n' ) '''
@@ -124,6 +126,7 @@ def d_Function(t):
 	   '@end'
 	'''
 	f = F.createFunction(t[1] , t[2] and t[2][0] or ())
+	if t[4]: f.setDocumentation(t[4] and t[4][0])
 	t_setCode(f, t[5])
 	return f
 
@@ -149,20 +152,6 @@ def d_Class(t):
 	t_setCode(None, t[4], f)
 	return f
 
-def d_ClassAttribute(t):
-	'''ClassAttribute: '@shared' NAME (':' Type)?  ('=' Value)? EOL '''
-	return F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
-
-def d_ClassMethod(t):
-	'''ClassMethod: '@operation' NAME Arguments? EOL
-		   Documentation?
-	       Code
-	  '@end'
-	'''
-	m = F.createClassMethod(t[1], t[2] and t[2][0] or ())
-	t_setCode(m, t[5])
-	return m
-
 def d_Annotation(t):
 	'''Annotation: WhenAnnotation'''
 	return t[0]
@@ -175,6 +164,10 @@ def d_Attribute(t):
 	'''Attribute: '@property' NAME (':' Type)? ('=' Value)?  EOL '''
 	return F._attr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 
+def d_ClassAttribute(t):
+	'''ClassAttribute: '@shared' NAME (':' Type)?  ('=' Value)? EOL '''
+	return F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
+
 def d_Method(t):
 	'''Method: '@method' NAME Arguments? EOL
 	       Annotation*
@@ -185,8 +178,21 @@ def d_Method(t):
 	m = F.createMethod(t[1], t[2] and t[2][0] or ())
 	for ann in t[4]:
 		m.annotate(ann)
+	if t[5]: m.setDocumentation(t[5] and t[5][0])
 	t_setCode(m, t[6])
 	return m
+
+def d_ClassMethod(t):
+	'''ClassMethod: '@operation' NAME Arguments? EOL
+		   Documentation?
+	       Code
+	  '@end'
+	'''
+	m = F.createClassMethod(t[1], t[2] and t[2][0] or ())
+	if t[4]: m.setDocumentation(t[4] and t[4][0])
+	t_setCode(m, t[5])
+	return m
+
 
 def d_Constructor(t):
 	'''Constructor: '@constructor'  Arguments? EOL
@@ -286,7 +292,7 @@ def d_AllocationD(t):
 # ----------------------------------------------------------------------------
 
 def d_Expression(t):
-	'''Expression : Condition | Iteration | Instanciation | InvocationOrResolution | Slicing | Assignation | Comparison |
+	'''Expression : Condition | Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation | Comparison |
 	              PrefixComputation | Computation |   Value | LP Expression RP
 	'''
 	if len(t) == 1: return t[0]
@@ -401,13 +407,13 @@ def d_Range(t):
 	return F.enumerate(t[0], t[2])
 
 def d_List(t):
-	'''List : LB (Expression ("," Expression)*)? RB '''
+	'''List : LB (EOL* Expression EOL* ( (EOL|",") EOL* Expression EOL*)*)? RB '''
 	r = t_filterOut(",", t[1])
 	l = F._list(*r)
 	return l
 
 def d_Dict(t):
-	'''Dict : LC ( EOL* DictPair EOL* ( (EOL |"," ) EOL* DictPair EOL*)*)? RC '''
+	'''Dict : LC ( EOL* DictPair EOL* ( (EOL|",") EOL* DictPair EOL*)*)? RC '''
 	p = t_filterOut(",", t[1])
 	d = F._dict()
 	for k,v in p:
@@ -415,8 +421,11 @@ def d_Dict(t):
 	return d
 
 def d_DictPair(t):
-	'''DictPair : Expression ':' Expression '''
-	return t[0], t[2]
+	'''DictPair : (Name|LP Expression RP) ':' Expression '''
+	key =  t[0]
+	if len(key) == 1: key = F._string(key[0].getReferenceName())
+	else: key = key[1]
+	return key, t[2]
 
 # ----------------------------------------------------------------------------
 # Punctuation
