@@ -97,7 +97,7 @@ def d_Documentation(t):
 	return t
 
 def d_Statement(t):
-	'''Statement : (ControlIf|Allocation|Termination|Expression) ( ';' | '\\n' ) '''
+	'''Statement : (Match|Allocation|Termination|Expression) ( ';' | '\\n' ) '''
 	return t[0][0]
 
 def d_Declaration(t):
@@ -208,27 +208,30 @@ def d_Destructor(t):
 	t_setCode(m, t[6])
 	return m
 
-def d_ControlIf(t):
-	'''ControlIf: '@if' Expression (':'|EOL)
-	       Code
-	  (
-	  	'@elif' Expression (':'|EOL)
-	  	 Code
-	  	
-	  )*
-	  (
-	  	'@else'
-	  	Code
-	  )?
-	  '@end'
-	'''
+def d_Condition(t):
+	''' Condition: Expression '->' Expression '''
 	res = F.select()
-	res.addRule(F.match(t[1], t_setCode(F.createBlock(), t[3])))
-	for m in t_split(t[4], "@elif"):
-		res.addRule(F.match(m[1], t_setCode(F.createBlock(), m[3])))
-	if t[5]:
-		# FIMXE: Add 'otherwise'
-		res.addRule(F._res("true",  t_setCode(F.createBlock(),t[5][1])))
+	match = F.match(t[0], t[2])
+	res.addRule(match)
+	return res
+
+def d_Match(t):
+	''' Match: '@match' (EOL|':') 
+	           Condition
+	           ( EOL Condition )*
+	           ( EOL '--' Expression)?
+	           EOL
+	           '@end'
+	'''
+	conds = []
+	conds.append(t[2])
+	conds.extend(t_filterOut('',t[3]))
+	conds = [m.getRules()[0] for m in conds]
+	last = t_filterOut('--', t[4])
+	# TODO: Add an 'otherwise'
+	if last: conds.append(F.match(F._ref('true'),last[0] ))
+	res = F.select()
+	map(res.addRule, conds)
 	return res
 
 # ----------------------------------------------------------------------------
@@ -256,6 +259,12 @@ def d_Computation(t):
 	# FIXME: Normalize operators
 	return F.compute(F._op(t[1][0]),t[0],t[2])
 
+def d_PrefixComputation(t):
+	'''PrefixComputation: ('not') Expression '''
+	# FIXME: Normalize operators
+	print t
+	return F.compute(F._op(t[0][0]),t[1])
+
 def d_Assignation(t):
 	''' Assignation: Expression '=' Expression '''
 	return F.assign(t[0], t[2])
@@ -277,8 +286,8 @@ def d_AllocationD(t):
 # ----------------------------------------------------------------------------
 
 def d_Expression(t):
-	'''Expression : Iteration | Instanciation | InvocationOrResolution | Slicing | Assignation | Comparison
-	              | Computation |   Value | LP Expression RP
+	'''Expression : Condition | Iteration | Instanciation | InvocationOrResolution | Slicing | Assignation | Comparison |
+	              PrefixComputation | Computation |   Value | LP Expression RP
 	'''
 	if len(t) == 1: return t[0]
 	else: return t[1]
