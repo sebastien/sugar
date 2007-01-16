@@ -56,6 +56,22 @@ def sourceToJavaScript( name, text ):
 	resolver.flow(module)
 	return writer.write(module), reporter
 
+def translate(moduleName, source, target="js"):
+	"""Translates the given module source to the given target language."""
+	# Otherwise, we are in interpreter mode
+	parser           = grammar.Parser()
+	writer, resolver = None, None
+	reporter         = DefaultReporter
+	if target == "js" :
+		writer   = javascript.Writer(reporter=reporter)
+		resolver = javascript.Resolver(reporter=reporter)
+	else:
+		print "Please specify a language."
+		return -1
+	source, module = parser.parseModule(moduleName, source)
+	resolver.flow(module)
+	return writer.write(module) + "\n"
+	
 def run( args, output=sys.stdout ):
 	"""The run method can be used to execute a SweetC command from another
 	Python script without having to spawn a shell."""
@@ -70,6 +86,8 @@ def run( args, output=sys.stdout ):
 	oparser.add_option("-o", "--output", action="store", dest="output",
 		help=OPT_OUTPUT)
 	oparser.add_option("-v", "--verbose", action="store_true", dest="verbose",
+		help=OPT_VERBOSE)
+	oparser.add_option("-m", "--module", action="store_true", dest="module",
 		help=OPT_VERBOSE)
 	# We parse the options and arguments
 	options, args = oparser.parse_args(args=args)
@@ -91,7 +109,7 @@ def run( args, output=sys.stdout ):
 	for source in args:
 		source, module = parser.parse(source)
 		resolver.flow(module)
-		output.write( writer.write(module) + "\n")
+		output.write( writer.writeModule(module, options.module) + "\n")
 
 # ------------------------------------------------------------------------------
 #
