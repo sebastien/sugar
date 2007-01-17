@@ -16,7 +16,7 @@ import grammar
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, c
 
-__version__ = "0.6.4"
+__version__ = "0.6.5"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"

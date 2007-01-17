@@ -44,8 +44,9 @@ def t_setCode( process, code, context=None ):
 		and  isinstance(o, interfaces.IReferencable):
 		#	print "as slot"
 			context.setSlot(o.getName(), o)
+		elif type(o) in (list, tuple):
+			t_setCode(process, o, context)
 		else:
-		#	print "not recognized"
 			pass
 	return process
 
@@ -99,7 +100,7 @@ def d_Documentation(t):
 	return F.doc("\n".join(d))
 
 def d_Statement(t):
-	'''Statement : (Match|Allocation|Termination|Expression) ( ';' | '\\n' ) '''
+	'''Statement : (Match|Allocation|Termination|Expression) ( ';' | Comment | '\\n' ) '''
 	return t[0][0]
 
 def d_Declaration(t):
@@ -140,6 +141,7 @@ def d_Class(t):
 	      |   Method
 	      |   Constructor
 	      |   Destructor
+	      |   MethodGroup
 	      |   EOL
 	      )*
 	  '@end'
@@ -151,16 +153,21 @@ def d_Class(t):
 	parents = t_filterOut(",", parents)
 	f = F.createClass(t[1] , parents)
 	if t[4]: f.setDocumentation(t[4] and t[4][0])
+	print "CODE", t[5]
 	t_setCode(None, t[5], f)
 	return f
 
 def d_Annotation(t):
-	'''Annotation: WhenAnnotation'''
-	return t[0]
+	'''Annotation: (WhenAnnotation | AsAnnotation)'''
+	return t[0][0]
 
 def d_WhenAnnotation(t):
 	'''WhenAnnotation: '@when' Expression EOL'''
 	return F.annotation('when', t[1])
+
+def d_AsAnnotation(t):
+	'''AsAnnotation: '@as' ("[a-zA-Z0-9_\-]+")+ EOL'''
+	return F.annotation('as', t[1])
 
 def d_Attribute(t):
 	'''Attribute: '@property' NAME (':' Type)? ('=' Value)?  EOL '''
@@ -170,6 +177,16 @@ def d_ClassAttribute(t):
 	'''ClassAttribute: '@shared' NAME (':' Type)?  ('=' Value)? EOL '''
 	return F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 
+def d_MethodGroup(t):
+	'''MethodGroup: '@group' "[a-zA-Z0-9_\-]+" EOL
+		(ClassMethod | Method | EOL)* 
+	   '@end'
+	'''
+	annotation = F.annotation('as', t[1])
+	methods    = t_filterOut('', t[3])
+	for m in methods: m.annotate(annotation)
+	return methods
+	
 def d_Method(t):
 	'''Method: '@method' NAME Arguments? EOL
 	       Annotation*
@@ -328,7 +345,7 @@ def d_Slicing(t):
 	return F.slice(t[0], t[2])
 
 def d_InvocationOrResolution(t):
-	'''InvocationOrResolution: Expression ( Name | Value | LP (EOL* Expression EOL* ( (EOL|",") EOL* Expression EOL*)*)?  RP) '''
+	'''InvocationOrResolution: Expression ( Name | Value | LP (EOL* Expression EOL* ( (EOL|",") EOL* Expression EOL*)*)?  RP ) '''
 	p = t[1]
 	# NOTE: In some cases (and I don't get why this happens), Invocation
 	# matches but Resoltuion doesn't. So we check if expression is a
@@ -341,7 +358,9 @@ def d_InvocationOrResolution(t):
 	elif len(p) == 2:
 		return F.invoke(t[0])
 	else:
-		p = t_filterOut(",", p[1:-1])
+		if p[0] == "['(']":
+			 p = p[1:-1]
+		p = t_filterOut(",", p)
 		return F.invoke(t[0], *p)
 
 # ----------------------------------------------------------------------------
@@ -552,8 +571,6 @@ class Parser:
 		return self.parseModule(self.pathToModuleName(filepath), text, filepath)
 
 	def parseModule( self, name, text, sourcepath=None ):
-		# We trim the EOF
-		text = text[:-1]
 		# And ensure that there is an EOL
 		if text[-1] != "\n":
 			self.warn("No trailing EOL in given code")

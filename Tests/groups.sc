@@ -1,0 +1,98 @@
+@class WishEditor
+
+	@shared   Widget
+	@property element
+	@property coin
+	
+	
+	@constructor selector
+		element = $(selector) get (0)
+		Widget  = this
+		bindHTML (element)
+		bindCommands (this)
+	@end
+	
+	
+	@group Widget
+		@method doCommand name
+		@as dispatcher
+			# FIX: getMethod(name) ()
+			:return this[name]()
+		@end
+		
+		@method bindHTML e
+		@when   e and e boundHTML is undefined
+	
+		@end
+		
+		@method show
+			$(element) show()
+		@end
+		
+		@method hide
+			$(element) hide()
+		@end
+	@end
+	
+	@group Properties
+		@method getUserName
+		@as accessor
+			:return $(".input.name", element) get (0) value
+		@end
+		
+		@method getUserWish
+		@when accessor
+			:return $(".input.wish", element) get (0) value
+		@end
+	@end
+		
+	@group Commands
+
+		@method startWish
+			toggleSection "wish"
+		@end
+		
+		@method makeWish
+			toggleSection "review"
+		@end
+		
+		@method modifyWish
+			toggleSection "wish"
+		@end
+		
+		@method confirmWish
+			toggleSection "thanks"
+		@end
+	
+		@method endWish
+			hide ()
+			$(coin element) DraggableDestroy()
+		@end
+	
+	@end
+	
+	
+	@group Sections
+		
+		@method toggleSection name
+		| Hides every section but the given one
+			hideSections()
+			showSection (name)
+		@end
+	
+		@method hideSections
+		| Hides all sections in this widget
+			$(".section", element) :: {s|$(s) addClass "hidden"}
+		@end
+		
+		
+		@method showSection name
+		| Shows the section with the given name (this does not ensure the existence of
+		| the given section
+			$(".section." + name, element) :: {s|$(s) removeClass "hidden"}
+		@end
+	
+	@end
+	
+@end
+
