@@ -10,23 +10,23 @@
 	@shared    COUNT:int
 	@property  points:List
 	
-	@constructor ()
+	@constructor 
 	@end
 
-	@method addPoint( point:Point )
-		return points append(point)
+	@method addPoint point:Point
+		:return points append(point)
 	@end
 
-	@operation shapeCount()
-		return COUNT
+	@operation shapeCount
+		:return COUNT
 	@end
 
 @end
 
 @class Rectangle:Shape
 
-	@constructor ()
-		0..4 do { points add(new Point()) }
+	@constructor 
+		0..4 :: { points add(new Point()) }
 	@end
 
 @end

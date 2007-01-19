@@ -24,7 +24,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "new return yield and or not is".split()
+KEYWORDS = "var new return yield and or not is".split()
 
 # ----------------------------------------------------------------------------
 # Common utilities
@@ -174,7 +174,7 @@ def d_Attribute(t):
 	return F._attr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 
 def d_ClassAttribute(t):
-	'''ClassAttribute: '@shared' NAME (':' Type)?  ('=' Value)? EOL '''
+	'''ClassAttribute: '@shared' NAME (':' Type)?  ('=' Expression)? EOL '''
 	return F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 
 def d_MethodGroup(t):
@@ -236,9 +236,9 @@ def d_Destructor(t):
 	return m
 
 def d_Condition(t):
-	''' Condition: Expression '->' Expression '''
+	''' Condition: Expression EOL* '->'  EOL* Expression '''
 	res = F.select()
-	match = F.match(t[0], t[2])
+	match = F.match(t[0], t[-1])
 	res.addRule(match)
 	return res
 
@@ -523,7 +523,7 @@ def disambiguate( nodes ):
 #
 # ----------------------------------------------------------------------------
 
-_PARSER = Parser(make_grammar_file=1)
+_PARSER = Parser(make_grammar_file=0)
 
 def parse( text, verbose=True ):
 	#res = _PARSER.parse(text, ambiguity_fn=disambiguate,print_debug_info=1)
