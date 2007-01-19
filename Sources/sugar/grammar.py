@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   03-Jan-2007
+# Last mod.         :   19-Jan-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -77,11 +77,12 @@ def d_Program(t):
 	m.setSlot(F.ModuleInit, f)
 	return m
 
-def d_Code(t):
-	'''Code : (Declaration|Statement|Comment|EOL)* '''
+def d_Code(t, spec):
+	'''Code : (EOL | (CHECK (Declaration|Statement|Comment)))* '''
 	# FIXME: Declarations should not go into code
-	return t[0]
+	return t_filterOut(None, t[0])
 
+# FIXME: Exchange LINE and STATEMENT
 def d_Line(t):
 	'''Line : (Allocation|Termination|Expression) ( ';' Line )* '''
 	r = [t[0][0]]
@@ -100,7 +101,7 @@ def d_Documentation(t):
 	return F.doc("\n".join(d))
 
 def d_Statement(t):
-	'''Statement : (Match|Allocation|Termination|Expression) ( ';' | Comment | '\\n' ) '''
+	'''Statement : (Match|Allocation|Termination|Expression) ( ';' | Comment | EOL) '''
 	return t[0][0]
 
 def d_Declaration(t):
@@ -113,28 +114,33 @@ def d_Declaration(t):
 
 def d_Main(t):
 	'''Main: '@main' EOL
+		  INDENT
 	      Code
+	      DEDENT
 	   '@end'
 	'''
 	f = F.createFunction(F.MainFunction , ())
-	t_setCode(f, t[2])
+	t_setCode(f, t[3])
 	return f
 
 def d_Function(t):
 	'''Function: '@function' NAME Arguments? EOL
 		  Documentation?
+		  INDENT
 	      Code
+	      DEDENT
 	   '@end'
 	'''
 	f = F.createFunction(t[1] , t[2] and t[2][0] or ())
 	if t[4]: f.setDocumentation(t[4] and t[4][0])
-	t_setCode(f, t[5])
+	t_setCode(f, t[6])
 	return f
 
 def d_Class(t):
 	# FIXME: Change Name to Reference
 	'''Class: '@class' NAME (':' Name (',' Name)* )? EOL
 		  Documentation?
+		  INDENT
 	      (   ClassAttribute
 	      |   ClassMethod
 	      |   Attribute
@@ -144,6 +150,7 @@ def d_Class(t):
 	      |   MethodGroup
 	      |   EOL
 	      )*
+	      DEDENT
 	  '@end'
 	'''
 	# TODO: Parents support
@@ -153,7 +160,6 @@ def d_Class(t):
 	parents = t_filterOut(",", parents)
 	f = F.createClass(t[1] , parents)
 	if t[4]: f.setDocumentation(t[4] and t[4][0])
-	print "CODE", t[5]
 	t_setCode(None, t[5], f)
 	return f
 
@@ -191,48 +197,56 @@ def d_Method(t):
 	'''Method: '@method' NAME Arguments? EOL
 	       Annotation*
 	       Documentation?
+	       INDENT
 	       Code
+	       DEDENT
 	  '@end'
 	'''
 	m = F.createMethod(t[1], t[2] and t[2][0] or ())
 	for ann in t[4]:
 		m.annotate(ann)
 	if t[5]: m.setDocumentation(t[5] and t[5][0])
-	t_setCode(m, t[6])
+	t_setCode(m, t[7])
 	return m
 
 def d_ClassMethod(t):
 	'''ClassMethod: '@operation' NAME Arguments? EOL
 		   Documentation?
+		   INDENT
 	       Code
+	       DEDENT
 	  '@end'
 	'''
 	m = F.createClassMethod(t[1], t[2] and t[2][0] or ())
 	if t[4]: m.setDocumentation(t[4] and t[4][0])
-	t_setCode(m, t[5])
+	t_setCode(m, t[6])
 	return m
 
 
 def d_Constructor(t):
 	'''Constructor: '@constructor'  Arguments? EOL
 	       Documentation?
+	       INDENT
 	       Code
+	       DEDENT
 	  '@end'
 	'''
 	m = F.createConstructor(t[1] and t[1][0])
 	if t[3]: m.setDocumentation(t[3] and t[3][0])
-	t_setCode(m, t[4])
+	t_setCode(m, t[5])
 	return m
 
 def d_Destructor(t):
 	'''Destructor: '@destructor' EOL
 	       Documentation?
+	       INDENT
 	       Code
+	       DEDENT
 	  '@end'
 	'''
 	m = F.createDestructor()
 	if t[2]: m.setDocumentation(t[2] and t[2][0])
-	t_setCode(m, t[6])
+	t_setCode(m, t[7])
 	return m
 
 def d_Condition(t):
@@ -243,18 +257,20 @@ def d_Condition(t):
 	return res
 
 def d_Match(t):
-	''' Match: ':match' (EOL|':') 
+	''' Match: ':match' (EOL|':')
+				INDENT
 	           Condition
 	           ( EOL Condition )*
 	           ( EOL '--' Expression)?
 	           EOL
+	           DEDENT
 	           ':end'
 	'''
 	conds = []
-	conds.append(t[2])
-	conds.extend(t_filterOut('',t[3]))
+	conds.append(t[3])
+	conds.extend(t_filterOut('',t[4]))
 	conds = [m.getRules()[0] for m in conds]
-	last = t_filterOut('--', t[4])
+	last = t_filterOut('--', t[5])
 	# TODO: Add an 'otherwise'
 	if last: conds.append(F.match(F._ref('true'),last[0] ))
 	res = F.select()
@@ -486,7 +502,7 @@ def d_NAME(t, spec):
 		return t[0]
 
 def d_EOL(t):
-	''' EOL: '\\n' '''
+	''' EOL: "\\n"+ '''
 	return
 
 def d_STR_ESC(t):
@@ -501,10 +517,46 @@ def d_STR_NOT_DQUOTE(t):
 	r'''STR_NOT_DQUOTE: "[^\\\n\"]+" '''
 	return t[0]
 
-def d_whitespace(t):
-	'whitespace : "[ \t]*"'
-	# FIXME: Implement specific Python whitespace function
-	return
+def d_INDENT(t, spec):
+	''' INDENT: '''
+	st = _PARSER.indentStack
+	if spec:
+		if len(st) < 2 or not (st[-1] > st[-2]): return Reject
+		_PARSER.requiredIndent = st[-1]
+		
+def d_DEDENT(t, spec):
+	''' DEDENT: '''
+	st = _PARSER.indentStack
+	if spec:
+		if len(st) < 2 or not (st[-1] < st[-2]): return Reject
+		_PARSER.requiredIndent = st[-1]
+
+def d_CHECK(t, spec):
+	''' CHECK: '''
+	if spec:
+		if not _PARSER.indentStack: return
+		if _PARSER.requiredIndent != _PARSER.indentStack[-1]:
+			return Reject
+	
+def skip_whitespace(loc):
+	indent = 0
+	st = _PARSER.indentStack
+	while loc.s < len(loc.buf):
+		c = loc.buf[loc.s]
+		if c in (' ', '\t'):
+			loc.s  += 1
+			indent += 1
+		elif c == '\n':
+			loc.line += 1
+			_PARSER.isNewline = True
+			return
+		else:
+			break
+	if _PARSER.isNewline:
+		_PARSER.isNewline = False
+		if not st or st[-1] != indent:
+			st.append(indent)
+		_PARSER.previousLine = loc.s
 
 # ----------------------------------------------------------------------------
 #
@@ -524,10 +576,13 @@ def disambiguate( nodes ):
 # ----------------------------------------------------------------------------
 
 _PARSER = Parser(make_grammar_file=0)
-
+_PARSER.indentStack = []
+_PARSER.isNewline   = True
+_PARSER.requiredIndent = 0
+_PARSER.previousLine   = 0
+ 
 def parse( text, verbose=True ):
-	#res = _PARSER.parse(text, ambiguity_fn=disambiguate,print_debug_info=1)
-	res = _PARSER.parse(text,ambiguity_fn=disambiguate, print_debug_info=(verbose and 1 or 0))
+	res = _PARSER.parse(text,initial_skip_space_fn=skip_whitespace,ambiguity_fn=disambiguate, print_debug_info=(verbose and 1 or 0))
 	return res
 
 def parseFile( path, verbose=False ):
