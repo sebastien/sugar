@@ -160,7 +160,7 @@ def d_Class(t):
 	parents = t_filterOut(",", parents)
 	f = F.createClass(t[1] , parents)
 	if t[4]: f.setDocumentation(t[4] and t[4][0])
-	t_setCode(None, t[5], f)
+	t_setCode(None, t[6], f)
 	return f
 
 def d_Annotation(t):
@@ -384,10 +384,10 @@ def d_InvocationOrResolution(t):
 # ----------------------------------------------------------------------------
 
 def d_Closure(t):
-	'''Closure: LC (Arguments '|')? (Line|Code)? RC '''
+	'''Closure: LC (Arguments '|')? (Line| (Line|EOL) (INDENT Code DEDENT)? )? RC '''
 	a = t[1] and t[1][0] or ()
 	c = F.createClosure(a)
-	t_setCode(c, t[2] and t[2][0] or ())
+	t_setCode(c, t[2])
 	return c
 
 def d_Arguments(t):
@@ -446,13 +446,13 @@ def d_Range(t):
 	return F.enumerate(t[0], t[2])
 
 def d_List(t):
-	'''List : LB (EOL* Expression EOL* ( (EOL|",") EOL* Expression EOL*)*)? RB '''
+	'''List : LB ( (Expression (',' Expression)*)? (EOL INDENT (Expression (',' Expression)* EOL)* DEDENT )? ) RB '''
 	r = t_filterOut(",", t[1])
 	l = F._list(*r)
 	return l
 
 def d_Dict(t):
-	'''Dict : LC ( EOL* DictPair EOL* ( (EOL|",") EOL* DictPair EOL*)*)? RC '''
+	'''Dict : LC ( (DictPair (',' DictPair)*)? (EOL INDENT (DictPair (',' DictPair)* EOL)* DEDENT )? ) RC '''
 	p = t_filterOut(",", t[1])
 	d = F._dict()
 	for k,v in p:
