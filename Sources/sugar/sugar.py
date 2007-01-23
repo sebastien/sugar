@@ -21,6 +21,7 @@ __version__ = "0.6.5"
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
 OPT_VERBOSE    = "Verbose parsing output (useful for debugging)"
+OPT_API        = "Generates SDoc API documentation (give the apifilename)"
 DESCRIPTION    = """\
 Sugar is a meta-language that can be easily converted to other languages such
 as C, JavaScript or Python. Programs written in sugar are entirely accessible
@@ -71,7 +72,23 @@ def translate(moduleName, source, target="js"):
 	source, module = parser.parseModule(moduleName, source)
 	resolver.flow(module)
 	return writer.write(module) + "\n"
-	
+
+def apidoc( modules, output="api.html" ):
+	import sdoc.main
+	documenter = sdoc.main.LambdaFactoryDocumenter()
+	# And now document the module
+	target_html = None
+	for module in modules:
+		documenter.documentModule(module, module.getName())
+	# We eventually return the HTML file
+	title = "API documentation (SDoc)"
+	html  = documenter.toHTML(title=title)
+	if type(output) in (str, unicode):
+		open(output, "w").write(html)
+	else:
+		output.write(html)
+	return html
+
 def run( args, output=sys.stdout ):
 	"""The run method can be used to execute a SweetC command from another
 	Python script without having to spawn a shell."""
@@ -89,6 +106,9 @@ def run( args, output=sys.stdout ):
 		help=OPT_VERBOSE)
 	oparser.add_option("-m", "--module", action="store_true", dest="module",
 		help=OPT_VERBOSE)
+	oparser.add_option("-a", "--api", action="store", dest="api", default="api.html",
+		help=OPT_API)
+	
 	# We parse the options and arguments
 	options, args = oparser.parse_args(args=args)
 	# If no argument is given, we simply print the description
@@ -106,10 +126,14 @@ def run( args, output=sys.stdout ):
 		print "Please specify a language."
 		return -1
 	# We process the source files
+	modules = []
 	for source in args:
 		source, module = parser.parse(source)
+		modules.append(module)
 		resolver.flow(module)
 		output.write( writer.writeModule(module, options.module) + "\n")
+	if options.api:
+		apidoc(modules, options.api)
 
 # ------------------------------------------------------------------------------
 #
