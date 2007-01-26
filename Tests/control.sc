@@ -1,24 +1,24 @@
-@if 1
+:when 1
 	print (True)
-@end
+:end
 
-@if 1: print True
+:when 1 print (True)
 
-@if 2 
+:when 2 
 	print (True)
-@else
+:otherwise
 	print (False)
-@end
+:end
 
 
-@if 2 : print True
-@else   print False
+:when 1 print True
+:otherwise print False
 
-@if 3
+:when 3
 	print (True)
-@elif False
+:when 4
 	print (False)
-@else
+:otherwise
 	print ()
 @end
 

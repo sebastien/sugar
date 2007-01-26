@@ -1,24 +1,24 @@
-class A:
+@class A
 
-	method foo():
-		print("Foo" + self.getClass())
-	end
+	@method foo
+		print ("Foo" + this getClass())
+	@end
 
-end
+@end
 
-class B extends A:
+@class B : A
 
-	method foo():
-		super().pouet
-	end 
+	@method foo
+		super() pouet
+	@end 
 
-end
+@end
 
-class C extends B:
+@class C: B
 
-	method foo():
-		super(A).foo()
-		super(B).foo()
-	end
+	@method foo
+		super(A) foo()
+		super(B) foo()
+	@end
 
-end
+@end

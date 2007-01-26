@@ -1,8 +1,8 @@
-
 @class Point
 
 	@property x:double
 	@property y:double
+
 @end
 
 @class Shape
@@ -11,6 +11,7 @@
 	@property  points:List
 	
 	@constructor 
+		points = []
 	@end
 
 	@method addPoint point:Point

@@ -1,4 +1,4 @@
-@function main()
+@function main
 
 	# Alternative:
 	#   We may do a! instead of a()

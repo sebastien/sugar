@@ -22,6 +22,7 @@ OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
 OPT_VERBOSE    = "Verbose parsing output (useful for debugging)"
 OPT_API        = "Generates SDoc API documentation (give the apifilename)"
+OPT_TEST       = "Tells wether the source code is valid or not"
 DESCRIPTION    = """\
 Sugar is a meta-language that can be easily converted to other languages such
 as C, JavaScript or Python. Programs written in sugar are entirely accessible
@@ -108,7 +109,8 @@ def run( args, output=sys.stdout ):
 		help=OPT_VERBOSE)
 	oparser.add_option("-a", "--api", action="store", dest="api", default="api.html",
 		help=OPT_API)
-	
+	oparser.add_option("-t", "--test", action="store_true", dest="test", 
+		help=OPT_TEST)
 	# We parse the options and arguments
 	options, args = oparser.parse_args(args=args)
 	# If no argument is given, we simply print the description
@@ -127,11 +129,21 @@ def run( args, output=sys.stdout ):
 		return -1
 	# We process the source files
 	modules = []
-	for source in args:
-		source, module = parser.parse(source)
-		modules.append(module)
-		resolver.flow(module)
-		output.write( writer.writeModule(module, options.module) + "\n")
+	for source_path in args:
+		try:
+			source, module = parser.parse(source_path)
+			if options.test:
+				print "%-40s [%s]" % (source_path,  'OK')
+			else:
+				modules.append(module)
+				resolver.flow(module)
+				output.write( writer.writeModule(module, options.module) + "\n")
+		except Exception, e:
+			if options.test:
+				print "%-40s [%s]" % (source_path,  'FAILED')
+			else:
+				print e
+		
 	if options.api:
 		apidoc(modules, options.api)
 

@@ -1,3 +1,3 @@
-main:
+@main
 	a = new A()
-end
+@end

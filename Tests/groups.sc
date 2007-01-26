@@ -22,7 +22,7 @@
 		
 		@method bindHTML e
 		@when   e and e boundHTML is undefined
-	
+			a = 0
 		@end
 		
 		@method show
@@ -75,7 +75,7 @@
 	@group Sections
 		
 		@method toggleSection name
-		| Hides every section but the given one
+		| Hides every section but the given one
 			hideSections()
 			showSection (name)
 		@end

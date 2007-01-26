@@ -25,9 +25,8 @@ a  = [[],[],[]]
 
 # Dicts
 a  = {}
-a  = {"key":value}
-a  = {"key":value, "key":value}
-a  = {"key":value, "key":value, "key":value}
+a  = { key :value}
+a  = { key :value,  key:value}
 a  = { key:value,   key:value, key:value}
-a  = { 1:value,     2:value, 3:value}
+a  = { (1):value,     (2):value, (3):value}
 a  = { (1+4):value,     (2+10):value, (3+20):value}

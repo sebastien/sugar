@@ -101,7 +101,7 @@ def d_Documentation(t):
 	return F.doc("\n".join(d))
 
 def d_Statement(t):
-	'''Statement : (Match|Allocation|Termination|Expression) ( ';' | Comment | EOL) '''
+	'''Statement : (Select|Allocation|Termination|Expression) ( ';' | Comment | EOL) '''
 	return t[0][0]
 
 def d_Declaration(t):
@@ -250,32 +250,37 @@ def d_Destructor(t):
 	return m
 
 def d_Condition(t):
-	''' Condition: Expression EOL* '->'  EOL* Expression '''
+	''' Condition: 
+		(':when' Expression EOL+ 
+			INDENT Code DEDENT
+		)+
+		(':otherwise' EOL+
+			INDENT Code DEDENT
+		)?
+		':end'
+	'''
 	res = F.select()
-	match = F.match(t[0], t[-1])
-	res.addRule(match)
+	for when in t_split(t[0], ':when'):
+		block = F.createBlock()
+		t_setCode(block, when[4])
+		res.addRule(F.match(when[1], block))
+	if t[1]:
+		block = F.createBlock()
+		t_setCode(block, t[1][3])
+		res.addRule(F.match(F._ref('true'), block))
+	#match = F.match(t[0], t[-1])
+	#res.addRule(match)
 	return res
 
-def d_Match(t):
-	''' Match: ':match' (EOL|':')
-				INDENT
-	           Condition
-	           ( EOL Condition )*
-	           ( EOL '--' Expression)?
-	           EOL
-	           DEDENT
+def d_Select(t):
+	''' Select: ':select' Expression EOL+ 
+				   INDENT Condition  DEDENT  EOL
 	           ':end'
 	'''
-	conds = []
-	conds.append(t[3])
-	conds.extend(t_filterOut('',t[4]))
-	conds = [m.getRules()[0] for m in conds]
-	last = t_filterOut('--', t[5])
-	# TODO: Add an 'otherwise'
-	if last: conds.append(F.match(F._ref('true'),last[0] ))
-	res = F.select()
-	map(res.addRule, conds)
-	return res
+	condition = t[3]
+	for rule in condition.getRules():
+		rule.setPredicate(F.compute(F._op("=="),t[1],rule.getPredicate()))
+	return condition
 
 # ----------------------------------------------------------------------------
 # Operations
@@ -312,16 +317,8 @@ def d_Assignation(t):
 	return F.assign(t[0], t[2])
 
 def d_Allocation(t):
-	'''Allocation : AllocationD | AllocationS'''
-	return t[0]
-
-def d_AllocationS(t):
-	'''AllocationS: 'var' NAME (':' Type)?  '''
-	return F.allocate(F._slot(t[1],t[2] and t[2][1] or None))
-
-def d_AllocationD(t):
-	''' AllocationD: NAME (':' Type)? ':=' Expression? '''
-	return F.allocate(F._slot(t[0],t[1] and t[1][1] or None), t[3] and t[3][0] or None)
+	'''Allocation: ':var' NAME (':' Type)?  ('=' Expression)?'''
+	return F.allocate(F._slot(t[1],t[2] and t[2][1] or None), t[3] and t[3][1] or None)
 
 # ----------------------------------------------------------------------------
 # Expressions

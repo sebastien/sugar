@@ -1,7 +1,7 @@
 @function hello
 | This is the function documentation
 | And it can span more than one line
-		return 0
+		:return 0
 @end
 
 @class A
