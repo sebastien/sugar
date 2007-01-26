@@ -305,7 +305,6 @@ def d_Computation(t):
 def d_PrefixComputation(t):
 	'''PrefixComputation: ('not') Expression '''
 	# FIXME: Normalize operators
-	print t
 	return F.compute(F._op(t[0][0]),t[1])
 
 def d_Assignation(t):
@@ -330,7 +329,7 @@ def d_AllocationD(t):
 
 def d_Expression(t):
 	'''Expression : Condition | Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation | Comparison |
-	              PrefixComputation | Computation |   Value | LP Expression RP
+	              PrefixComputation | Computation | Value | LP Expression RP
 	'''
 	if len(t) == 1: return t[0]
 	else: return t[1]
@@ -352,7 +351,6 @@ def d_Instanciation(t):
 	elif len(p) == 2:
 		return F.instanciate(t[1])
 	else:
-		print len(p), p
 		p = t_filterOut(",", p[1:-1])
 		return F.instanciate(t[1], *p)
 
@@ -431,6 +429,7 @@ def d_StringSQ(t):
 def d_StringDQ(t):
 	'''StringDQ : '"' (STR_NOT_DQUOTE|STR_ESC)* '"' '''
 	return "".join(t[1])
+
 
 def d_Name(t):
 	'''Name : NAME '''
@@ -566,7 +565,6 @@ def skip_whitespace(loc):
 
 def disambiguate( nodes ):
 	# FIXME: This may not be the best way...
-	print "********AMIBGUITY", nodes
 	return nodes[0]
 
 # ----------------------------------------------------------------------------
@@ -575,13 +573,14 @@ def disambiguate( nodes ):
 #
 # ----------------------------------------------------------------------------
 
+#_PARSER = Parser(make_grammar_file=0)
 _PARSER = Parser(make_grammar_file=0)
-_PARSER.indentStack = []
-_PARSER.isNewline   = True
-_PARSER.requiredIndent = 0
-_PARSER.previousLine   = 0
- 
+
 def parse( text, verbose=True ):
+	_PARSER.indentStack = []
+	_PARSER.isNewline   = True
+	_PARSER.requiredIndent = 0
+	_PARSER.previousLine   = 0
 	res = _PARSER.parse(text,initial_skip_space_fn=skip_whitespace,ambiguity_fn=disambiguate, print_debug_info=(verbose and 1 or 0))
 	return res
 
