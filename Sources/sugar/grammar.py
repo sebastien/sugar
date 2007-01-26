@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   19-Jan-2007
+# Last mod.         :   25-Jan-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -273,14 +273,15 @@ def d_Condition(t):
 	return res
 
 def d_Select(t):
-	''' Select: ':select' Expression EOL+ 
-				   INDENT Condition  DEDENT  EOL
-	           ':end'
+	''' Select: ':select' Expression EOL
+				INDENT (EOL|Condition)* DEDENT
+	            ':end'
 	'''
-	condition = t[3]
-	for rule in condition.getRules():
-		rule.setPredicate(F.compute(F._op("=="),t[1],rule.getPredicate()))
-	return condition
+	conditions = t_filterOut(None, t[4])
+	for condition in conditions:
+		for rule in condition.getRules():
+			rule.setPredicate(F.compute(F._op("=="),t[1],rule.getPredicate()))
+	return conditions
 
 # ----------------------------------------------------------------------------
 # Operations
@@ -517,14 +518,16 @@ def d_INDENT(t, spec):
 	''' INDENT: '''
 	st = _PARSER.indentStack
 	if spec:
-		if len(st) < 2 or not (st[-1] > st[-2]): return Reject
+		if len(st) < 2 or not (st[-1] > st[-2]): 
+			return Reject
 		_PARSER.requiredIndent = st[-1]
 		
 def d_DEDENT(t, spec):
 	''' DEDENT: '''
 	st = _PARSER.indentStack
 	if spec:
-		if len(st) < 2 or not (st[-1] < st[-2]): return Reject
+		if len(st) < 2 or not (st[-1] < st[-2]): 
+			return Reject
 		_PARSER.requiredIndent = st[-1]
 
 def d_CHECK(t, spec):
