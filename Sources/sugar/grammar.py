@@ -68,12 +68,17 @@ def t_split( array, element ):
 # ----------------------------------------------------------------------------
 
 def d_Program(t):
-	'''Program: Code'''
+	'''Program: 
+		(Comment | EOL) *
+		Documentation? 
+		Code
+	'''
 	# FIXME: Add a notion of Module = Slots + Process
 	m = F.createModule(F.CurrentModule)
+	if t[1]: m.setDocumentation(t[1] and t[1][0])
 	f = F.createFunction(F.ModuleInit, ())
 	# FIXME: Rename to addStatements
-	t_setCode(f,t[0],m)
+	t_setCode(f,t[2],m)
 	m.setSlot(F.ModuleInit, f)
 	return m
 
@@ -84,7 +89,7 @@ def d_Code(t, spec):
 
 # FIXME: Exchange LINE and STATEMENT
 def d_Line(t):
-	'''Line : (Allocation|Termination|Expression) ( ';' Line )* '''
+	'''Line : (Select|Allocation|Termination|Expression) ( ';' Line )* '''
 	r = [t[0][0]]
 	r.extend(t[1])
 	r = t_filterOut(";", r)
@@ -101,7 +106,7 @@ def d_Documentation(t):
 	return F.doc("\n".join(d))
 
 def d_Statement(t):
-	'''Statement : (Select|Allocation|Termination|Expression) ( ';' | Comment | EOL) '''
+	'''Statement : Line EOL '''
 	return t[0][0]
 
 def d_Declaration(t):
@@ -114,26 +119,27 @@ def d_Declaration(t):
 
 def d_Main(t):
 	'''Main: '@main' EOL
-		  INDENT
+		  (INDENT
 	      Code
-	      DEDENT
+	      DEDENT)?
 	   '@end'
 	'''
 	f = F.createFunction(F.MainFunction , ())
-	t_setCode(f, t[3])
+	t_setCode(f, t[2] and t[2][1] or ())
 	return f
 
 def d_Function(t):
 	'''Function: '@function' NAME Arguments? EOL
 		  Documentation?
-		  INDENT
+		  (INDENT
 	      Code
 	      DEDENT
+	      )?
 	   '@end'
 	'''
 	f = F.createFunction(t[1] , t[2] and t[2][0] or ())
 	if t[4]: f.setDocumentation(t[4] and t[4][0])
-	t_setCode(f, t[6])
+	t_setCode(f, t[5] and t[5][1] or ())
 	return f
 
 def d_Class(t):
@@ -197,83 +203,118 @@ def d_Method(t):
 	'''Method: '@method' NAME Arguments? EOL
 	       Annotation*
 	       Documentation?
-	       INDENT
+	       (INDENT
 	       Code
-	       DEDENT
+	       DEDENT) ?
 	  '@end'
 	'''
 	m = F.createMethod(t[1], t[2] and t[2][0] or ())
 	for ann in t[4]:
 		m.annotate(ann)
 	if t[5]: m.setDocumentation(t[5] and t[5][0])
-	t_setCode(m, t[7])
+	t_setCode(m, t[6] and t[6][1] or ())
 	return m
 
 def d_ClassMethod(t):
 	'''ClassMethod: '@operation' NAME Arguments? EOL
 		   Documentation?
-		   INDENT
+		   (INDENT
 	       Code
-	       DEDENT
+	       DEDENT)?
 	  '@end'
 	'''
 	m = F.createClassMethod(t[1], t[2] and t[2][0] or ())
 	if t[4]: m.setDocumentation(t[4] and t[4][0])
-	t_setCode(m, t[6])
+	t_setCode(m, t[5] and t[5][1] or ())
 	return m
 
 
 def d_Constructor(t):
 	'''Constructor: '@constructor'  Arguments? EOL
 	       Documentation?
-	       INDENT
+	       (INDENT
 	       Code
-	       DEDENT
+	       DEDENT)?
 	  '@end'
 	'''
 	m = F.createConstructor(t[1] and t[1][0])
 	if t[3]: m.setDocumentation(t[3] and t[3][0])
-	t_setCode(m, t[5])
+	t_setCode(m, t[4] and t[4][1] or ())
 	return m
 
 def d_Destructor(t):
 	'''Destructor: '@destructor' EOL
 	       Documentation?
-	       INDENT
+	       (INDENT
 	       Code
-	       DEDENT
+	       DEDENT) ?
 	  '@end'
 	'''
 	m = F.createDestructor()
 	if t[2]: m.setDocumentation(t[2] and t[2][0])
-	t_setCode(m, t[7])
+	t_setCode(m, t[3] and t[3][1] or ())
 	return m
 
 def d_Condition(t):
 	''' Condition: 
-		(':when' Expression EOL+ 
-			INDENT Code DEDENT
-		)+
-		(':otherwise' EOL+
-			INDENT Code DEDENT
-		)?
-		':end'
+		( ConditionWhenMultiLine  | ConditionWhenSingleLine )*
+		( ConditionWhenSingleLine
+		| ConditionOtherwiseSingleLine
+		| ConditionOtherwiseMultiLine ':end'
+		| ':end'
+		)
 	'''
 	res = F.select()
-	for when in t_split(t[0], ':when'):
-		block = F.createBlock()
-		t_setCode(block, when[4])
-		res.addRule(F.match(when[1], block))
-	if t[1]:
-		block = F.createBlock()
-		t_setCode(block, t[1][3])
-		res.addRule(F.match(F._ref('true'), block))
+	for when in t[0]:
+		res.addRule(when)
+	r = t[1] and t_filterOut(':end', t[1]) or ()
+	if r: res.addRule(r[0])
 	#match = F.match(t[0], t[-1])
 	#res.addRule(match)
 	return res
 
+def d_ConditionWhenMultiLine(t):
+	''' ConditionWhenMultiLine: 
+		':when' Expression EOL+ 
+			INDENT Code DEDENT
+	'''
+	return F.match(t[1], t_setCode(F.createBlock(), t[4]))
+
+def d_ConditionWhenSingleLine(t):
+	''' ConditionWhenSingleLine: 
+		':when' Expression '->' Line EOL+
+	'''
+	return F.match(t[1], t_setCode(F.createBlock(), t[3]))
+
+def d_ConditionOtherwiseMultiLine(t):
+	''' ConditionOtherwiseMultiLine: 
+		':otherwise' EOL+ 
+			INDENT Code DEDENT
+	'''
+	return F.match(F._ref('true'), t_setCode(F.createBlock(), t[3]))
+
+def d_ConditionOtherwiseSingleLine(t):
+	''' ConditionOtherwiseSingleLine: 
+		':otherwise' '->' Line EOL?
+	'''
+	return F.match(F._ref('true'), t_setCode(F.createBlock(), t[2]))
+
 def d_Select(t):
-	''' Select: ':select' Expression EOL
+	''' Select: ':select' Expression? EOL
+				INDENT (EOL|Condition)* DEDENT
+	            ':end'
+	'''
+	res = F.select()
+	conditions = t_filterOut(None, t[4])
+	for condition in conditions:
+		for rule in condition.getRules():
+			if t[1]:
+				rule.setPredicate(F.compute(F._op("=="),t[1][0],rule.getPredicate()))
+			res.addRule(rule)
+	return res
+
+def d_Match(t):
+	''' Match: ':match' Expression EOL
 				INDENT (EOL|Condition)* DEDENT
 	            ':end'
 	'''
@@ -574,7 +615,7 @@ def disambiguate( nodes ):
 # ----------------------------------------------------------------------------
 
 #_PARSER = Parser(make_grammar_file=0)
-_PARSER = Parser(make_grammar_file=0)
+_PARSER = Parser()
 
 def parse( text, verbose=True ):
 	_PARSER.indentStack = []

@@ -107,7 +107,7 @@ def run( args, output=sys.stdout ):
 		help=OPT_VERBOSE)
 	oparser.add_option("-m", "--module", action="store_true", dest="module",
 		help=OPT_VERBOSE)
-	oparser.add_option("-a", "--api", action="store", dest="api", default="api.html",
+	oparser.add_option("-a", "--api", action="store", dest="api",
 		help=OPT_API)
 	oparser.add_option("-t", "--test", action="store_true", dest="test", 
 		help=OPT_TEST)

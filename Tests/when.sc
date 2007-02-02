@@ -37,3 +37,12 @@
 		print 'Two'
 	:end
 }
+
+@function inArea pos, area
+| This is a snippet that failed parsing at some point
+	:when (pos[0] < area x)            -> :return false
+	:when (pos[0] > (area x + area w)) -> :return false
+	:when (pos[1] > area y)            -> :return false
+	:when (pos[1] > (area y + area y)) -> :return false
+	:otherwise -> :return true
+@end
