@@ -24,7 +24,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "var new return yield and or not is".split()
+KEYWORDS = "and or not is".split()
 
 # ----------------------------------------------------------------------------
 # Common utilities
@@ -182,12 +182,22 @@ def d_AsAnnotation(t):
 	return F.annotation('as', t[1])
 
 def d_Attribute(t):
-	'''Attribute: '@property' NAME (':' Type)? ('=' Value)?  EOL '''
-	return F._attr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
+	'''Attribute: 
+		'@property' NAME (':' Type)? ('=' Value)?  EOL
+		Documentation ?
+	 '''
+	a = F._attr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
+	if t[-1]: a.setDocumentation(t[-1] and t[-1][0])
+	return a
 
 def d_ClassAttribute(t):
-	'''ClassAttribute: '@shared' NAME (':' Type)?  ('=' Expression)? EOL '''
-	return F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
+	'''ClassAttribute: 
+		'@shared' NAME (':' Type)?  ('=' Expression)? EOL
+		Documentation ? 
+	'''
+	a =  F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
+	if t[-1]: a.setDocumentation(t[-1] and t[-1][0])
+	return a
 
 def d_MethodGroup(t):
 	'''MethodGroup: '@group' "[a-zA-Z0-9_\-]+" EOL
@@ -382,7 +392,7 @@ def d_Value(t):
 # ----------------------------------------------------------------------------
 
 def d_Instanciation(t):
-	'''Instanciation: 'new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
+	'''Instanciation: ':new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
 	'''
 	p = t[2]
 	if len(p) == 1:
@@ -498,11 +508,16 @@ def d_Dict(t):
 	return d
 
 def d_DictPair(t):
-	'''DictPair : (Name|LP Expression RP) ':' Expression '''
+	'''DictPair : (DictKey|LP Expression RP) ':' Expression '''
 	key =  t[0]
-	if len(key) == 1: key = F._string(key[0].getReferenceName())
+	if len(key) == 1: key = key[0]
 	else: key = key[1]
 	return key, t[2]
+
+def d_DictKey(t):
+	'''DictKey: "[$A-Za-z_]+[\\-$0-9A-Za-z_]*" 
+	'''
+	return F._string(t[0])
 
 # ----------------------------------------------------------------------------
 # Punctuation
