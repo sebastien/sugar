@@ -170,12 +170,16 @@ def d_Class(t):
 	return f
 
 def d_Annotation(t):
-	'''Annotation: (WhenAnnotation | AsAnnotation)'''
+	'''Annotation: (WhenAnnotation | PostAnnotation| AsAnnotation)'''
 	return t[0][0]
 
 def d_WhenAnnotation(t):
 	'''WhenAnnotation: '@when' Expression EOL'''
 	return F.annotation('when', t[1])
+
+def d_PostAnnotation(t):
+	'''PostAnnotation: '@post' Expression EOL'''
+	return F.annotation('post', t[1])
 
 def d_AsAnnotation(t):
 	'''AsAnnotation: '@as' ("[a-zA-Z0-9_\-]+")+ EOL'''
@@ -241,6 +245,7 @@ def d_ClassMethod(t):
 
 def d_Constructor(t):
 	'''Constructor: '@constructor'  Arguments? EOL
+	       (PostAnnotation)*
 	       Documentation?
 	       (INDENT
 	       Code
@@ -248,8 +253,9 @@ def d_Constructor(t):
 	  '@end'
 	'''
 	m = F.createConstructor(t[1] and t[1][0])
-	if t[3]: m.setDocumentation(t[3] and t[3][0])
-	t_setCode(m, t[4] and t[4][1] or ())
+	for ann in t[3]: m.annotate(ann)
+	if t[4]: m.setDocumentation(t[4] and t[4][0])
+	t_setCode(m, t[5] and t[5][1] or ())
 	return m
 
 def d_Destructor(t):
