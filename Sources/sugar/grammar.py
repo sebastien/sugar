@@ -7,12 +7,11 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   06-Feb-2007
+# Last mod.         :   25-Jan-2007
 # -----------------------------------------------------------------------------
 
 import os
-from dparser import Parser as DParser
-from dparser import Reject
+from dparser import Parser, Reject
 from lambdafactory import modelbase as model
 from lambdafactory import interfaces
 
@@ -20,19 +19,6 @@ __doc__ = """
 This module implements a Sugar syntax driver for the LambdaFactory program model
 library. This module uses the fantastic D parser Python library.
 """
-
-# We instanciate LambdaFactory default factory, which will be used in the
-# grammar production rules to create model elements.
-
-KEYWORDS = "and or not is".split()
-
-# Cleans up existing dparser data (prevents core dumps)
-DPARSER_FILES = ["d_parser_mach_gen.g.md5", "d_parser_mach_gen.g.d_parser.dat"]
-def cleanup():
-	for f in DPARSER_FILES:
-		p = os.path.join(os.path.dirname(os.path.abspath(__file__)), f)
-		if os.path.isfile(p): os.unlink(p)
-cleanup()
 
 # We instanciate LambdaFactory default factory, which will be used in the
 # grammar production rules to create model elements.
@@ -134,8 +120,8 @@ def d_Declaration(t):
 def d_Main(t):
 	'''Main: '@main' EOL
 		  (INDENT
-		  Code
-		  DEDENT)?
+	      Code
+	      DEDENT)?
 	   '@end'
 	'''
 	f = F.createFunction(F.MainFunction , ())
@@ -143,17 +129,17 @@ def d_Main(t):
 	return f
 
 def d_Function(t):
-# FIXME: This was before (INDENT Code DEDENT)? but it crashed dparser
 	'''Function: '@function' NAME Arguments? EOL
 		  Documentation?
-		  INDENT
-		  Code
-		  DEDENT
+		  (INDENT
+	      Code
+	      DEDENT
+	      )?
 	   '@end'
 	'''
 	f = F.createFunction(t[1] , t[2] and t[2][0] or ())
 	if t[4]: f.setDocumentation(t[4] and t[4][0])
-	t_setCode(f, t[6])
+	t_setCode(f, t[5] and t[5][1] or ())
 	return f
 
 def d_Class(t):
@@ -161,16 +147,16 @@ def d_Class(t):
 	'''Class: '@class' NAME (':' Name (',' Name)* )? EOL
 		  Documentation?
 		  INDENT
-		  (   ClassAttribute
-		  |   ClassMethod
-		  |   Attribute
-		  |   Method
-		  |   Constructor
-		  |   Destructor
-		  |   MethodGroup
-		  |   EOL
-		  )*
-		  DEDENT
+	      (   ClassAttribute
+	      |   ClassMethod
+	      |   Attribute
+	      |   Method
+	      |   Constructor
+	      |   Destructor
+	      |   MethodGroup
+	      |   EOL
+	      )*
+	      DEDENT
 	  '@end'
 	'''
 	# TODO: Parents support
@@ -259,7 +245,7 @@ def d_ClassMethod(t):
 
 def d_Constructor(t):
 	'''Constructor: '@constructor'  Arguments? EOL
-# FIXME   (PostAnnotation)*
+	       (PostAnnotation)*
 	       Documentation?
 	       (INDENT
 	       Code
@@ -344,19 +330,10 @@ def d_Select(t):
 	return res
 
 def d_Match(t):
-# BUG: This works
-	''' Match: ':match' Expression EOL '''
-# BUG: This causes core dump
-#	''' Match: ':match' Expression EOL (EOL|Condition)*'''
-# BUG: Core dumps
-#	''' Match: ':match' Expression EOL 
-#		(EOL|Condition)*
-#	'''
-# BUG: This too (was the original bug)
-#	''' Match: ':match' Expression EOL
-#				INDENT (EOL|Condition)* DEDENT
-#				':end'
-#	'''
+	''' Match: ':match' Expression EOL
+				INDENT (EOL|Condition)* DEDENT
+	            ':end'
+	'''
 	conditions = t_filterOut(None, t[4])
 	for condition in conditions:
 		for rule in condition.getRules():
@@ -406,25 +383,15 @@ def d_Allocation(t):
 # ----------------------------------------------------------------------------
 
 def d_Expression(t):
-	# FIXME: ExpressionRest was added because the rule cause core dumps
-	'''Expression :  Condition | Iteration | Instanciation | Slicing
-    | InvocationOrResolution | Assignation | Comparison
-    | ExpressionRest
+	'''Expression : Condition | Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation | Comparison |
+	              PrefixComputation | Computation | Value | LP Expression RP
 	'''
-	return t[0]
-
-def d_ExpressionRest(t):
-	'''ExpressionRest: PrefixComputation | Computation | Value | LP Expression RP'''
 	if len(t) == 1: return t[0]
 	else: return t[1]
 
 def d_Value(t):
 	'''Value : Litteral|List|Dict|Range|Closure'''
-	if len(t) == 1: return t[0]
-	else: return t[1]
-
-
-
+	return t[0]
 
 # ----------------------------------------------------------------------------
 # Operations
@@ -669,7 +636,7 @@ def disambiguate( nodes ):
 # ----------------------------------------------------------------------------
 
 #_PARSER = Parser(make_grammar_file=0)
-_PARSER = DParser()
+_PARSER = Parser()
 
 def parse( text, verbose=True ):
 	_PARSER.indentStack = []
