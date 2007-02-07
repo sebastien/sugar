@@ -7,11 +7,12 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   25-Jan-2007
+# Last mod.         :   07-Feb-2007
 # -----------------------------------------------------------------------------
 
 import os
-from dparser import Parser, Reject
+from dparser import Parser as DParser
+form dparser import Reject
 from lambdafactory import modelbase as model
 from lambdafactory import interfaces
 
@@ -636,7 +637,7 @@ def disambiguate( nodes ):
 # ----------------------------------------------------------------------------
 
 #_PARSER = Parser(make_grammar_file=0)
-_PARSER = Parser()
+_PARSER = DParser()
 
 def parse( text, verbose=True ):
 	_PARSER.indentStack = []
