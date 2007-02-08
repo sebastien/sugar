@@ -12,7 +12,7 @@
 
 import os
 from dparser import Parser as DParser
-form dparser import Reject
+from dparser import Reject
 from lambdafactory import modelbase as model
 from lambdafactory import interfaces
 
