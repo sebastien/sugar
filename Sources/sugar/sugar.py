@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   16-Jan-2007
+# Last mod.         :   12-Feb-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, shutil
@@ -16,7 +16,7 @@ import grammar
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, c
 
-__version__ = "0.6.7"
+__version__ = "0.6.8"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"

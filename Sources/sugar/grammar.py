@@ -695,6 +695,7 @@ class Parser:
 		# We try to parse the file
 		#try:
 		if True:
+			name = self.pathToModuleName(name)
 			res = parseModule(name, text, self.verbose)
 			# We set the module file path (for informative purpose only)
 			if sourcepath:
