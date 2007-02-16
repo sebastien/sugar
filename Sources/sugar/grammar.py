@@ -80,7 +80,7 @@ def d_Program(t):
 	f = F.createFunction(F.ModuleInit, ())
 	# FIXME: Rename to addStatements
 	t_setCode(f,t[2],m)
-	m.setSlot(F.ModuleInit, f)
+	m.setSlot(F.ModuleInit, f, True)
 	return m
 
 def d_Code(t, spec):
