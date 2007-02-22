@@ -27,7 +27,7 @@
 @class Rectangle:Shape
 
 	@constructor 
-		0..4 :: { points add(new Point()) }
+		0..4 :: { points add(:new Point()) }
 	@end
 
 @end
