@@ -121,10 +121,10 @@ def run( args, output=sys.stdout ):
 	parser           = grammar.Parser(verbose=options.verbose)
 	writer, resolver = None, None
 	reporter         = DefaultReporter
-	if options.lang == "js":
+	if options.lang == "js" or not options.lang:
 		writer   = javascript.Writer(reporter=reporter)
 		resolver = javascript.Resolver(reporter=reporter)
-	elif options.lang == "c" or not options.lang:
+	elif options.lang == "c":
 		writer   = c.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
 	else:

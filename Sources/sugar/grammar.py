@@ -147,7 +147,7 @@ def d_Class(t):
 	# FIXME: Change Name to Reference
 	'''Class: '@class' NAME (':' Name (',' Name)* )? EOL
 		  Documentation?
-		  INDENT
+		  (INDENT
 	      (   ClassAttribute
 	      |   ClassMethod
 	      |   Attribute
@@ -157,7 +157,7 @@ def d_Class(t):
 	      |   MethodGroup
 	      |   EOL
 	      )*
-	      DEDENT
+	      DEDENT) ?
 	  '@end'
 	'''
 	# TODO: Parents support
@@ -167,7 +167,7 @@ def d_Class(t):
 	parents = t_filterOut(",", parents)
 	f = F.createClass(t[1] , parents)
 	if t[4]: f.setDocumentation(t[4] and t[4][0])
-	t_setCode(None, t[6], f)
+	t_setCode(None, t[5], f)
 	return f
 
 def d_Annotation(t):
