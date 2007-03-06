@@ -16,7 +16,7 @@ import grammar
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, c
 
-__version__ = "0.6.9"
+__version__ = "0.6.10"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
@@ -133,7 +133,8 @@ def run( args, output=sys.stdout ):
 	# We process the source files
 	modules = []
 	for source_path in args:
-		try:
+		#try:
+		if True:
 			source, module = parser.parse(source_path)
 			if options.test:
 				print "%-40s [%s]" % (source_path,  'OK')
@@ -141,11 +142,11 @@ def run( args, output=sys.stdout ):
 				modules.append(module)
 				resolver.flow(module)
 				output.write( writer.writeModule(module, options.module) + "\n")
-		except Exception, e:
-			if options.test:
-				print "%-40s [%s]" % (source_path,  'FAILED')
-			else:
-				print e
+		#except Exception, e:
+		#	if options.test:
+		#		print "%-40s [%s]" % (source_path,  'FAILED')
+		#	else:
+		#		print e
 		
 	if options.api:
 		apidoc(modules, options.api)

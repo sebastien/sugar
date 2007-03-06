@@ -1,0 +1,6 @@
+:var a = "pouet"
+:var a = " pouet"
+:var a = " pouet "
+:var a = "  pouet "
+:var a = "  pouet  "
+:var a = "\  pouet\\  "
