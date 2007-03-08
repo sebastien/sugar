@@ -23,7 +23,7 @@
 #define RESOLVE(O,s)                 SgObject_get(O,#s)
 #define $G(O,s)                      SgObject_get(O,#s)
 
-#define LIST(...)                    SgCore_list(__VA_ARGS)
+#define LIST(...)                    SgCore_list(0, __VA_ARGS__)
 #define INT(v)                       SgCore_int(v)
 #define FLOAT(v)                     SgCore_float(v)
 #define DOUBLE(v)                    SgCore_double(v)
@@ -80,7 +80,7 @@ SgObject* SgObject_new2(SgClass* self, SgValue* a, SgValue* b);
 SgObject* SgObject_new3(SgClass* self, SgValue* a, SgValue* b, SgValue* c);
 SgValue*  SgObject_get(SgObject* self, char* slotName);
 
-SgValue*  SgCore_list(...);
+SgValue*  SgCore_list(int length, ...);
 SgValue*  SgCore_int(int i);
 SgValue*  SgCore_float(float f);
 SgValue*  SgCore_double(double g);

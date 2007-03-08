@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   06-Mar-2007
+# Last mod.         :   08-Mar-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -277,14 +277,14 @@ def d_Condition(t):
 		( ConditionWhenMultiLine  | ConditionWhenSingleLine )*
 		( ConditionWhenSingleLine
 		| ConditionOtherwiseSingleLine
-		| ConditionOtherwiseMultiLine ':end'
-		| ':end'
+		| ConditionOtherwiseMultiLine 'end'
+		| 'end'
 		)
 	'''
 	res = F.select()
 	for when in t[0]:
 		res.addRule(when)
-	r = t[1] and t_filterOut(':end', t[1]) or ()
+	r = t[1] and t_filterOut('end', t[1]) or ()
 	if r: res.addRule(r[0])
 	#match = F.match(t[0], t[-1])
 	#res.addRule(match)
@@ -292,34 +292,34 @@ def d_Condition(t):
 
 def d_ConditionWhenMultiLine(t):
 	''' ConditionWhenMultiLine: 
-		':when' Expression EOL+ 
+		'when' Expression EOL+ 
 			INDENT Code DEDENT
 	'''
 	return F.match(t[1], t_setCode(F.createBlock(), t[4]))
 
 def d_ConditionWhenSingleLine(t):
 	''' ConditionWhenSingleLine: 
-		':when' Expression '->' Line EOL+
+		'when' Expression '->' Line EOL+
 	'''
 	return F.match(t[1], t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseMultiLine(t):
 	''' ConditionOtherwiseMultiLine: 
-		':otherwise' EOL+ 
+		'otherwise' EOL+ 
 			INDENT Code DEDENT
 	'''
 	return F.match(F._ref('true'), t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseSingleLine(t):
 	''' ConditionOtherwiseSingleLine: 
-		':otherwise' '->' Line EOL?
+		'otherwise' '->' Line EOL?
 	'''
 	return F.match(F._ref('true'), t_setCode(F.createBlock(), t[2]))
 
 def d_Select(t):
-	''' Select: ':select' Expression? EOL
+	''' Select: 'select' Expression? EOL
 				INDENT (EOL|Condition)* DEDENT
-	            ':end'
+	            'end'
 	'''
 	res = F.select()
 	conditions = t_filterOut(None, t[4])
@@ -331,9 +331,9 @@ def d_Select(t):
 	return res
 
 def d_Match(t):
-	''' Match: ':match' Expression EOL
+	''' Match: 'match' Expression EOL
 				INDENT (EOL|Condition)* DEDENT
-	            ':end'
+	            'end'
 	'''
 	conditions = t_filterOut(None, t[4])
 	for condition in conditions:
@@ -346,7 +346,7 @@ def d_Match(t):
 # ----------------------------------------------------------------------------
 
 def d_Termination(t):
-	'''Termination : ':return' Expression'''
+	'''Termination : 'return' Expression'''
 	return F.returns(t[1])
 
 def d_Iteration(t):
@@ -376,7 +376,7 @@ def d_Assignation(t):
 	return F.assign(t[0], t[2])
 
 def d_Allocation(t):
-	'''Allocation: ':var' NAME (':' Type)?  ('=' Expression)?'''
+	'''Allocation: 'var' NAME (':' Type)?  ('=' Expression)?'''
 	return F.allocate(F._slot(t[1],t[2] and t[2][1] or None), t[3] and t[3][1] or None)
 
 # ----------------------------------------------------------------------------
@@ -399,7 +399,7 @@ def d_Value(t):
 # ----------------------------------------------------------------------------
 
 def d_Instanciation(t):
-	'''Instanciation: ':new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
+	'''Instanciation: 'new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
 	'''
 	p = t[2]
 	if len(p) == 1:
