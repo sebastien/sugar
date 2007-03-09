@@ -1,53 +1,53 @@
-:when 1
+when 1
 	print (True)
-:end
+end
 
-:when 1 -> print (True)
+when 1 -> print (True)
 
-:when 2 
+when 2 
 	print (True)
-:otherwise
+otherwise
 	print (False)
-:end
+end
 
 
-:when 1    -> print True
-:otherwise -> print False
+when 1    -> print True
+otherwise -> print False
 
-:when 3
+when 3
 	print (True)
-:when 4
+when 4
 	print (False)
-:otherwise
+otherwise
 	print ()
-:end
+end
 
 
-:for x in 0..10 
+for x in 0..10 
 	print x
-:end
+end
 
 (0..10) :: {i|print i}
 
 
-a := 0
-:for i in a..(a+10)
-:end
+var a = 0
+for i in a..(a+10)
+end
 
-:for i in (a)..(a+10)
-:end
+for i in (a)..(a+10)
+end
 
 # Iterates from 0 to 10
-:for i in (a)..(a+10)
+for i in (a)..(a+10)
 	print (i)
-:end
+end
 
 # Iterates from 0 to 10, by step of 2
-:for i in (a)..(a+10) step 2
+for i in (a)..(a+10) step 2
 	print (i)
-:end
+end
 
 a = 0
-:while a < 10
+while a < 10
 	a = a + 1
-:end
+end

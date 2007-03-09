@@ -1,5 +1,5 @@
 @function f
-	:return 'b'
+	return 'b'
 @end
 
 a = {}

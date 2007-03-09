@@ -17,7 +17,7 @@
 		@method doCommand name
 		@as dispatcher
 			# FIX: getMethod(name) ()
-			:return this[name]()
+			return this[name]()
 		@end
 		
 		@method bindHTML e
@@ -37,12 +37,12 @@
 	@group Properties
 		@method getUserName
 		@as accessor
-			:return $(".input.name", element) get (0) value
+			return $(".input.name", element) get (0) value
 		@end
 		
 		@method getUserWish
 		@when accessor
-			:return $(".input.wish", element) get (0) value
+			return $(".input.wish", element) get (0) value
 		@end
 	@end
 		

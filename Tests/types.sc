@@ -1,7 +1,7 @@
 # Variable types
-:var foo:int
-:var spam:any = 10
+var fooint
+var spamany = 10
 
-@function foo a:int, b:String
-	:return 10
+@function foo aint, bString
+	return 10
 @end

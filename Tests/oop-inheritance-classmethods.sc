@@ -2,11 +2,11 @@
 @class A
 	@shared P = 'P'
 	@operation o
-		:return P
+		return P
 	@end
 	@operation a v
 		P = P + v
-		:return P
+		return P
 	@end
 @end
 

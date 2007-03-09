@@ -7,16 +7,16 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   08-Mar-2007
+# Last mod.         :   09-Mar-2007
 # -----------------------------------------------------------------------------
 
-import os, sys, shutil
+import os, sys, shutil, traceback
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, c
 
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
@@ -150,21 +150,20 @@ def run( args, output=sys.stdout ):
 	# We process the source files
 	modules = []
 	for source_path in args:
-		#try:
-		if True:
-			source, module = parser.parse(source_path)
+		try:
+			if True:
+				source, module = parser.parse(source_path)
+				if options.test:
+					print "%-40s [%s]" % (source_path,  'OK')
+				else:
+					modules.append(module)
+					resolver.flow(module)
+					output.write( writer.writeModule(module, options.module) + "\n")
+		except Exception, e:
 			if options.test:
-				print "%-40s [%s]" % (source_path,  'OK')
+				print "%-40s [%s]" % (source_path,  'FAILED')
 			else:
-				modules.append(module)
-				resolver.flow(module)
-				output.write( writer.writeModule(module, options.module) + "\n")
-		#except Exception, e:
-		#	if options.test:
-		#		print "%-40s [%s]" % (source_path,  'FAILED')
-		#	else:
-		#		print e
-		
+				raise e
 	if options.api:
 		apidoc(modules, options.api)
 

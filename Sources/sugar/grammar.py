@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "and or not is var new return yield when otherwise end".split()
+KEYWORDS = "and or not is var new for in return yield when otherwise end".split()
 
 # ----------------------------------------------------------------------------
 # Common utilities
@@ -354,8 +354,25 @@ def d_Termination(t):
 	return F.returns(t[1])
 
 def d_Iteration(t):
-	'''Iteration : Expression '::' Expression'''
+	'''Iteration : IterationExpression | ForIteration'''
+	return t[0]
+
+def d_IterationExpression(t):
+	'''IterationExpression : Expression '::' Expression'''
 	return F.iterate(t[0], t[2])
+
+def d_ForIteration(t):
+	'''ForIteration :
+		'for' Arguments 'in' Expression EOL
+		(INDENT Code DEDENT)?
+		'end'
+	'''
+	expr    = t[3]
+	args    = t[1]
+	body    = t[5] and t[5][1] or ()
+	process = F.createFunction(None, args)
+	t_setCode(process, body)
+	return F.iterate(expr, process)
 
 def d_Comparison(t):
 	'''Comparison : Expression ('<' | '>' | '==' | '>=' | '<=' | '<>' | '!='

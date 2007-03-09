@@ -1,33 +1,33 @@
 @class Point
 
-	@property x:double
-	@property y:double
+	@property xdouble
+	@property ydouble
 
 @end
 
 @class Shape
 
-	@shared    COUNT:int
-	@property  points:List
+	@shared    COUNTint
+	@property  pointsList
 	
 	@constructor 
 		points = []
 	@end
 
-	@method addPoint point:Point
-		:return points append(point)
+	@method addPoint pointPoint
+		return points append(point)
 	@end
 
 	@operation shapeCount
-		:return COUNT
+		return COUNT
 	@end
 
 @end
 
-@class Rectangle:Shape
+@class RectangleShape
 
 	@constructor 
-		0..4 :: { points add(:new Point()) }
+		0..4 :: { points add(new Point()) }
 	@end
 
 @end

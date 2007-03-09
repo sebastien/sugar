@@ -1,48 +1,48 @@
 # ISSUE: What to do when you want to say
-# :select
+# select
 
 print "POUET"
-:select 1
-	:when 1
+select 1
+	when 1
 		print 'One'
-	:end
-:end
+	end
+end
 
 print 'HELLO'
-:select 2
-	:when 1
+select 2
+	when 1
 		print 'One'
-	:when 2
+	when 2
 		print 'Two'
-	:end
-:end
+	end
+end
 
 print "POUET"
-:select 2
-	:when 1 -> print 'One'
-	:when 2 -> print 'Two'
-:end
+select 2
+	when 1 -> print 'One'
+	when 2 -> print 'Two'
+end
 
 print "POUET"
-:select 2
-	:when 1 -> print 'One'
-	:when 2
+select 2
+	when 1 -> print 'One'
+	when 2
 		print 'Two'
-	:end
-:end
+	end
+end
 
 
 print "POUET"
-:select 2
-	:when 1 -> print 'One'
-	:when 2
+select 2
+	when 1 -> print 'One'
+	when 2
 		print 'Two'
-	:end
-:end
+	end
+end
 
 print "POUET"
-:select 2
-	:when @ > 2 -> print 'Greater than two'
-	:when @ < 1 -> print 'Lower than one'
-	:otherwise  -> print 'Between one and two'
-:end
+select 2
+	when @ > 2 -> print 'Greater than two'
+	when @ < 1 -> print 'Lower than one'
+	otherwise  -> print 'Between one and two'
+end
