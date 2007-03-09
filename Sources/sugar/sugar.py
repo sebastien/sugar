@@ -150,16 +150,17 @@ def run( args, output=sys.stdout ):
 	# We process the source files
 	modules = []
 	for source_path in args:
-		try:
-			if True:
-				source, module = parser.parse(source_path)
-				if options.test:
-					print "%-40s [%s]" % (source_path,  'OK')
-				else:
-					modules.append(module)
-					resolver.flow(module)
-					output.write( writer.writeModule(module, options.module) + "\n")
-		except Exception, e:
+		#try:
+		if True:
+			source, module = parser.parse(source_path)
+			if options.test:
+				print "%-40s [%s]" % (source_path,  'OK')
+			else:
+				modules.append(module)
+				resolver.flow(module)
+				output.write( writer.writeModule(module, options.module) + "\n")
+		if False:
+		#except Exception, e:
 			if options.test:
 				print "%-40s [%s]" % (source_path,  'FAILED')
 			else:

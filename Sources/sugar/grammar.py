@@ -420,7 +420,7 @@ def d_Value(t):
 # ----------------------------------------------------------------------------
 
 def d_Instanciation(t):
-	'''Instanciation: 'new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
+	'''Instanciation: 'new[ |\t]' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
 	'''
 	p = t[2]
 	if len(p) == 1:
@@ -442,6 +442,8 @@ def d_InvocationOrResolution(t):
 	# matches but Resoltuion doesn't. So we check if expression is a
 	# reference (a name) and we make the invocation fail
 	if len(p) == 1:
+		if isinstance(p[0], interfaces.IList) and len(p[0].getValues()) == 1:
+			return F.slice(t[0], p[0].getValue(0))
 		if isinstance(p[0], interfaces.IReference):
 			return F.resolve(p[0], t[0])
 		else:

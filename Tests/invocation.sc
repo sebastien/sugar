@@ -25,6 +25,7 @@
 
 	a[0] pouet()
 
+	# There is a problem here where the '[0]' is interepreted as a value
 	a pouet[0]()
 	a pouet[0] b()
 	a pouet()[0] b()
