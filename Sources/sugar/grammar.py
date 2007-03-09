@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   08-Mar-2007
+# Last mod.         :   09-Mar-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "and or not is".split()
+KEYWORDS = "and or not is var new return yield when otherwise end".split()
 
 # ----------------------------------------------------------------------------
 # Common utilities
@@ -84,7 +84,7 @@ def d_Program(t):
 	return m
 
 def d_Code(t, spec):
-	'''Code : (EOL | (CHECK (Declaration|Statement|Comment)))* '''
+	'''Code : (EOL | (CHECK (Declaration|Condition|Statement|Comment)))* '''
 	# FIXME: Declarations should not go into code
 	return t_filterOut(None, t[0])
 
@@ -218,6 +218,7 @@ def d_Method(t):
 	'''Method: '@method' NAME Arguments? EOL
 	       Annotation*
 	       Documentation?
+	       EOL*
 	       (INDENT
 	       Code
 	       DEDENT) ?
@@ -227,12 +228,13 @@ def d_Method(t):
 	for ann in t[4]:
 		m.annotate(ann)
 	if t[5]: m.setDocumentation(t[5] and t[5][0])
-	t_setCode(m, t[6] and t[6][1] or ())
+	t_setCode(m, t[7] and t[7][1] or ())
 	return m
 
 def d_ClassMethod(t):
 	'''ClassMethod: '@operation' NAME Arguments? EOL
 		   Documentation?
+		   EOL*
 		   (INDENT
 	       Code
 	       DEDENT)?
@@ -240,7 +242,7 @@ def d_ClassMethod(t):
 	'''
 	m = F.createClassMethod(t[1], t[2] and t[2][0] or ())
 	if t[4]: m.setDocumentation(t[4] and t[4][0])
-	t_setCode(m, t[5] and t[5][1] or ())
+	t_setCode(m, t[6] and t[6][1] or ())
 	return m
 
 
@@ -248,6 +250,7 @@ def d_Constructor(t):
 	'''Constructor: '@constructor'  Arguments? EOL
 	       (PostAnnotation)*
 	       Documentation?
+	       EOL*
 	       (INDENT
 	       Code
 	       DEDENT)?
@@ -256,12 +259,13 @@ def d_Constructor(t):
 	m = F.createConstructor(t[1] and t[1][0])
 	for ann in t[3]: m.annotate(ann)
 	if t[4]: m.setDocumentation(t[4] and t[4][0])
-	t_setCode(m, t[5] and t[5][1] or ())
+	t_setCode(m, t[6] and t[6][1] or ())
 	return m
 
 def d_Destructor(t):
 	'''Destructor: '@destructor' EOL
 	       Documentation?
+	       EOL*
 	       (INDENT
 	       Code
 	       DEDENT) ?
@@ -269,7 +273,7 @@ def d_Destructor(t):
 	'''
 	m = F.createDestructor()
 	if t[2]: m.setDocumentation(t[2] and t[2][0])
-	t_setCode(m, t[3] and t[3][1] or ())
+	t_setCode(m, t[4] and t[4][1] or ())
 	return m
 
 def d_Condition(t):
@@ -299,7 +303,7 @@ def d_ConditionWhenMultiLine(t):
 
 def d_ConditionWhenSingleLine(t):
 	''' ConditionWhenSingleLine: 
-		'when' Expression '->' Line EOL+
+		'when' Expression '->' Line EOL
 	'''
 	return F.match(t[1], t_setCode(F.createBlock(), t[3]))
 
@@ -384,7 +388,7 @@ def d_Allocation(t):
 # ----------------------------------------------------------------------------
 
 def d_Expression(t):
-	'''Expression : Condition | Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation | Comparison |
+	'''Expression : Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation | Comparison |
 	              PrefixComputation | Computation | Value | LP Expression RP
 	'''
 	if len(t) == 1: return t[0]
