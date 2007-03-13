@@ -206,12 +206,17 @@ def d_ClassAttribute(t):
 
 def d_MethodGroup(t):
 	'''MethodGroup: '@group' "[a-zA-Z0-9_\-]+" EOL
+		Annotation*
+		Documentation?
+	    EOL*
 		(ClassMethod | Method | EOL)* 
 	   '@end'
 	'''
 	annotation = F.annotation('as', t[1])
-	methods    = t_filterOut('', t[3])
-	for m in methods: m.annotate(annotation)
+	methods    = t_filterOut('', t[6])
+	for m in methods:
+		m.annotate(annotation)
+		for a in t[3]: m.annotate(a)
 	return methods
 	
 def d_Method(t):
@@ -383,7 +388,7 @@ def d_Comparison(t):
 	return F.compute(F._op(" ".join(t[1])),t[0],t[2])
 
 def d_Computation(t):
-	'''Computation: Expression ('+'|'-'|'*'|'/'|'%'|'//'|'and'|'or') Expression '''
+	'''Computation: Expression ('+'|'-'|'*'|'/'|'%'|'//'|'+='|'-='|'and'|'or') Expression '''
 	# FIXME: Normalize operators
 	return F.compute(F._op(t[1][0]),t[0],t[2])
 
@@ -420,7 +425,7 @@ def d_Value(t):
 # ----------------------------------------------------------------------------
 
 def d_Instanciation(t):
-	'''Instanciation: 'new[ |\t]' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
+	'''Instanciation: 'new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
 	'''
 	p = t[2]
 	if len(p) == 1:
