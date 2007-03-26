@@ -7,10 +7,10 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   09-Mar-2007
+# Last mod.         :   23-Mar-2007
 # -----------------------------------------------------------------------------
 
-import os, sys, shutil, traceback
+import os, sys, shutil, traceback, StringIO
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
@@ -105,7 +105,6 @@ def ensureVersion( require ):
 def run( args, output=sys.stdout ):
 	"""The run method can be used to execute a SweetC command from another
 	Python script without having to spawn a shell."""
-	"""Runs SDoc as a command line tool"""
 	if type(args) not in (type([]), type(())): args = [args]
 	from optparse import OptionParser
 	# We create the parse and register the options
@@ -150,8 +149,8 @@ def run( args, output=sys.stdout ):
 	# We process the source files
 	modules = []
 	for source_path in args:
-		#try:
-		if True:
+		try:
+		#if True:
 			source, module = parser.parse(source_path)
 			if options.test:
 				print "%-40s [%s]" % (source_path,  'OK')
@@ -159,12 +158,15 @@ def run( args, output=sys.stdout ):
 				modules.append(module)
 				resolver.flow(module)
 				output.write( writer.writeModule(module, options.module) + "\n")
-		if False:
-		#except Exception, e:
+		#if False:
+		except Exception, e:
 			if options.test:
 				print "%-40s [%s]" % (source_path,  'FAILED')
 			else:
-				raise e
+				error_msg = StringIO.StringIO()
+				traceback.print_exc(file=error_msg)
+				error_msg = error_msg.getvalue()
+				print error_msg
 	if options.api:
 		apidoc(modules, options.api)
 

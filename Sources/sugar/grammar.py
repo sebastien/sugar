@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   09-Mar-2007
+# Last mod.         :   27-Mar-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -379,18 +379,59 @@ def d_ForIteration(t):
 	t_setCode(process, body)
 	return F.iterate(expr, process)
 
+OPERATORS_PRIORITY_0 = "and or".split()
+OPERATORS_PRIORITY_1 = "> >= < <= != is ==".split()
+OPERATORS_PRIORITY_2 = "+ -".split()
+OPERATORS_PRIORITY_3 = "/ * % //".split()
+OPERATORS_PRIORITY_4 = "+= -=".split()
+def getPriority( op ):
+	"""Returns the priority for the given operator"""
+	if not( type(op) in (str, unicode)) and isinstance(op, interfaces.IOperator):
+		op = op.getReferenceName()
+	if op in OPERATORS_PRIORITY_0: return 0
+	if op in OPERATORS_PRIORITY_1: return 1
+	if op in OPERATORS_PRIORITY_2: return 2
+	if op in OPERATORS_PRIORITY_3: return 3
+	if op in OPERATORS_PRIORITY_4: return 4
+	raise Exception("Unknown operator: %s" % (op))
+
 def d_Comparison(t):
 	'''Comparison : Expression ('<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
 	                 |'in' |'not' 'in'  | 'is' |'is' 'not') Expression
 	'''
 	# FIXME: Normalize operators
 	# FIXME: t[1] may be a list (not in, is not)
-	return F.compute(F._op(" ".join(t[1])),t[0],t[2])
+	op = t[1][0]
+	return F.compute(F._op(" ".join(op), getPriority(op)),t[0],t[2])
 
 def d_Computation(t):
-	'''Computation: Expression ('+'|'-'|'*'|'/'|'%'|'//'|'+='|'-='|'and'|'or') Expression '''
+	'''Computation:
+		Expression (('+'|'-'|'*'|'/'|'%'|'//'|'+='|'-='|'and'|'or') Expression)+	
+	'''
 	# FIXME: Normalize operators
-	return F.compute(F._op(t[1][0]),t[0],t[2])
+	result           = None
+	left = t[0]
+	op               = None
+	right            = None
+	for i in range(len(t[1]) / 2):
+		op    = t[1][i*2]
+		right = t[1][i*2+1]
+		# If the priority of the current operator is superior to the
+		# priority of the previous expresion we reshape the computation from
+		#     (A op B) op C
+		# into
+		#      A op (B op C) 
+		if isinstance(left, interfaces.IComputation) and \
+		getPriority(op) > left.getOperator().getPriority():
+			new_left = F.compute(left.getOperator(), left.getLeftOperand(),
+				F.compute(F._op(op, getPriority(op)), left.getRightOperand(), right)
+			)
+			result = new_left
+			left   = result
+		else:
+			result = F.compute(F._op(op, getPriority(op)), left, right)
+			left   = result
+	return result
 
 def d_PrefixComputation(t):
 	'''PrefixComputation: ('not') Expression '''
@@ -413,8 +454,14 @@ def d_Expression(t):
 	'''Expression : Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation | Comparison |
 	              PrefixComputation | Computation | Value | LP Expression RP
 	'''
-	if len(t) == 1: return t[0]
-	else: return t[1]
+	if len(t) == 1:
+		return t[0]
+	else:
+		# This is a bit dirty, but we need to fix the computation priority
+		# here (I did not manage to do it in a cleaner way)
+		if isinstance(t[1], interfaces.IComputation):
+			t[1].getOperator().setPriority(interfaces.Constants.PARENS_PRIORITY)
+		return t[1]
 
 def d_Value(t):
 	'''Value : Litteral|List|Dict|Range|Closure'''
