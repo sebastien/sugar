@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "and or not is var new for in return yield when otherwise end".split()
+KEYWORDS = "and or not has is var new for in return yield when otherwise end".split()
 
 # ----------------------------------------------------------------------------
 # Common utilities
@@ -359,7 +359,7 @@ def d_Termination(t):
 	return F.returns(t[1])
 
 def d_Iteration(t):
-	'''Iteration : IterationExpression | ForIteration'''
+	'''Iteration : IterationExpression | ForIteration|WhileIteration'''
 	return t[0]
 
 def d_IterationExpression(t):
@@ -379,8 +379,20 @@ def d_ForIteration(t):
 	t_setCode(process, body)
 	return F.iterate(expr, process)
 
+def d_WhileIteration(t):
+	'''WhileIteration :
+		'while' Expression EOL
+		(INDENT Code DEDENT)?
+		'end'
+	'''
+	cond    = t[1]
+	body    = t[3] and t[3][1] or ()
+	process = F.createBlock()
+	t_setCode(process, body)
+	return F.repeat(cond, process)
+
 OPERATORS_PRIORITY_0 = "and or".split()
-OPERATORS_PRIORITY_1 = "> >= < <= != is ==".split()
+OPERATORS_PRIORITY_1 = "> >= < <= != is has ==".split() ; OPERATORS_PRIORITY_1.append("is not")
 OPERATORS_PRIORITY_2 = "+ -".split()
 OPERATORS_PRIORITY_3 = "/ * % //".split()
 OPERATORS_PRIORITY_4 = "+= -=".split()
@@ -395,28 +407,31 @@ def getPriority( op ):
 	if op in OPERATORS_PRIORITY_4: return 4
 	raise Exception("Unknown operator: %s" % (op))
 
-def d_Comparison(t):
-	'''Comparison : Expression ('<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
-	                 |'in' |'not' 'in'  | 'is' |'is' 'not') Expression
-	'''
-	# FIXME: Normalize operators
-	# FIXME: t[1] may be a list (not in, is not)
-	op = t[1][0]
-	if type(op) not in (str, unicode): op = " ".join(op)
-	return F.compute(F._op(op, getPriority(op)),t[0],t[2])
-
 def d_Computation(t):
 	'''Computation:
-		Expression (('+'|'-'|'*'|'/'|'%'|'//'|'+='|'-='|'and'|'or') Expression)+	
+		('not')? Expression (
+			(
+				'+'|'-'|'*'|'/'|'%'|'//'|'+='|'-='|'and'|'or'
+				|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
+				|'in'  | 'has' |'not' 'in'  | 'is' |'is not'
+			) 
+			Expression
+		)+
 	'''
 	# FIXME: Normalize operators
+	prefix           = t[0]
 	result           = None
-	left = t[0]
+	left             = t[1]
 	op               = None
 	right            = None
-	for i in range(len(t[1]) / 2):
-		op    = t[1][i*2]
-		right = t[1][i*2+1]
+	print t
+	if prefix:
+		left = F.compute(F._op(prefix[1], 9999), left)
+	# we iterate on the right operations
+	for i in range(len(t[2]) / 2):
+		op    = t[2][i*2]
+		if type(op) not in (str, unicode): op = " ".join(op)
+		right = t[2][i*2+1]
 		# If the priority of the current operator is superior to the
 		# priority of the previous expresion we reshape the computation from
 		#     (A op B) op C
@@ -424,11 +439,9 @@ def d_Computation(t):
 		#      A op (B op C) 
 		if isinstance(left, interfaces.IComputation) and \
 		getPriority(op) > left.getOperator().getPriority():
-			new_left = F.compute(left.getOperator(), left.getLeftOperand(),
-				F.compute(F._op(op, getPriority(op)), left.getRightOperand(), right)
-			)
-			result = new_left
-			left   = result
+			print "LOWER PRIORITY", left.getOperator().getReferenceName(), op
+			left.setRightOperand(F.compute(F._op(op, getPriority(op)), left.getRightOperand(), right))
+			result = left
 		else:
 			result = F.compute(F._op(op, getPriority(op)), left, right)
 			left   = result
@@ -452,8 +465,8 @@ def d_Allocation(t):
 # ----------------------------------------------------------------------------
 
 def d_Expression(t):
-	'''Expression : Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation | Comparison |
-	              PrefixComputation | Computation | Value | LP Expression RP
+	'''Expression : Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation |
+	   Computation | Value | LP Expression RP
 	'''
 	if len(t) == 1:
 		return t[0]

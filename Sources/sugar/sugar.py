@@ -14,9 +14,9 @@ import os, sys, shutil, traceback, StringIO
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
-from lambdafactory import javascript, c
+from lambdafactory import javascript, c, modelwriter
 
-__version__ = "0.7.1"
+__version__ = "0.7.2"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
@@ -137,11 +137,14 @@ def run( args, output=sys.stdout ):
 	parser           = grammar.Parser(verbose=options.verbose)
 	writer, resolver = None, None
 	reporter         = DefaultReporter
-	if options.lang == "js" or not options.lang:
+	if options.lang in ("js","javascript") or not options.lang:
 		writer   = javascript.Writer(reporter=reporter)
 		resolver = javascript.Resolver(reporter=reporter)
 	elif options.lang == "c":
 		writer   = c.Writer(reporter=reporter)
+		resolver = c.Resolver(reporter=reporter)
+	elif options.lang in ("s", "sg", "sugar"):
+		writer   = modelwriter.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
 	else:
 		print "Please specify a valid language (js or c)"
