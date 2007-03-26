@@ -402,7 +402,8 @@ def d_Comparison(t):
 	# FIXME: Normalize operators
 	# FIXME: t[1] may be a list (not in, is not)
 	op = t[1][0]
-	return F.compute(F._op(" ".join(op), getPriority(op)),t[0],t[2])
+	if type(op) not in (str, unicode): op = " ".join(op)
+	return F.compute(F._op(op, getPriority(op)),t[0],t[2])
 
 def d_Computation(t):
 	'''Computation:
