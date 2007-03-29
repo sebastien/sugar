@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   27-Mar-2007
+# Last mod.         :   29-Mar-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -26,6 +26,22 @@ library. This module uses the fantastic D parser Python library.
 
 F = model.Factory(model)
 KEYWORDS = "and or not has is var new for in return yield when otherwise end".split()
+
+OPERATORS_PRIORITY_0 = "and or".split()
+OPERATORS_PRIORITY_1 = "> >= < <= != is has ==".split() ; OPERATORS_PRIORITY_1.append("is not")
+OPERATORS_PRIORITY_2 = "+ -".split()
+OPERATORS_PRIORITY_3 = "/ * % //".split()
+OPERATORS_PRIORITY_4 = "+= -=".split()
+def getPriority( op ):
+	"""Returns the priority for the given operator"""
+	if not( type(op) in (str, unicode)) and isinstance(op, interfaces.IOperator):
+		op = op.getReferenceName()
+	if op in OPERATORS_PRIORITY_0: return 0
+	if op in OPERATORS_PRIORITY_1: return 1
+	if op in OPERATORS_PRIORITY_2: return 2
+	if op in OPERATORS_PRIORITY_3: return 3
+	if op in OPERATORS_PRIORITY_4: return 4
+	raise Exception("Unknown operator: %s" % (op))
 
 # ----------------------------------------------------------------------------
 # Common utilities
@@ -283,11 +299,11 @@ def d_Destructor(t):
 
 def d_Condition(t):
 	''' Condition: 
-		( ConditionWhenMultiLine  | ConditionWhenSingleLine )*
+		( ConditionWhenSingleLine | ConditionWhenMultiLine )*
 		( ConditionWhenSingleLine
 		| ConditionOtherwiseSingleLine
-		| ConditionOtherwiseMultiLine 'end'
-		| 'end'
+		| ConditionOtherwiseMultiLine 'end' EOL
+		| 'end' EOL
 		)
 	'''
 	res = F.select()
@@ -340,7 +356,7 @@ def d_Select(t):
 	return res
 
 def d_Match(t):
-	''' Match: 'match' Expression EOL
+	''' Match: 'match' Expression  EOL
 				INDENT (EOL|Condition)* DEDENT
 	            'end'
 	'''
@@ -391,27 +407,12 @@ def d_WhileIteration(t):
 	t_setCode(process, body)
 	return F.repeat(cond, process)
 
-OPERATORS_PRIORITY_0 = "and or".split()
-OPERATORS_PRIORITY_1 = "> >= < <= != is has ==".split() ; OPERATORS_PRIORITY_1.append("is not")
-OPERATORS_PRIORITY_2 = "+ -".split()
-OPERATORS_PRIORITY_3 = "/ * % //".split()
-OPERATORS_PRIORITY_4 = "+= -=".split()
-def getPriority( op ):
-	"""Returns the priority for the given operator"""
-	if not( type(op) in (str, unicode)) and isinstance(op, interfaces.IOperator):
-		op = op.getReferenceName()
-	if op in OPERATORS_PRIORITY_0: return 0
-	if op in OPERATORS_PRIORITY_1: return 1
-	if op in OPERATORS_PRIORITY_2: return 2
-	if op in OPERATORS_PRIORITY_3: return 3
-	if op in OPERATORS_PRIORITY_4: return 4
-	raise Exception("Unknown operator: %s" % (op))
 
 def d_Computation(t):
 	'''Computation:
 		('not')? Expression (
 			(
-				'+'|'-'|'*'|'/'|'%'|'//'|'+='|'-='|'and'|'or'
+				'+'|'-'|'*'|'/'|'%'|'//'|'and'|'or'
 				|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
 				|'in'  | 'has' |'not' 'in'  | 'is' |'is not'
 			) 
@@ -439,7 +440,6 @@ def d_Computation(t):
 		#      A op (B op C) 
 		if isinstance(left, interfaces.IComputation) and \
 		getPriority(op) > left.getOperator().getPriority():
-			print "LOWER PRIORITY", left.getOperator().getReferenceName(), op
 			left.setRightOperand(F.compute(F._op(op, getPriority(op)), left.getRightOperand(), right))
 			result = left
 		else:
@@ -453,8 +453,13 @@ def d_PrefixComputation(t):
 	return F.compute(F._op(t[0][0]),t[1])
 
 def d_Assignation(t):
-	''' Assignation: Expression '=' Expression '''
-	return F.assign(t[0], t[2])
+	''' Assignation: Expression ('='|'-='|'+=') Expression '''
+	op = t[1][0]
+	if op == "=":
+		return F.assign(t[0], t[2])
+	else:
+		op = op[0]
+		return F.assign(t[0], F.compute(F._op(op, getPriority(op)), t[0], t[2]))
 
 def d_Allocation(t):
 	'''Allocation: 'var' NAME (':' Type)?  ('=' Expression)?'''
