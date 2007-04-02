@@ -161,7 +161,7 @@ def d_Function(t):
 
 def d_Class(t):
 	# FIXME: Change Name to Reference
-	'''Class: '@class' NAME (':' Name (',' Name)* )? EOL
+	'''Class: '@class' NAME (':' Expression (',' Expression)* )? EOL
 		  Documentation?
 		  (INDENT
 	      (   ClassAttribute
@@ -425,7 +425,6 @@ def d_Computation(t):
 	left             = t[1]
 	op               = None
 	right            = None
-	print t
 	if prefix:
 		left = F.compute(F._op(prefix[1], 9999), left)
 	# we iterate on the right operations
@@ -512,7 +511,6 @@ def d_InvocationOrResolution(t):
 	# NOTE: In some cases (and I don't get why this happens), Invocation
 	# matches but Resoltuion doesn't. So we check if expression is a
 	# reference (a name) and we make the invocation fail
-	print "POUET", t
 	if len(p) == 1:
 		if isinstance(p[0], interfaces.IList) and len(p[0].getValues()) == 1:
 			return F.slice(t[0], p[0].getValue(0))
@@ -740,8 +738,20 @@ def skip_whitespace(loc):
 
 def disambiguate( nodes ):
 	# FIXME: This may not be the best way...
-	return nodes[0]
-
+	# In some case, we have ambiguities (and I don't know how to fix this
+	# properly).
+	def get_name(n):
+		if n.symbol == "Expression": return get_name(n.c[0])
+		else: return n.symbol
+	names = map(get_name, nodes)
+	if "Instanciation" in names:
+		# This is when we have new_node setAttribute that gets
+		# interpreted as new _node.setAttribute
+		return filter(lambda n:get_name(n)!="Instanciation", nodes)[0]
+	else:
+		assert None, "Ambiguity not supported"
+		return nodes[0]
+	
 # ----------------------------------------------------------------------------
 #
 # EXTERNAL API
