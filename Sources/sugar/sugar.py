@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   23-Mar-2007
+# Last mod.         :   02-Apr-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, StringIO

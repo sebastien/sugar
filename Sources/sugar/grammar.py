@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   29-Mar-2007
+# Last mod.         :   02-Apr-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -507,25 +507,38 @@ def d_Slicing(t):
 	return F.slice(t[0], t[2])
 
 def d_InvocationOrResolution(t):
-	'''InvocationOrResolution: Expression ( Name | Value | LP (EOL* Expression EOL* ( (EOL|",") EOL* Expression EOL*)*)?  RP ) '''
+	'''InvocationOrResolution: Expression ( Name | Value | InvocationParameters ) '''
 	p = t[1]
 	# NOTE: In some cases (and I don't get why this happens), Invocation
 	# matches but Resoltuion doesn't. So we check if expression is a
 	# reference (a name) and we make the invocation fail
+	print "POUET", t
 	if len(p) == 1:
 		if isinstance(p[0], interfaces.IList) and len(p[0].getValues()) == 1:
 			return F.slice(t[0], p[0].getValue(0))
 		if isinstance(p[0], interfaces.IReference):
 			return F.resolve(p[0], t[0])
 		else:
-			return F.invoke(t[0], *p)
-	elif len(p) == 2:
-		return F.invoke(t[0])
+			if type(p[0]) in (tuple, list):
+				return F.invoke(t[0], *p[0])
+			else:
+				return F.invoke(t[0], p[0])
 	else:
-		if p[0] == "['(']":
-			 p = p[1:-1]
-		p = t_filterOut(",", p)
-		return F.invoke(t[0], *p)
+		assert None, "This should not happen !"
+
+def d_InvocationParameters(t):
+	'''InvocationParameters:
+		LP Expression? ("," Expression)*
+			(','? EOL INDENT (Line EOL+)+ DEDENT)?
+		RP
+	'''
+	r = []
+	r.extend(t[1])
+	r.extend(t_filterOut(",", t[2]))
+	for line in t_filterOut(",", t[3]):
+		if line is None: continue
+		r.extend(line)
+	return r
 
 # ----------------------------------------------------------------------------
 # Closures
@@ -814,7 +827,7 @@ class Parser:
 		given file."""
 		# FIXME: For now, we have a single-level
 		res = os.path.splitext(os.path.basename(modulePath))[0]
-		res = res.replace("-", "_")
+		res = res.replace("-", "_").replace(".", "_")
 		return res
 
 	def warn( self, message ):

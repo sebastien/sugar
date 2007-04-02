@@ -29,4 +29,25 @@
 	a pouet[0]()
 	a pouet[0] b()
 	a pouet()[0] b()
+
+	# Multi-line invocation
+	a(1)
+	a(1,2)
+	a(1,2,3)
+
+	a(1,2,
+		3
+	)
+
+	a(1,
+		2
+		3
+	)
+
+	a(
+		1
+		2
+		3
+	)
+
 @end
