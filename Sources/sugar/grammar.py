@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   02-Apr-2007
+# Last mod.         :   03-Apr-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -87,15 +87,25 @@ def t_split( array, element ):
 def d_Program(t):
 	'''Program: 
 		(Comment | EOL) *
+		ModuleAnnotations?
 		Documentation? 
 		Code
 	'''
 	# FIXME: Add a notion of Module = Slots + Process
-	m = F.createModule(F.CurrentModule)
-	if t[1]: m.setDocumentation(t[1] and t[1][0])
+	annotations = t[1] and t[1][0] or ()
+	def get_annotation(name,annotations=annotations):
+		for a in annotations:
+			if a.getName() == name: return a.getContent()
+		return None
+	if get_annotation("module"):
+		m = F.createModule(get_annotation("module"))
+	else:
+		m = F.createModule(F.CurrentModule)
+	map(m.annotate, annotations)
+	if t[2]: m.setDocumentation(t[2] and t[2][0])
 	f = F.createFunction(F.ModuleInit, ())
 	# FIXME: Rename to addStatements
-	t_setCode(f,t[2],m)
+	t_setCode(f,t[3],m)
 	m.setSlot(F.ModuleInit, f, True)
 	return m
 
@@ -189,6 +199,45 @@ def d_Class(t):
 def d_Annotation(t):
 	'''Annotation: (WhenAnnotation | PostAnnotation| AsAnnotation)'''
 	return t[0][0]
+
+def d_ModuleAnnotations(t):
+	'''ModuleAnnotations:
+		( ModuleAnnotation
+		| VersionAnnotation
+		| RequiresAnnotation
+		| TargetAnnotation
+		)+
+	'''
+	return t[0]
+
+def d_ModuleAnnotation(t):
+	'''ModuleAnnotation: '@module' NAME EOL'''
+	return F.annotation('module', t[1])
+
+def d_VersionAnnotation(t):
+	'''VersionAnnotation: '@version' VERSION EOL'''
+	return F.annotation('version', t[1])
+
+def d_VERSION(t):
+	'''VERSION:
+		"[0-9]+(.[0-9]+)?(.[0-9]+)?[a-zA-Z_]*"
+		(
+			'(' "[0-9][0-9]?\-[A-Z][a-z][a-z]-[0-9][0-9]([0-9][0-9])?" ')'
+		)?
+	'''
+	return t[0]
+
+def d_RequiresAnnotation(t):
+	'''RequiresAnnotation: '@requires' DEPENDENCY (',' DEPENDENCY)* EOL'''
+	return F.annotation('requires', t[1:-1])
+
+def d_DEPENDENCY(t):
+	'''DEPENDENCY: NAME ('(' VERSION ')')? '''
+	return t
+
+def d_TargetAnnotation(t):
+	'''TargetAnnotation: '@target' NAME+  EOL'''
+	return F.annotation('target', t[1:-1])
 
 def d_WhenAnnotation(t):
 	'''WhenAnnotation: '@when' Expression EOL'''
@@ -743,13 +792,15 @@ def disambiguate( nodes ):
 	def get_name(n):
 		if n.symbol == "Expression": return get_name(n.c[0])
 		else: return n.symbol
+	def get_code(n):
+		return n.buf[n.start_loc.s:n.end]
 	names = map(get_name, nodes)
 	if "Instanciation" in names:
 		# This is when we have new_node setAttribute that gets
 		# interpreted as new _node.setAttribute
 		return filter(lambda n:get_name(n)!="Instanciation", nodes)[0]
 	else:
-		assert None, "Ambiguity not supported"
+		print "Ambiguity not supported " + str(names) + "\n" + str(map(get_code,nodes))
 		return nodes[0]
 	
 # ----------------------------------------------------------------------------
@@ -775,8 +826,13 @@ def parseFile( path, verbose=False ):
 
 def parseModule( name, text, verbose=False ):
 	res = parse(text, verbose)
-	res.setName(name)
+	module_name = res.getAnnotation("module")
+	if module_name:
+		res.setName(module_name.getContent())
+	else:
+		res.setName(name)
 	return res
+
 # ------------------------------------------------------------------------------
 #
 # Parser

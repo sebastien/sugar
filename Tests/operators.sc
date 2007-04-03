@@ -31,4 +31,12 @@ a = ( 1 >= 2 )
 a = ( 1 <= 2 )
 a =  1 + 2 == 2 * 3
 a =  2 * 1 * 2 == 2 * 3 / 4
+a = 1 and 2
+a = 1 or 2
+a = 1 and 2 or 3
+a = 1 and 2 or 3 and 4
+a = not 1
+a = not 1 and 2
+a = not 1 and 2 or 3
+a = not 1 and 2 or 3 and 4
 a =  pouet has that and 3 * 4 == 2
