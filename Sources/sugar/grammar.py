@@ -27,11 +27,12 @@ library. This module uses the fantastic D parser Python library.
 F = model.Factory(model)
 KEYWORDS = "and or not has is var new for in return yield when otherwise end".split()
 
-OPERATORS_PRIORITY_0 = "and or".split()
-OPERATORS_PRIORITY_1 = "> >= < <= != is has ==".split() ; OPERATORS_PRIORITY_1.append("is not")
-OPERATORS_PRIORITY_2 = "+ -".split()
-OPERATORS_PRIORITY_3 = "/ * % //".split()
-OPERATORS_PRIORITY_4 = "+= -=".split()
+OPERATORS_PRIORITY_0 = ["or"]
+OPERATORS_PRIORITY_1 = ["and"]
+OPERATORS_PRIORITY_2 = "not > >= < <= != is has ==".split() ; OPERATORS_PRIORITY_1.append("is not")
+OPERATORS_PRIORITY_3 = "+ -".split()
+OPERATORS_PRIORITY_4 = "/ * % //".split()
+OPERATORS_PRIORITY_5 = "+= -=".split()
 def getPriority( op ):
 	"""Returns the priority for the given operator"""
 	if not( type(op) in (str, unicode)) and isinstance(op, interfaces.IOperator):
@@ -41,6 +42,7 @@ def getPriority( op ):
 	if op in OPERATORS_PRIORITY_2: return 2
 	if op in OPERATORS_PRIORITY_3: return 3
 	if op in OPERATORS_PRIORITY_4: return 4
+	if op in OPERATORS_PRIORITY_4: return 5
 	raise Exception("Unknown operator: %s" % (op))
 
 # ----------------------------------------------------------------------------
@@ -459,41 +461,45 @@ def d_WhileIteration(t):
 
 def d_Computation(t):
 	'''Computation:
-		('not')? Expression (
-			(
-				'+'|'-'|'*'|'/'|'%'|'//'|'and'|'or'
-				|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
-				|'in'  | 'has' |'not' 'in'  | 'is' |'is not'
-			) 
-			Expression
-		)+
+		('not' Expression)
+	|	(
+			Expression (
+				(
+					'+'|'-'|'*'|'/'|'%'|'//'|'and'|'or'
+					|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
+					|'in'  | 'has' |'not' 'in'  | 'is' |'is not'
+				) 
+				Expression
+			)+
+		)
 	'''
 	# FIXME: Normalize operators
-	prefix           = t[0]
-	result           = None
-	left             = t[1]
-	op               = None
-	right            = None
-	if prefix:
-		left = F.compute(F._op(prefix[1], 9999), left)
-	# we iterate on the right operations
-	for i in range(len(t[2]) / 2):
-		op    = t[2][i*2]
-		if type(op) not in (str, unicode): op = " ".join(op)
-		right = t[2][i*2+1]
-		# If the priority of the current operator is superior to the
-		# priority of the previous expresion we reshape the computation from
-		#     (A op B) op C
-		# into
-		#      A op (B op C) 
-		if isinstance(left, interfaces.IComputation) and \
-		getPriority(op) > left.getOperator().getPriority():
-			left.setRightOperand(F.compute(F._op(op, getPriority(op)), left.getRightOperand(), right))
-			result = left
-		else:
-			result = F.compute(F._op(op, getPriority(op)), left, right)
-			left   = result
-	return result
+	if t[0][0] == 'not':
+		return F.compute(F._op('not', 9999), t[0][1])
+	else:
+		t       = t[0]
+		result  = None
+		left    = t[0]
+		op      = None
+		right   = None
+		# we iterate on the right operations
+		for i in range(len(t) / 2):
+			op    = t[i*2+1]
+			if type(op) not in (str, unicode): op = " ".join(op)
+			right = t[i*2+2]
+			# If the priority of the current operator is superior to the
+			# priority of the previous expresion we reshape the computation from
+			#     (A op B) op C
+			# into
+			#      A op (B op C) 
+			if isinstance(left, interfaces.IComputation) and \
+			getPriority(op) > left.getOperator().getPriority():
+				left.setRightOperand(F.compute(F._op(op, getPriority(op)), left.getRightOperand(), right))
+				result = left
+			else:
+				result = F.compute(F._op(op, getPriority(op)), left, right)
+				left   = result
+		return result
 
 def d_PrefixComputation(t):
 	'''PrefixComputation: ('not') Expression '''
