@@ -102,6 +102,14 @@ def parseVersion(text):
 def ensureVersion( require ):
 	return parseVersion(__version__) >= parseVersion(require)
 
+def runAsString( args ):
+	"""Runs Sugar, but instead of printing the result to the given
+	output, it returns a Python string with the result. It is very useful
+	when embedding sugar."""
+	output = StringIO.StringIO()
+	run(args, output)
+	return "" + output.getvalue()
+
 def run( args, output=sys.stdout ):
 	"""The run method can be used to execute a SweetC command from another
 	Python script without having to spawn a shell."""

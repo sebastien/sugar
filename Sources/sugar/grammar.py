@@ -202,6 +202,10 @@ def d_Annotation(t):
 	'''Annotation: (WhenAnnotation | PostAnnotation| AsAnnotation)'''
 	return t[0][0]
 
+def d_FunctionAnnotation(t):
+	'''FunctionAnnotation: (WhenAnnotation|PostAnnotation|AsAnnotation)'''
+	return t[0][0]
+
 def d_ModuleAnnotations(t):
 	'''ModuleAnnotations:
 		( ModuleAnnotation
@@ -288,7 +292,7 @@ def d_MethodGroup(t):
 	
 def d_Method(t):
 	'''Method: '@method' NAME Arguments? EOL
-	       Annotation*
+	       FunctionAnnotation*
 	       Documentation?
 	       EOL*
 	       (INDENT
@@ -305,6 +309,7 @@ def d_Method(t):
 
 def d_ClassMethod(t):
 	'''ClassMethod: '@operation' NAME Arguments? EOL
+		   FunctionAnnotation*
 		   Documentation?
 		   EOL*
 		   (INDENT
@@ -313,8 +318,10 @@ def d_ClassMethod(t):
 	  '@end'
 	'''
 	m = F.createClassMethod(t[1], t[2] and t[2][0] or ())
-	if t[4]: m.setDocumentation(t[4] and t[4][0])
-	t_setCode(m, t[6] and t[6][1] or ())
+	for ann in t[4]:
+		m.annotate(ann)
+	if t[5]: m.setDocumentation(t[5] and t[5][0])
+	t_setCode(m, t[7] and t[7][1] or ())
 	return m
 
 
