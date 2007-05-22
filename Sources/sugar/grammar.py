@@ -183,6 +183,7 @@ def d_Class(t):
 	      |   Constructor
 	      |   Destructor
 	      |   MethodGroup
+	      |   Comment
 	      |   EOL
 	      )*
 	      DEDENT) ?
