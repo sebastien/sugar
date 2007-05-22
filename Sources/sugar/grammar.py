@@ -861,6 +861,12 @@ class Parser:
 		"""Creates a new interpreter."""
 		self._warnings = []
 		self.verbose   = verbose
+		self._program  = F.createProgram()
+
+	def program( self ):
+		"""Returns the program that is implicitely created by parsing the
+		different modules."""
+		return self._program
 
 	def parse( self, filepath ):
 		"""Reads and parses the content given of the given file and returns a
@@ -892,6 +898,8 @@ class Parser:
 			# We set the module file path (for informative purpose only)
 			if sourcepath:
 				res.setSource("file://" + os.path.abspath(sourcepath))
+			# FIXME: Add support for modules which are part of other modules
+			self._program.setSlot(name, res)
 			return ( text, res )
 		# And catch possible exceptions
 		#except tpg.SyntacticError:

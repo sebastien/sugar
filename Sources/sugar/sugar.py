@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   02-Apr-2007
+# Last mod.         :   22-May-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, StringIO
@@ -16,7 +16,7 @@ import grammar
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, c, modelwriter
 
-__version__ = "0.7.3"
+__version__ = "0.7.4"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
@@ -158,6 +158,10 @@ def run( args, output=sys.stdout ):
 		print "Please specify a valid language (js or c)"
 		return -1
 	# We process the source files
+	# TODO: Refactor this
+	# 1 -- Parse the modules, stop on syntax errors
+	# 2 -- Flow the modules, stop on resolution errors
+	# 3 -- Generate the output files
 	modules = []
 	for source_path in args:
 		try:
@@ -167,7 +171,8 @@ def run( args, output=sys.stdout ):
 				print "%-40s [%s]" % (source_path,  'OK')
 			else:
 				modules.append(module)
-				resolver.flow(module)
+				# FIXME: This should be split off
+				resolver.flow(parser.program())
 				output.write( writer.writeModule(module, options.module) + "\n")
 		#if False:
 		except Exception, e:
