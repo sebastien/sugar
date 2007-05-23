@@ -160,8 +160,9 @@ def run( args, output=sys.stdout ):
 	# We process the source files
 	# TODO: Refactor this
 	# 1 -- Parse the modules, stop on syntax errors
-	# 2 -- Flow the modules, stop on resolution errors
-	# 3 -- Generate the output files
+	# 2 -- Flow the modules
+	# 3 -- Program prcocessing passes (typing, resolution, etc)
+	# 4 -- Generate the output files
 	modules = []
 	for source_path in args:
 		try:
