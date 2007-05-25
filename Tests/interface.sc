@@ -3,21 +3,20 @@
 
 @interface jQueryEngine
 	@group Core
-		@abstract @method each fn:Function
-		@abstract @method eq   pos:Number
-		@abstract @method get
-#		@abstract @method get  num:Number
-		@abstract @method gt   pos:Number
-		@abstract @method index subject:Number
-		@abstract @method length:Number
-		@abstract @method lt   pos:Number
-		@abstract @method size
+		@abstract @method each Function
+		@abstract @method eq Number
+		@abstract @method get Number
+		@abstract @method gt Number
+		@abstract @method index Number
+		@abstract @method length Number
+		@abstract @method lt Number
+		@abstract @method size Number
 	@end
 @end
 
 # TODO: Variable arguments
 #@function jQuery:jQueryEngine selector:String (parent:String)?
-@abstract @function jQuery:jQueryEngine selector:String 
+@abstract @function jQuery:JQueryEngine String
 
 # TODO: Multiple dispatch (with type support)
-#@abstract @function jQuery:jQueryEngine f:Function
+#@abstract @function jQuery:jQueryEngine Function

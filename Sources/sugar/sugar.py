@@ -168,12 +168,15 @@ def run( args, output=sys.stdout ):
 		try:
 		#if True:
 			source, module = parser.parse(source_path)
-			if options.test:
+			modules.append(module)
+			# FIXME: This should be split off
+			resolver.flow(parser.program())
+			if options.test:				
+				writer.writeModule(module, options.module)
 				print "%-40s [%s]" % (source_path,  'OK')
+			elif module.isAbstract():
+				writer.writeModule(module, options.module)
 			else:
-				modules.append(module)
-				# FIXME: This should be split off
-				resolver.flow(parser.program())
 				output.write( writer.writeModule(module, options.module) + "\n")
 		#if False:
 		except Exception, e:

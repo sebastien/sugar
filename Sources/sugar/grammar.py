@@ -90,7 +90,8 @@ def d_Program(t):
 	'''Program: 
 		(Comment | EOL) *
 		ModuleAnnotations?
-		Documentation? 
+		Documentation?
+		ImportOperations?
 		Code
 	'''
 	# FIXME: Add a notion of Module = Slots + Process
@@ -103,11 +104,18 @@ def d_Program(t):
 		m = F.createModule(get_annotation("module"))
 	else:
 		m = F.createModule(F.CurrentModule)
+	if get_annotation("as"):
+		m.setAbstract(True)
 	map(m.annotate, annotations)
 	if t[2]: m.setDocumentation(t[2] and t[2][0])
+	#FIXME: bind the imported module to the slot
+#	imports = t[3] and t[3][0] or ()
+	code = []
+	code.extend(t[3])
+	code.extend(t[4])
 	f = F.createFunction(F.ModuleInit, ())
 	# FIXME: Rename to addStatements
-	t_setCode(f,t[3],m)
+	t_setCode(f,code,m)
 	m.setSlot(F.ModuleInit, f, True)
 	return m
 
@@ -139,7 +147,7 @@ def d_Statement(t):
 	return t[0][0]
 
 def d_Declaration(t):
-	'''Declaration : (Main|Function|Class) EOL '''
+	'''Declaration : (Main|AbstractFunction|Interface|Function|Class) EOL '''
 	return t[0][0]
 
 # ----------------------------------------------------------------------------
@@ -171,6 +179,12 @@ def d_Function(t):
 	t_setCode(f, t[5] and t[5][1] or ())
 	return f
 
+def d_AbstractFunction(t):
+	'''AbstractFunction: '@abstract' '@function' NAME(':'NAME)? NAME EOL'''
+	m = F.createMethod(t[2],())
+	m.setAbstract(True)
+	return m
+
 def d_Class(t):
 	# FIXME: Change Name to Reference
 	'''Class: '@class' NAME (':' Expression (',' Expression)* )? EOL
@@ -199,6 +213,24 @@ def d_Class(t):
 	t_setCode(None, t[5], f)
 	return f
 
+def d_Interface(t):
+	'''Interface: '@interface' NAME EOL
+		Documentation?
+		(INDENT
+		(   ClassAttribute
+	      |   AbstractClassMethod
+	      |   Attribute
+	      |   AbstractMethod
+	      |   Constructor
+	      |   Destructor
+	      |   AbstractMethodGroup
+	      |   Comment
+	      |   EOL
+	      )*
+		DEDENT) ?
+	  '@end'
+	'''
+
 def d_Annotation(t):
 	'''Annotation: (WhenAnnotation | PostAnnotation| AsAnnotation)'''
 	return t[0][0]
@@ -213,6 +245,7 @@ def d_ModuleAnnotations(t):
 		| VersionAnnotation
 		| RequiresAnnotation
 		| TargetAnnotation
+		| AsAnnotation
 		)+
 	'''
 	return t[0]
@@ -233,6 +266,16 @@ def d_VERSION(t):
 		)?
 	'''
 	return t[0]
+
+def d_ImportOperations(t):
+	'''ImportOperations: (ImportOperation)* '''
+	return t[0]
+
+def d_ImportOperation(t):
+	'''ImportOperation: '@import' NAME ('as' NAME )? EOL'''
+	alias = None
+	if t[2] and t[2][1]: alias = F._ref(t[2][1])
+	return F.imports(F._ref(t[1]),alias)
 
 def d_RequiresAnnotation(t):
 	'''RequiresAnnotation: '@requires' DEPENDENCY (',' DEPENDENCY)* EOL'''
@@ -290,6 +333,22 @@ def d_MethodGroup(t):
 		m.annotate(annotation)
 		for a in t[3]: m.annotate(a)
 	return methods
+
+def d_AbstractMethodGroup(t):
+	'''AbstractMethodGroup: '@group' "[a-zA-Z0-9_\-]+" EOL
+		Annotation*
+		Documentation?
+	    EOL*
+		(AbstractClassMethod | AbstractMethod | Comment | EOL)* 
+	   '@end'
+	'''
+	annotation = F.annotation('as', t[1])
+	methods    = t_filterOut('', t[6])
+	for m in methods:
+		if not isinstance(m, interfaces.IAnnotation):
+			m.annotate(annotation)
+			for a in t[3]: m.annotate(a)
+	return methods
 	
 def d_Method(t):
 	'''Method: '@method' NAME Arguments? EOL
@@ -308,6 +367,12 @@ def d_Method(t):
 	t_setCode(m, t[7] and t[7][1] or ())
 	return m
 
+def d_AbstractMethod(t):
+	'''AbstractMethod: '@abstract' '@method' NAME(':'NAME)? NAME EOL'''
+	m = F.createMethod(t[2],())
+	m.setAbstract(True)
+	return m
+
 def d_ClassMethod(t):
 	'''ClassMethod: '@operation' NAME Arguments? EOL
 		   FunctionAnnotation*
@@ -323,6 +388,12 @@ def d_ClassMethod(t):
 		m.annotate(ann)
 	if t[5]: m.setDocumentation(t[5] and t[5][0])
 	t_setCode(m, t[7] and t[7][1] or ())
+	return m
+
+def d_AbstractClassMethod(t):
+	'''AbstractClassMethod: '@abstract' '@operation' NAME(':'NAME)? NAME EOL'''
+	m = F.createMethod(t[2],())
+	m.setAbstract(True)
 	return m
 
 
