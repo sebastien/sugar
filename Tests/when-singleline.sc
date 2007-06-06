@@ -1,3 +1,3 @@
 @function
-	0..10 :: { e | when e > 1 -> print "YAY" }
+	0..10 :: { e | (when 1 -> print "YAY") }
 @end

@@ -450,26 +450,44 @@ def d_ConditionWhenMultiLine(t):
 		'when' Expression EOL+ 
 			INDENT Code DEDENT
 	'''
-	return F.match(t[1], t_setCode(F.createBlock(), t[4]))
+	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[4]))
+
+def d_ConditionExpression(t):
+	''' ConditionExpression:
+		'when' Expression '->' Expression
+		('|' 'when' Expression '->' Expression) *
+		('|' 'otherwise' Expression) ?
+	'''
+	res = F.select()
+	m   = F.matchExpression(t[1], t[3])
+	res.addRule(m)
+	rules = t[4]
+	while rules:
+		predicate, _, expression = rules[2:5]
+		res.addRule(F.matchExpression(predicate, expression))
+		rules = rules[5:]
+	if t[5]:
+		res.addRule(F.matchExpression(F._ref("True"), t[5][2]))
+	return res
 
 def d_ConditionWhenSingleLine(t):
 	''' ConditionWhenSingleLine: 
 		'when' Expression '->' Line EOL
 	'''
-	return F.match(t[1], t_setCode(F.createBlock(), t[3]))
+	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseMultiLine(t):
 	''' ConditionOtherwiseMultiLine: 
 		'otherwise' EOL+ 
 			INDENT Code DEDENT
 	'''
-	return F.match(F._ref('true'), t_setCode(F.createBlock(), t[3]))
+	return F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseSingleLine(t):
 	''' ConditionOtherwiseSingleLine: 
 		'otherwise' '->' Line EOL?
 	'''
-	return F.match(F._ref('true'), t_setCode(F.createBlock(), t[2]))
+	return F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[2]))
 
 def d_Select(t):
 	''' Select: 'select' Expression? EOL
@@ -605,6 +623,7 @@ def d_Allocation(t):
 
 def d_Expression(t):
 	'''Expression : Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation |
+	   ConditionExpression |
 	   Computation | Value | LP Expression RP
 	'''
 	if len(t) == 1:
