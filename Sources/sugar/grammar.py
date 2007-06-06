@@ -615,7 +615,7 @@ def d_Assignation(t):
 		return F.assign(t[0], F.compute(F._op(op, getPriority(op)), t[0], t[2]))
 
 def d_Allocation(t):
-	'''Allocation: AllocationSingle'''
+	'''Allocation: AllocationSingle|AllocationMultiple'''
 	return t[0]
 	
 def d_AllocationSingle(t):
@@ -633,6 +633,7 @@ def d_AllocationMultiple(t):
 	heads = [d[1]]
 	heads.extend(d[2])
 	heads.extend(d[3])
+	heads.extend(d[4])
 	heads = "".join(heads).split(",")
 	tail = heads[-1].split("|")
 	if len(tail) == 2:
@@ -643,19 +644,20 @@ def d_AllocationMultiple(t):
 	code = []
 	i    = 0
 	for var in heads:
-		var = var.split(":")
+		var = var.split(":") ; vartype = None
 		if len(var) == 1:
-			code.append(F.allocate(F._slot(var[0], None),F.slice(expression, F._number(i)))) 
+			code.append(F.allocate(F._slot(var[0], None),F.access(expression, F._number(i)))) 
 		else:
-			code.append(F.allocate(F._slot(var[0], var[1]),F.slice(expression, F._number(i))))
+			code.append(F.allocate(F._slot(var[0], var[1]),F.access(expression, F._number(i))))
 		i += 1
+	print tail, heads, d
 	if tail:
-		var = tail.split(":")
+		var = tail.split(":") ; vartype = None
 		if len(var) == 1:
 			var = var[0]
 		else:
 			var, vartype = var 
-		code.append(F.allocate(F._slot(var, vartype),F.slice(expression, F._number(i), F._end())))
+		code.append(F.allocate(F._slot(var, vartype),F.slice(expression, F._number(i))))
 	return code
 
 # ----------------------------------------------------------------------------
