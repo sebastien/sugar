@@ -604,6 +604,7 @@ def d_PrefixComputation(t):
 	# FIXME: Normalize operators
 	return F.compute(F._op(t[0][0]),t[1])
 
+# FIXME: Rename Assignment ?
 def d_Assignation(t):
 	''' Assignation: Expression ('='|'-='|'+=') Expression '''
 	op = t[1][0]
@@ -614,8 +615,48 @@ def d_Assignation(t):
 		return F.assign(t[0], F.compute(F._op(op, getPriority(op)), t[0], t[2]))
 
 def d_Allocation(t):
-	'''Allocation: 'var' NAME (':' Type)?  ('=' Expression)?'''
+	'''Allocation: AllocationSingle'''
+	return t[0]
+	
+def d_AllocationSingle(t):
+	'''AllocationSingle: 'var' NAME (':' Type)?  ('=' Expression)?'''
 	return F.allocate(F._slot(t[1],t[2] and t[2][1] or None), t[3] and t[3][1] or None)
+
+def d_AllocationMultiple(t):
+	'''AllocationMultiple: 'var'
+		NAME (':' Type)?
+		(',' (NAME (':' Type)?) )*
+		('|' (NAME (':' Type)?) )?
+	  '=' Expression'''
+	d = t[:t.index("=")]
+	expression   = t[t.index("=")+1]
+	heads = [d[1]]
+	heads.extend(d[2])
+	heads.extend(d[3])
+	heads = "".join(heads).split(",")
+	tail = heads[-1].split("|")
+	if len(tail) == 2:
+		heads[-1] = tail[0]
+		tail = tail[1]
+	else:
+		tail = None
+	code = []
+	i    = 0
+	for var in heads:
+		var = var.split(":")
+		if len(var) == 1:
+			code.append(F.allocate(F._slot(var[0], None),F.slice(expression, F._number(i)))) 
+		else:
+			code.append(F.allocate(F._slot(var[0], var[1]),F.slice(expression, F._number(i))))
+		i += 1
+	if tail:
+		var = tail.split(":")
+		if len(var) == 1:
+			var = var[0]
+		else:
+			var, vartype = var 
+		code.append(F.allocate(F._slot(var, vartype),F.slice(expression, F._number(i), F._end())))
+	return code
 
 # ----------------------------------------------------------------------------
 # Expressions
@@ -656,8 +697,14 @@ def d_Instanciation(t):
 		return F.instanciate(t[1], *p)
 
 def d_Slicing(t):
-	'''Slicing: Expression LB Expression RB '''
-	return F.slice(t[0], t[2])
+	'''Slicing: Expression LB Expression (':' Expression? )? RB '''
+	if t[3]:
+		if len(t[3]) == 1:
+			return F.slice(t[0], t[2])
+		else:
+			return F.slice(t[0], t[2], t[3][1])
+	else:
+		return F.access(t[0], t[2])
 
 def d_InvocationOrResolution(t):
 	'''InvocationOrResolution: Expression ( Name | Value | InvocationParameters ) '''
@@ -667,7 +714,7 @@ def d_InvocationOrResolution(t):
 	# reference (a name) and we make the invocation fail
 	if len(p) == 1:
 		if isinstance(p[0], interfaces.IList) and len(p[0].getValues()) == 1:
-			return F.slice(t[0], p[0].getValue(0))
+			return F.access(t[0], p[0].getValue(0))
 		if isinstance(p[0], interfaces.IReference):
 			return F.resolve(p[0], t[0])
 		else:
