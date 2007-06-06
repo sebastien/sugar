@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   03-Apr-2007
+# Last mod.         :   06-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -25,11 +25,11 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "and or not has is var new for in return yield when otherwise end".split()
+KEYWORDS = "and or not has is var new in return yield otherwise end".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
-OPERATORS_PRIORITY_2 = "not > >= < <= != is has ==".split() ; OPERATORS_PRIORITY_1.append("is not")
+OPERATORS_PRIORITY_2 = "not > >= < <= != is has in ==".split() ; OPERATORS_PRIORITY_1.append("is not")
 OPERATORS_PRIORITY_3 = "+ -".split()
 OPERATORS_PRIORITY_4 = "/ * % //".split()
 OPERATORS_PRIORITY_5 = "+= -=".split()
@@ -544,9 +544,9 @@ def d_Computation(t):
 	|	(
 			Expression (
 				(
-					'+'|'-'|'*'|'/'|'%'|'//'|'and'|'or'
+					'+'|'-'|'*'|'/'|'%'|'//'|'and '|'or '
 					|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
-					|'in'  | 'has' |'not' 'in'  | 'is' |'is not'
+					|'in '  | 'has ' |'not ' 'in '  | 'is ' |'is not '
 				) 
 				Expression
 			)+
@@ -565,6 +565,7 @@ def d_Computation(t):
 		for i in range(len(t) / 2):
 			op    = t[i*2+1]
 			if type(op) not in (str, unicode): op = " ".join(op)
+			op = op.strip()
 			right = t[i*2+2]
 			# If the priority of the current operator is superior to the
 			# priority of the previous expresion we reshape the computation from

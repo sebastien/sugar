@@ -1,0 +1,7 @@
+print ("POUET" + e inPlaceEditor)
+# Fails because the 'in' of 'inPlaceEditor' is recognized as an operator.
+# Starngely, the following works
+print ("POUET" + (e inPlaceEditor))
+print ("POUET" + e andPlaceEditor)
+print ("POUET" + e orPlaceEditor)
+var a = 1 + e nota
