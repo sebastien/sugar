@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   22-May-2007
+# Last mod.         :   07-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, StringIO
@@ -16,7 +16,7 @@ import grammar
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, c, modelwriter
 
-__version__ = "0.7.4"
+__version__ = "0.7.5"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
@@ -182,7 +182,8 @@ def run( args, output=sys.stdout ):
 		except Exception, e:
 			if options.test:
 				print "%-40s [%s]" % (source_path,  'FAILED')
-			else:
+			#else:
+			if True:
 				error_msg = StringIO.StringIO()
 				traceback.print_exc(file=error_msg)
 				error_msg = error_msg.getvalue()

@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   06-Jun-2007
+# Last mod.         :   07-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -452,24 +452,6 @@ def d_ConditionWhenMultiLine(t):
 	'''
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[4]))
 
-def d_ConditionExpression(t):
-	''' ConditionExpression:
-		'when' Expression '->' Expression
-		('|' 'when' Expression '->' Expression) *
-		('|' 'otherwise' Expression) ?
-	'''
-	res = F.select()
-	m   = F.matchExpression(t[1], t[3])
-	res.addRule(m)
-	rules = t[4]
-	while rules:
-		predicate, _, expression = rules[2:5]
-		res.addRule(F.matchExpression(predicate, expression))
-		rules = rules[5:]
-	if t[5]:
-		res.addRule(F.matchExpression(F._ref("True"), t[5][2]))
-	return res
-
 def d_ConditionWhenSingleLine(t):
 	''' ConditionWhenSingleLine: 
 		'when' Expression '->' Line EOL
@@ -619,7 +601,7 @@ def d_Allocation(t):
 	return t[0]
 	
 def d_AllocationSingle(t):
-	'''AllocationSingle: 'var' NAME (':' Type)?  ('=' Expression)?'''
+	'''AllocationSingle: 'var' NAME (':' Type)?  ('=' Expression)? '''
 	return F.allocate(F._slot(t[1],t[2] and t[2][1] or None), t[3] and t[3][1] or None)
 
 def d_AllocationMultiple(t):
@@ -643,6 +625,15 @@ def d_AllocationMultiple(t):
 		tail = None
 	code = []
 	i    = 0
+	# NOTE: The grammar rule we wrote may override AllocationSingle in many
+	# situations, so we've got to take it into account
+	if len(heads) == 1 and not tail:
+		var = heads[0]
+		var = var.split(":") ; vartype = None
+		if len(var) == 1:var = var[0]
+		else:var, vartype = var 
+		return F.allocate(F._slot(var, vartype), expression)
+	# Here we have heads
 	for var in heads:
 		var = var.split(":") ; vartype = None
 		if len(var) == 1:
@@ -650,7 +641,7 @@ def d_AllocationMultiple(t):
 		else:
 			code.append(F.allocate(F._slot(var[0], var[1]),F.access(expression, F._number(i))))
 		i += 1
-	print tail, heads, d
+	# And maybe a tail too
 	if tail:
 		var = tail.split(":") ; vartype = None
 		if len(var) == 1:
@@ -677,6 +668,24 @@ def d_Expression(t):
 		if isinstance(t[1], interfaces.IComputation):
 			t[1].getOperator().setPriority(interfaces.Constants.PARENS_PRIORITY)
 		return t[1]
+
+def d_ConditionExpression(t):
+	''' ConditionExpression:
+		'when' Expression '->' Expression
+		('|' 'when' Expression '->' Expression) *
+		('|' 'otherwise' Expression) ?
+	'''
+	res = F.select()
+	m   = F.matchExpression(t[1], t[3])
+	res.addRule(m)
+	rules = t[4]
+	while rules:
+		predicate, _, expression = rules[2:5]
+		res.addRule(F.matchExpression(predicate, expression))
+		rules = rules[5:]
+	if t[5]:
+		res.addRule(F.matchExpression(F._ref("True"), t[5][2]))
+	return res
 
 def d_Value(t):
 	'''Value : Litteral|List|Dict|Range|Closure'''
@@ -954,7 +963,7 @@ def disambiguate( nodes ):
 		# interpreted as new _node.setAttribute
 		return filter(lambda n:get_name(n)!="Instanciation", nodes)[0]
 	else:
-		print "Ambiguity not supported " + str(names) + "\n" + str(map(get_code,nodes))
+		#print "Ambiguity not supported " + str(names) + "\n" + str(map(get_code,nodes))
 		return nodes[0]
 	
 # ----------------------------------------------------------------------------
