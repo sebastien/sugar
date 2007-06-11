@@ -120,9 +120,23 @@ def d_Program(t):
 	return m
 
 def d_Code(t, spec):
-	'''Code : (EOL | (CHECK (Declaration|Condition|Statement|Comment)))* '''
+	'''Code : (EOL | Embed | (CHECK (Declaration|Condition|Statement|Comment)))* '''
 	# FIXME: Declarations should not go into code
 	return t_filterOut(None, t[0])
+
+def d_Embed(t):
+	'''Embed:
+          '@embed' NAME EOL
+	      INDENT
+	      ( "[^\\n]*" EOL)+
+	      DEDENT
+	      '@end'
+	'''
+	language = t[1]
+	code = []
+	for e in t[4]:
+		if e != None: code.append(e)
+	return F.embed(language, "\n".join(code))
 
 # FIXME: Exchange LINE and STATEMENT
 def d_Line(t):
