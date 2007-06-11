@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   07-Jun-2007
+# Last mod.         :   08-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, StringIO
@@ -113,7 +113,7 @@ def runAsString( args ):
 def run( args, output=sys.stdout ):
 	"""The run method can be used to execute a SweetC command from another
 	Python script without having to spawn a shell."""
-	if type(args) not in (type([]), type(())): args = [args]
+	if type(args) != list: args = list(args)
 	from optparse import OptionParser
 	# We create the parse and register the options
 	oparser = OptionParser(prog="sugar", description=DESCRIPTION,
