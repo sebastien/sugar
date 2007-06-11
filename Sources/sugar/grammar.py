@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   07-Jun-2007
+# Last mod.         :   11-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "and or not has is var new in for return yield otherwise end".split()
+KEYWORDS = "and or not has is var new in for return yield otherwise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
@@ -166,7 +166,7 @@ def d_Main(t):
 	return f
 
 def d_Function(t):
-	'''Function: '@function' NAME Arguments? EOL
+	'''Function: '@function' NAME (':' Type)?  Arguments? EOL
 		  Documentation?
 		  (INDENT
 	      Code
@@ -174,26 +174,36 @@ def d_Function(t):
 	      )?
 	   '@end'
 	'''
-	f = F.createFunction(t[1] , t[2] and t[2][0] or ())
-	if t[4]: f.setDocumentation(t[4] and t[4][0])
-	t_setCode(f, t[5] and t[5][1] or ())
+	name = t[1]
+	args = t[3] and t[3][0] or ()
+	f = F.createFunction(name, args)
+	if t[5]: f.setDocumentation(t[5] and t[5][0])
+	t_setCode(f, t[6] and t[6][1] or ())
 	return f
 
 def d_AbstractFunction(t):
-	'''AbstractFunction: '@abstract' '@function' NAME(':'NAME)? NAME EOL'''
-	m = F.createMethod(t[2],())
-	m.setAbstract(True)
-	return m
+	'''AbstractFunction:
+		'@abstract' '@function' NAME (':' Type)?  Arguments? EOL
+		Documentation?
+	'''
+	name = t[2]
+	args = t[4] and t[4][0] or ()
+	f = F.createFunction(name, args)
+	if t[6]: f.setDocumentation(t[5] and t[6][0])
+	f.setAbstract(True)
+	return f
 
 def d_Class(t):
 	# FIXME: Change Name to Reference
-	'''Class: '@class' NAME (':' Expression (',' Expression)* )? EOL
+	'''Class: '@abstract'? '@class' NAME (':' Expression (',' Expression)* )? EOL
 		  Documentation?
 		  (INDENT
 	      (   ClassAttribute
 	      |   ClassMethod
+	      |   AbstractClassMethod
 	      |   Attribute
 	      |   Method
+	      |   AbstractMethod
 	      |   Constructor
 	      |   Destructor
 	      |   MethodGroup
@@ -204,32 +214,42 @@ def d_Class(t):
 	  '@end'
 	'''
 	# TODO: Parents support
+	is_abstract = t[0]
 	parents = []
-	parents.extend(t[2])
+	parents.extend(t[3])
 	parents = t_filterOut(":", parents)
 	parents = t_filterOut(",", parents)
-	f = F.createClass(t[1] , parents)
-	if t[4]: f.setDocumentation(t[4] and t[4][0])
-	t_setCode(None, t[5], f)
-	return f
+	c = F.createClass(t[2] , parents)
+	if t[5]: f.setDocumentation(t[5] and t[5][0])
+	t_setCode(None, t[6], c)
+	# FIXME
+	if is_abstract: c.setAbstract(True)
+	return c
 
 def d_Interface(t):
-	'''Interface: '@interface' NAME EOL
+	'''Interface: '@protocol' NAME (':' Expression (',' Expression)* )?  EOL
 		Documentation?
 		(INDENT
-		(   ClassAttribute
-	      |   AbstractClassMethod
+		  (   ClassAttribute
 	      |   Attribute
 	      |   AbstractMethod
-	      |   Constructor
-	      |   Destructor
 	      |   AbstractMethodGroup
+	      |   AbstractClassMethod
 	      |   Comment
 	      |   EOL
 	      )*
 		DEDENT) ?
 	  '@end'
 	'''
+	# TODO: Parents support
+	parents = []
+	parents.extend(t[2])
+	parents = t_filterOut(":", parents)
+	parents = t_filterOut(",", parents)
+	f = F.createInterface(t[1] , parents)
+	if t[4]: f.setDocumentation(t[4] and t[4][0])
+	t_setCode(None, t[5], f)
+	return f
 
 def d_Annotation(t):
 	'''Annotation: (WhenAnnotation | PostAnnotation| AsAnnotation)'''
@@ -342,16 +362,10 @@ def d_AbstractMethodGroup(t):
 		(AbstractClassMethod | AbstractMethod | Comment | EOL)* 
 	   '@end'
 	'''
-	annotation = F.annotation('as', t[1])
-	methods    = t_filterOut('', t[6])
-	for m in methods:
-		if not isinstance(m, interfaces.IAnnotation):
-			m.annotate(annotation)
-			for a in t[3]: m.annotate(a)
-	return methods
+	return d_MethodGroup(t)
 	
 def d_Method(t):
-	'''Method: '@method' NAME Arguments? EOL
+	'''Method: '@method' NAME (':' Type)? Arguments? EOL
 	       FunctionAnnotation*
 	       Documentation?
 	       EOL*
@@ -360,21 +374,27 @@ def d_Method(t):
 	       DEDENT) ?
 	  '@end'
 	'''
-	m = F.createMethod(t[1], t[2] and t[2][0] or ())
-	for ann in t[4]:
+	m = F.createMethod(t[1], t[3] and t[3][0] or ())
+	for ann in t[5]:
 		m.annotate(ann)
-	if t[5]: m.setDocumentation(t[5] and t[5][0])
-	t_setCode(m, t[7] and t[7][1] or ())
+	if t[6]: m.setDocumentation(t[6] and t[6][0])
+	t_setCode(m, t[8] and t[8][1] or ())
 	return m
 
 def d_AbstractMethod(t):
-	'''AbstractMethod: '@abstract' '@method' NAME(':'NAME)? NAME EOL'''
-	m = F.createMethod(t[2],())
-	m.setAbstract(True)
+	'''AbstractMethod:
+		'@abstract' '@method' NAME(':'Type)? Arguments?  EOL
+		FunctionAnnotation*
+		Documentation?
+	'''
+	m = F.createMethod(t[2], t[4] and t[4][0] or ())
+	for ann in t[6]:
+		m.annotate(ann)
+	if t[7]: m.setDocumentation(t[7] and t[7][0])
 	return m
 
 def d_ClassMethod(t):
-	'''ClassMethod: '@operation' NAME Arguments? EOL
+	'''ClassMethod: '@operation' NAME (':'Type)?  Arguments? EOL
 		   FunctionAnnotation*
 		   Documentation?
 		   EOL*
@@ -383,19 +403,24 @@ def d_ClassMethod(t):
 	       DEDENT)?
 	  '@end'
 	'''
-	m = F.createClassMethod(t[1], t[2] and t[2][0] or ())
-	for ann in t[4]:
+	m = F.createClassMethod(t[1], t[3] and t[3][0] or ())
+	for ann in t[5]:
 		m.annotate(ann)
-	if t[5]: m.setDocumentation(t[5] and t[5][0])
-	t_setCode(m, t[7] and t[7][1] or ())
+	if t[5]: m.setDocumentation(t[6] and t[6][0])
+	t_setCode(m, t[8] and t[8][1] or ())
 	return m
 
 def d_AbstractClassMethod(t):
-	'''AbstractClassMethod: '@abstract' '@operation' NAME(':'NAME)? NAME EOL'''
-	m = F.createMethod(t[2],())
+	'''AbstractClassMethod:  '@abstract' '@operation' NAME (':'Type)?  Arguments? EOL
+		   FunctionAnnotation*
+		   Documentation?
+	'''
+	m = F.createClassMethod(t[2], t[4] and t[4][0] or ())
+	for ann in t[6]:
+		m.annotate(ann)
+	if t[7]: m.setDocumentation(t[7] and t[7][0])
 	m.setAbstract(True)
 	return m
-
 
 def d_Constructor(t):
 	'''Constructor: '@constructor'  Arguments? EOL

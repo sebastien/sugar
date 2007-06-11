@@ -1,14 +1,14 @@
 @class Point
 
-	@property xdouble
-	@property ydouble
+	@property x:double
+	@property y:double
 
 @end
 
 @class Shape
 
-	@shared    COUNTint
-	@property  pointsList
+	@shared    COUNT:int
+	@property  points:List
 	
 	@constructor 
 		points = []
@@ -24,7 +24,7 @@
 
 @end
 
-@class RectangleShape
+@class RectangleShape: Shape
 
 	@constructor 
 		0..4 :: { points add(new Point()) }
