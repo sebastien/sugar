@@ -1,0 +1,61 @@
+# FEATURE: Astract contstructs (1.0)
+# SYNTAX: Prefix function/class/method/operation with @abstract, and remove
+# body.
+
+@abstract @function f
+| Lorem ipsum dolor sit amet
+
+@abstract @function g a, b
+| Lorem ipsum dolor sit amet
+
+@abstract @class A
+
+	@abstract @method m1
+	| Lorem ipsum dolor sit amet
+
+	@abstract @method m2 a, b
+	| Lorem ipsum dolor sit amet
+
+	@abstract @method m3:any a, b
+	| Lorem ipsum dolor sit amet
+
+	@abstract @method m4:any a:any, b
+	| Lorem ipsum dolor sit amet
+
+	@abstract @method m5:any a:any, b:any
+	| Lorem ipsum dolor sit amet
+
+	@abstract @operation o1
+	| Lorem ipsum dolor sit amet
+
+	@abstract @operation o2 a, b
+	| Lorem ipsum dolor sit amet
+
+@end
+
+@protocol A
+
+	@abstract @method m1
+	| Lorem ipsum dolor sit amet
+
+	@abstract @method m2 a, b
+	| Lorem ipsum dolor sit amet
+
+	@abstract @method m3:any a, b
+	| Lorem ipsum dolor sit amet
+
+	@abstract @method m4:any a:any, b
+	| Lorem ipsum dolor sit amet
+
+	@abstract @method m5:any a:any, b:any
+	| Lorem ipsum dolor sit amet
+
+	@abstract @operation o1
+	| Lorem ipsum dolor sit amet
+
+	@abstract @operation o2 a, b
+	| Lorem ipsum dolor sit amet
+
+@end
+
+# EOF

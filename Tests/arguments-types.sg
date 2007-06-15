@@ -1,0 +1,55 @@
+# FEATURE: Argument types (1.0)
+# SYNTAX:  NAME (':' TYPE) ?
+
+@function f1:Number
+	return 1
+@end
+
+@function f2:Number a:Number
+	return 1
+@end
+
+@function f3:Number a:Number, b:Number
+	return 1
+@end
+
+@function f4:Number a:Number, b:Number, c:Number
+	return 1
+@end
+
+@class A
+	@method g1:Number
+		return 1
+	@end
+
+	@method g2:Number a:Number
+		return 1
+	@end
+
+	@method g3:Number a:Number, b:Number
+		return 1
+	@end
+
+	@method g4:Number a:Number, b:Number, c:Number
+		return 1
+	@end
+
+	@operation o1:Number
+		return 1
+	@end
+
+	@operation o2:Number a:Number
+		return 1
+	@end
+
+	@operation o3:Number a:Number, b:Number
+		return 1
+	@end
+
+	@operation o4:Number a:Number, b:Number, c:Number
+		return 1
+	@end
+
+@end
+
+# EOF
