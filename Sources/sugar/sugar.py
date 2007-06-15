@@ -7,14 +7,14 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   08-Jun-2007
+# Last mod.         :   14-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, StringIO
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
-from lambdafactory import javascript, c, modelwriter
+from lambdafactory import javascript, java, c, modelwriter
 
 __version__ = "0.7.5"
 
@@ -151,6 +151,9 @@ def run( args, output=sys.stdout ):
 	elif options.lang == "c":
 		writer   = c.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
+	elif options.lang == "java":
+		writer   = java.Writer(reporter=reporter)
+		resolver = java.Resolver(reporter=reporter)
 	elif options.lang in ("s", "sg", "sugar"):
 		writer   = modelwriter.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
@@ -171,7 +174,7 @@ def run( args, output=sys.stdout ):
 			modules.append(module)
 			# FIXME: This should be split off
 			resolver.flow(parser.program())
-			if options.test:				
+			if options.test:
 				writer.writeModule(module, options.module)
 				print "%-40s [%s]" % (source_path,  'OK')
 			elif module.isAbstract():
