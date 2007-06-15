@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "and or not has is var new in for return yield otherwise".split()
+KEYWORDS = "and or not has is var new in for return yield otherwise break".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
@@ -140,7 +140,7 @@ def d_Embed(t):
 
 # FIXME: Exchange LINE and STATEMENT
 def d_Line(t):
-	'''Line : (Select|Allocation|Termination|Expression) ( ';' Line )* '''
+	'''Line : (Select|Allocation|Interruption|Expression) ( ';' Line )* '''
 	r = [t[0][0]]
 	r.extend(t[1])
 	r = t_filterOut(";", r)
@@ -234,7 +234,7 @@ def d_Class(t):
 	parents = t_filterOut(":", parents)
 	parents = t_filterOut(",", parents)
 	c = F.createClass(t[2] , parents)
-	if t[5]: f.setDocumentation(t[5] and t[5][0])
+	if t[5]: c.setDocumentation(t[5] and t[5][0])
 	t_setCode(None, t[6], c)
 	# FIXME
 	if is_abstract: c.setAbstract(True)
@@ -539,9 +539,17 @@ def d_Match(t):
 # Operations
 # ----------------------------------------------------------------------------
 
+def d_Interruption(t):
+	'''Interruption: Termination|Breaking '''
+	return t[0]
+
 def d_Termination(t):
 	'''Termination : 'return' Expression'''
 	return F.returns(t[1])
+
+def d_Breaking(t):
+	'''Breaking : 'break' '''
+	return F.breaks()
 
 def d_Iteration(t):
 	'''Iteration : IterationExpression | ForIteration|WhileIteration'''

@@ -1,0 +1,26 @@
+# FEATURE: breaking loops
+# SYNTAX: break keyword, or closure returning False when applied to iterator
+@module BreakTest
+
+@function f1
+	var i = 0
+	while True
+		i += 1
+		when i == 10 -> break
+	end
+@end
+
+@function f2
+	for i in 0..20
+		when i == 10 -> break
+	end
+@end
+
+@function f3
+	0..20 :: {j|
+		i = j
+		when i == 10 -> return False
+	}
+@end
+
+# EOF

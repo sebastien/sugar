@@ -1,37 +1,52 @@
-
-function compute():
+# FEATURE: Asynchronous invocation
+# SYNTAX: callable...arguments
+@function compute
 	return 0
-end
+@end
 
 # This function returns an iterator because it uses yield
-function continuations():
-	a := 0
-	while True:
+@function continuation
+	var a = 0
+	while True
 		yield a
 		a = a + 1
 	end
-end
+@end
 
-function asyncTest():
+@function asyncTest
 
-	# SYNTAXES:
-	#  @invocation()
+	#  POSSIBLE SYNTAXES:
+	#  @invocation()     (Io-like)
 	#  invocation@()
-	#  invocation->()
+	#  invocation->()    (Narrative JS)
 	#  invocation...()
+	#  invocation^()
+	#  invocation%()
+	#  \invocation()
 	#  invocation()...
 	#  &invocation()
 	#  invocation&()
 	#  invocation()&
 
+	# The function...params notation visually indicates that the computation
+	# will take some time, and evokes the range 0..2 notation, implying that
+	# the execution may be broken into sub-parts. The disadvantage is that this
+	# notation may be a bit long
 	future := compute...()
+
+	# The use of \ indicates escaping, but may be useful for other language
+	# features such as lazy arguments passing like f(\a, \b, \c) would mean
+	# passing the expressions of a, b, c.
+	# future := \compute()
+
 	# The future value is lazily evaluated. When the future is passed, it is not
 	# evaluated, but when it is used, it will be evaluated, and will then block
 	# the process waiting for the value
 	print (future)
 
 	# 
-	cont := continuations...()
-	print (cont.next())
+	var cont = continuation..()
+	cont :: { e | print e }
 
-end
+@end
+# EOF
