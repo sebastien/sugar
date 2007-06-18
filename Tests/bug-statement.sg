@@ -1,0 +1,12 @@
+# PROBLEM: The statements after the ';' are not displayed
+@function a
+	return 1
+@end
+
+@function b
+	return 2
+@end
+
+@main
+	a() ; b() ; a() ; b()
+@end

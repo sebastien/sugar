@@ -16,7 +16,7 @@ import grammar
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, java, c, modelwriter
 
-__version__ = "0.7.5"
+__version__ = "0.7.7"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
@@ -175,12 +175,12 @@ def run( args, output=sys.stdout ):
 			# FIXME: This should be split off
 			resolver.flow(parser.program())
 			if options.test:
-				writer.writeModule(module, options.module)
+				writer.write(module, options)
 				print "%-40s [%s]" % (source_path,  'OK')
 			elif module.isAbstract():
-				writer.writeModule(module, options.module)
+				writer.write(module)
 			else:
-				output.write( writer.writeModule(module, options.module) + "\n")
+				output.write( writer.write(module) + "\n")
 		#if False:
 		except Exception, e:
 			if options.test:

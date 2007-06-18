@@ -1,0 +1,16 @@
+@module Shared
+
+@shared Count
+
+@function inc
+	Count += 1
+@end
+
+@main
+	print (Count)
+	inc()
+	print (Count)
+	inc()
+	print (Count)
+	inc()
+@end

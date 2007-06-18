@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   11-Jun-2007
+# Last mod.         :   18-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -92,6 +92,7 @@ def d_Program(t):
 		ModuleAnnotations?
 		Documentation?
 		ImportOperations?
+		ModuleDeclarations?
 		Code
 	'''
 	# FIXME: Add a notion of Module = Slots + Process
@@ -113,6 +114,7 @@ def d_Program(t):
 	code = []
 	code.extend(t[3])
 	code.extend(t[4])
+	code.extend(t[5])
 	f = F.createFunction(F.ModuleInit, ())
 	# FIXME: Rename to addStatements
 	t_setCode(f,code,m)
@@ -301,16 +303,6 @@ def d_VERSION(t):
 	'''
 	return t[0]
 
-def d_ImportOperations(t):
-	'''ImportOperations: (ImportOperation)* '''
-	return t[0]
-
-def d_ImportOperation(t):
-	'''ImportOperation: '@import' NAME ('as' NAME )? EOL'''
-	alias = None
-	if t[2] and t[2][1]: alias = F._ref(t[2][1])
-	return F.imports(F._ref(t[1]),alias)
-
 def d_RequiresAnnotation(t):
 	'''RequiresAnnotation: '@requires' DEPENDENCY (',' DEPENDENCY)* EOL'''
 	return F.annotation('requires', t[1:-1])
@@ -334,6 +326,32 @@ def d_PostAnnotation(t):
 def d_AsAnnotation(t):
 	'''AsAnnotation: '@as' ("[a-zA-Z0-9_\-]+")+ EOL'''
 	return F.annotation('as', t[1])
+
+def d_ImportOperations(t):
+	'''ImportOperations: (ImportOperation)* '''
+	return t[0]
+
+def d_ImportOperation(t):
+	'''ImportOperation: '@import' NAME ('as' NAME )? EOL'''
+	alias = None
+	if t[2] and t[2][1]: alias = F._ref(t[2][1])
+	return F.imports(F._ref(t[1]),alias)
+
+def d_ModuleDeclarations(t):
+	'''ModuleDeclarations: Shared+'''
+	return t[0]
+
+def d_Shared(t):
+	'''Shared:
+	    '@shared' NAME (':' Type)? ('=' Value)?  EOL
+	    Documentation?
+	'''
+	s_name  = t[1]
+	s_type  = t[2] and t[2][1] or None
+	s_value = t[3] and t[3][1] or None
+	s = F._moduleattr(s_name, s_type, s_value)
+	if t[-1]: s.setDocumentation(t[-1] and t[-1][0])
+	return s
 
 def d_Attribute(t):
 	'''Attribute: 
