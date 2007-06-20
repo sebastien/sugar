@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   18-Jun-2007
+# Last mod.         :   20-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -126,19 +126,34 @@ def d_Code(t, spec):
 	# FIXME: Declarations should not go into code
 	return t_filterOut(None, t[0])
 
-def d_Embed(t):
+def d_Embed(t, nodes):
 	'''Embed:
           '@embed' NAME EOL
 	      INDENT
-	      ( "[^\\n]*" EOL)+
+	      (CHECKATLEAST "[^\\n]*" EOL)+
 	      DEDENT
 	      '@end'
 	'''
 	language = t[1]
 	code = []
-	for e in t[4]:
-		if e != None: code.append(e)
-	return F.embed(language, "\n".join(code))
+	buf = nodes[0].buf
+	indent = _PARSER.requiredIndent
+	code = buf[nodes[4].start_loc.s:nodes[4].end]
+	lines = []
+	# This removes the leading indentation
+	indent = -1
+	for line in code.split("\n")[1:]:
+		if not line: continue
+		i = 0
+		while i < len(line) and line[i] == "\t": i+=1
+		if indent == -1: indent = i
+		else: indent = min(indent, i)
+	prefix = "\t" * indent
+	for line in code.split("\n"):
+		if len(line) >= len(prefix) and line.startswith(prefix):
+			line = line[len(prefix):]
+		lines.append(line)
+	return F.embed(language, "\n".join(lines))
 
 # FIXME: Exchange LINE and STATEMENT
 def d_Line(t):
@@ -986,7 +1001,14 @@ def d_CHECK(t, spec):
 		if not _PARSER.indentStack: return
 		if _PARSER.requiredIndent != _PARSER.indentStack[-1]:
 			return Reject
-	
+
+def d_CHECKATLEAST(t, spec):
+	''' CHECKATLEAST: '''
+	if spec:
+		if not _PARSER.indentStack: return
+		if _PARSER.requiredIndent > _PARSER.indentStack[-1]:
+			return Reject
+
 def skip_whitespace(loc):
 	indent = 0
 	st = _PARSER.indentStack

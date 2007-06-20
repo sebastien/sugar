@@ -1,0 +1,20 @@
+# PROBLEM: the first @end and the second @embed are not recognized, and are
+# directly embedded
+# DATE   : 20-Jun-2007
+@function create declaration
+
+	@embed JavaScript
+		class_object._init = declaration.init
+	@end
+
+	{name|
+		var parent_proto = declaration parent prototype
+		return {parent_proto[name] apply (target, arguments)}
+	}
+
+	@embed JavaScript
+		instance_proto.init = declaration.init
+	@end
+
+@end
+# EOF

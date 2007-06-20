@@ -1,0 +1,17 @@
+# PROBLEM: When we have long conditions for when, we'd like to span more than
+# one line
+# SYNTAX: Allow
+# when condition
+# (and|or) condition
+# (and|or) condition
+
+@function f
+	var averylongvariable = 1
+	var anotherverylongvariable = 1
+
+	if averylongvariable == 1
+	and anotherverylong variable
+	or anotherverylong 
+		do stuff
+	end
+	
