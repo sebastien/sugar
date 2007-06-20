@@ -4,7 +4,7 @@
 @function create declaration
 
 	@embed JavaScript
-		class_object._init = declaration.init
+	|class_object._init = declaration.init
 	@end
 
 	{name|
@@ -13,7 +13,7 @@
 	}
 
 	@embed JavaScript
-		instance_proto.init = declaration.init
+	|instance_proto.init = declaration.init
 	@end
 
 @end

@@ -2,15 +2,15 @@
 @function f
 	while True
 		@embed JavaScript
-			if ( declaration.operations != undefined ) {
-				for ( var name in declaration.operations ) {
-					class_object[name] = declaration.operations[name]
-			}}
-
-			if ( declaration.attributes != undefined ) {
-				for ( var name in declaration.attributes ) {
-					class_object[name] = declaration.attributes[name]
-			}}
+		|if ( declaration.operations != undefined ) {
+		|	for ( var name in declaration.operations ) {
+		|		class_object[name] = declaration.operations[name]
+		|}}
+		|
+		|if ( declaration.attributes != undefined ) {
+		|	for ( var name in declaration.attributes ) {
+		|		class_object[name] = declaration.attributes[name]
+		|}}
 		@end
 	end
 @end

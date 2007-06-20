@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   14-Jun-2007
+# Last mod.         :   20-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, StringIO
@@ -16,7 +16,7 @@ import grammar
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, java, c, modelwriter
 
-__version__ = "0.7.7"
+__version__ = "0.7.7a"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"

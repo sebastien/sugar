@@ -3,7 +3,7 @@
 
 @function hello
 	@embed JavaScript
-		var hello = {world:"Hello, World !"};
-		alert("HELLO WORLD" + hello.world)
+	|var hello = {world:"Hello, World !"};
+	|alert("HELLO WORLD" + hello.world)
 	@end
 @end

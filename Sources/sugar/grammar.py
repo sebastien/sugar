@@ -129,30 +129,20 @@ def d_Code(t, spec):
 def d_Embed(t, nodes):
 	'''Embed:
           '@embed' NAME EOL
-	      INDENT
-	      (CHECKATLEAST "[^\\n]*" EOL)+
-	      DEDENT
-	      '@end'
+	      (
+	      	  '|' "[^\\n]*" EOL
+	      )+
+		  '@end'
 	'''
+
 	language = t[1]
 	code = []
 	buf = nodes[0].buf
 	indent = _PARSER.requiredIndent
-	code = buf[nodes[4].start_loc.s:nodes[4].end]
+	code = buf[nodes[3].start_loc.s:nodes[3].end]
 	lines = []
-	# This removes the leading indentation
-	indent = -1
-	for line in code.split("\n")[1:]:
-		if not line: continue
-		i = 0
-		while i < len(line) and line[i] == "\t": i+=1
-		if indent == -1: indent = i
-		else: indent = min(indent, i)
-	prefix = "\t" * indent
 	for line in code.split("\n"):
-		if len(line) >= len(prefix) and line.startswith(prefix):
-			line = line[len(prefix):]
-		lines.append(line)
+		lines.append(line[line.find("|")+1:])
 	return F.embed(language, "\n".join(lines))
 
 # FIXME: Exchange LINE and STATEMENT
