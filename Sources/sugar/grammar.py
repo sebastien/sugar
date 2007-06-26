@@ -49,6 +49,15 @@ def getPriority( op ):
 # Common utilities
 # ----------------------------------------------------------------------------
 
+def t_flatten( l, aggregate=None ):
+	if aggregate is None: aggregate = []
+	if type(l) in (tuple,list):
+		for e in l:
+			t_flatten(e, aggregate)
+	else:
+		aggregate.append(l)
+	return aggregate
+
 def t_filterOut( c, l ):
 	return filter(lambda e:e!=None and e!=c, l)
 
@@ -122,7 +131,7 @@ def d_Program(t):
 	return m
 
 def d_Code(t, spec):
-	'''Code : (EOL | Embed | (CHECK (Declaration|Condition|Statement|Comment)))* '''
+	'''Code : (EOL | Embed | Specific | (CHECK (Declaration|Condition|Statement|Comment)))* '''
 	# FIXME: Declarations should not go into code
 	return t_filterOut(None, t[0])
 
@@ -144,6 +153,54 @@ def d_Embed(t, nodes):
 	for line in code.split("\n"):
 		lines.append(line[line.find("|")+1:])
 	return F.embed(language, "\n".join(lines))
+
+def d_SpecificTarget(t):
+	'''SpecificTarget: "[\+\-]"? NAME'''
+	if t[0]: target=t[0][0] + t[1]
+	else: target=t="+" + t[1]
+	return target
+
+def d_Specific(t, nodes):
+	'''Specific:
+          '@specific' SpecificTarget+ EOL
+	      (  
+	         (INDENT
+	         Code
+	         DEDENT)
+	      |'@specific'SpecificTarget+ EOL
+	      )+
+	      '@end'
+	'''
+	lists =  t_flatten(t)
+	# We remove the trailing end and filter out unncessary things
+	lists = tuple((x for x in lists if x))[:-1]
+	def fold_specifics(l):
+		"""Returns a list of (TARGETS, CODE) corresponding to the specifics."""
+		targets = []
+		code    = []
+		if l[0] == "@specific": l = l[1:]
+		while l and type(l[0]) == str:
+			targets.append(l[0])
+			l = l[1:]
+		while l and l[0] != "@specific":
+			code.append(l[0])
+			l = l[1:]
+		if l:
+			res = [(targets, code)]
+			res.extend(fold_specifics(l))
+			return res
+		else:
+			return [(targets, code)]
+	def match_targets(targets):
+		for t in targets:
+			if t[0] == "+" and not _PARSER.options.hasTarget(t[1:]): return False
+			if t[0] == "-" and _PARSER.options.hasTarget(t[1:]): return False
+		return True
+	result_code = []
+	for targets, code in fold_specifics(lists):
+		if match_targets(targets):
+			result_code.extend(code)
+	return result_code
 
 # FIXME: Exchange LINE and STATEMENT
 def d_Line(t):
@@ -1053,20 +1110,22 @@ def disambiguate( nodes ):
 #_PARSER = Parser(make_grammar_file=0)
 _PARSER = DParser()
 
-def parse( text, verbose=True ):
+def parse( text, verbose=True, options=None ):
 	_PARSER.indentStack = []
 	_PARSER.isNewline   = True
 	_PARSER.requiredIndent = 0
 	_PARSER.previousLine   = 0
+	if options is None: options = Options()
+	_PARSER.options = options
 	res = _PARSER.parse(text,initial_skip_space_fn=skip_whitespace,ambiguity_fn=disambiguate, print_debug_info=(verbose and 1 or 0))
 	return res
 
-def parseFile( path, verbose=False ):
+def parseFile( path, verbose=False, options=None ):
 	f = file(path, 'r') ; t = f.read() ; f.close()
-	return parse(t, verbose)
+	return parse(t, verbose, options)
 
-def parseModule( name, text, verbose=False ):
-	res = parse(text, verbose)
+def parseModule( name, text, verbose=False, options=None ):
+	res = parse(text, verbose, options)
 	module_name = res.getAnnotation("module")
 	if module_name:
 		res.setName(module_name.getContent())
@@ -1080,6 +1139,22 @@ def parseModule( name, text, verbose=False ):
 #
 # ------------------------------------------------------------------------------
 
+class Options:
+	
+	def __init__(self):
+		self.targets = []
+
+	def addTarget( self, name ):
+		"""Adds a target to the options."""
+		name = name.upper()
+		if name not in self.targets:
+				self.targets.append(name)
+	
+	def hasTarget(self, name):
+		"""Returns True of the given target name is present in the options."""
+		name = name.upper()
+		return name in self.targets
+	
 class Parser:
 	"""The parser is a simple API that can be used as an entry point
 	to manipulate SweetC source code."""
@@ -1088,6 +1163,7 @@ class Parser:
 		"""Creates a new interpreter."""
 		self._warnings = []
 		self.verbose   = verbose
+		self.options   = Options()
 		self._program  = F.createProgram()
 
 	def program( self ):
@@ -1121,7 +1197,7 @@ class Parser:
 		#try:
 		if True:
 			name = self.pathToModuleName(name)
-			res = parseModule(name, text, self.verbose)
+			res = parseModule(name, text, self.verbose, self.options)
 			# We set the module file path (for informative purpose only)
 			if sourcepath:
 				res.setSource("file://" + os.path.abspath(sourcepath))

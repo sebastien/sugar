@@ -16,13 +16,14 @@ import grammar
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, java, c, modelwriter
 
-__version__ = "0.7.7a"
+__version__ = "0.7.8"
 
 OPT_LANG       = "Specifies the target language (js, c, py)"
 OPT_OUTPUT     = "Name of the output file containing the processed source files"
 OPT_VERBOSE    = "Verbose parsing output (useful for debugging)"
 OPT_API        = "Generates SDoc API documentation (give the apifilename)"
 OPT_TEST       = "Tells wether the source code is valid or not"
+OPT_DEFINE     = "Defines a specific target (for @specific)"
 OPT_VERSION    = "Ensures that Sugar is at least of the given version"
 DESCRIPTION    = """\
 Sugar is a meta-language that can be easily converted to other languages such
@@ -130,6 +131,8 @@ def run( args, output=sys.stdout ):
 		help=OPT_API)
 	oparser.add_option("-t", "--test", action="store_true", dest="test", 
 		help=OPT_TEST)
+	oparser.add_option("-D", "--define", action="append", dest="targets", 
+		help=OPT_DEFINE)
 	oparser.add_option("-V", None, action="store", dest="version", 
 		help=OPT_VERSION)
 	# We parse the options and arguments
@@ -143,6 +146,8 @@ def run( args, output=sys.stdout ):
 		return -1
 	# Otherwise, we are in interpreter mode
 	parser           = grammar.Parser(verbose=options.verbose)
+	for target in options.targets:
+		parser.options.addTarget(target)
 	writer, resolver = None, None
 	reporter         = DefaultReporter
 	if options.lang in ("js","javascript") or not options.lang:

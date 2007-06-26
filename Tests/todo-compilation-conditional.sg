@@ -1,0 +1,23 @@
+# FEATURE: Conditional compilations
+
+@specific TARGET -OTHERTARGET
+	@function f
+		return 0
+	@end
+@specific +OTHERTARGET
+	@function f
+		return 1
+	@end
+@end
+
+
+@function g
+	var a = 1
+	@specific TARGET
+		a = 10
+	@specific OTHERTARGET
+		a  = 20
+	@end
+@end
+
+# EOF
