@@ -895,9 +895,13 @@ def d_Arguments(t):
 	return r
 
 def d_Argument(t):
-	'''Argument: NAME (':' Type)? '?'? '''
+	'''Argument: NAME (':' Type)? ('?'|'...'|'=' (Litteral|'C' Expression ')')) ? '''
 	is_optional = t[2] and t[2][0] == '?'
-	return F._arg(t[0], t[1] and t[1][1] or None, optional=is_optional)
+	is_rest     = t[2] and t[2][0] == '...'
+	arg = F._arg(t[0], t[1] and t[1][1] or None)
+	if is_optional: arg.setOptional(True)
+	if is_rest: arg.setRest(True)
+	return arg
 
 def d_Type(t):
 	'''Type: NAME '''

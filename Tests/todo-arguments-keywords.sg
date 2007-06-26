@@ -1,0 +1,15 @@
+# FEATURE: Variable arguments list
+
+@function f1 a=...
+	return 0
+@end
+
+@function f2 b, a=...
+	return 0
+@end
+
+@function f3 b, c?, d..., d=...
+	return 0
+@end
+
+# EOF

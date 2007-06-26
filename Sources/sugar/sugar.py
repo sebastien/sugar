@@ -146,8 +146,9 @@ def run( args, output=sys.stdout ):
 		return -1
 	# Otherwise, we are in interpreter mode
 	parser           = grammar.Parser(verbose=options.verbose)
-	for target in options.targets:
-		parser.options.addTarget(target)
+	if options.targets:
+		for target in options.targets:
+			parser.options.addTarget(target)
 	writer, resolver = None, None
 	reporter         = DefaultReporter
 	if options.lang in ("js","javascript") or not options.lang:

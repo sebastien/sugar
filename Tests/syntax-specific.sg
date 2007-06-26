@@ -8,6 +8,13 @@
 	@function f
 		return 1
 	@end
+
+	@class A
+		@property a
+		@constructor
+			a = 10
+		@end
+	@end
 @end
 
 
@@ -19,5 +26,6 @@
 		a  = 20
 	@end
 @end
+
 
 # EOF
