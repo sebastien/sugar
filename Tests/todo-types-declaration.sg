@@ -1,0 +1,6 @@
+@type JSON as Object
+@type Text as String
+
+@function f o:JSON
+	return o
+@end

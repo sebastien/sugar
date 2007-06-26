@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   20-Jun-2007
+# Last mod.         :   26-Jun-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -838,8 +838,9 @@ def d_Arguments(t):
 	return r
 
 def d_Argument(t):
-	'''Argument: NAME (':' Type)? '''
-	return F._arg(t[0], t[1] and t[1][1] or None)
+	'''Argument: NAME (':' Type)? '?'? '''
+	is_optional = t[2] and t[2][0] == '?'
+	return F._arg(t[0], t[1] and t[1][1] or None, optional=is_optional)
 
 def d_Type(t):
 	'''Type: NAME '''

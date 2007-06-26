@@ -1,0 +1,9 @@
+var a
+var b
+var c
+
+when  a > b and a <  b + c  
+	return false
+end
+var d = a and not b
+var d = not a and b

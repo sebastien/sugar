@@ -175,7 +175,7 @@ def run( args, output=sys.stdout ):
 			# FIXME: This should be split off
 			resolver.flow(parser.program())
 			if options.test:
-				writer.write(module, options)
+				writer.write(module)
 				print "%-40s [%s]" % (source_path,  'OK')
 			elif module.isAbstract():
 				writer.write(module)

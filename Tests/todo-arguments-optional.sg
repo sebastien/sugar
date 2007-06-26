@@ -1,0 +1,10 @@
+# FEATURE: Optional arguments
+# SYNTAX: Add '?' after the argument
+
+@function f a, b?, c?, d?
+	return 0
+@end
+
+@function f a, b:Int?, c:Object?, d:String?
+	return 0
+@end
