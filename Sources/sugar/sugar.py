@@ -7,10 +7,10 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   20-Jun-2007
+# Last mod.         :   27-Jun-2007
 # -----------------------------------------------------------------------------
 
-import os, sys, shutil, traceback, StringIO
+import os, sys, shutil, traceback, tempfile, StringIO
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
@@ -24,6 +24,7 @@ OPT_VERBOSE    = "Verbose parsing output (useful for debugging)"
 OPT_API        = "Generates SDoc API documentation (give the apifilename)"
 OPT_TEST       = "Tells wether the source code is valid or not"
 OPT_DEFINE     = "Defines a specific target (for @specific)"
+OPT_RUN        = "Directly runs the script"
 OPT_VERSION    = "Ensures that Sugar is at least of the given version"
 DESCRIPTION    = """\
 Sugar is a meta-language that can be easily converted to other languages such
@@ -119,6 +120,8 @@ def run( args, output=sys.stdout ):
 	# We create the parse and register the options
 	oparser = OptionParser(prog="sugar", description=DESCRIPTION,
 	usage=USAGE, version="Sugar " + __version__)
+	oparser.add_option("-r", "--run", action="store_true", dest="run",
+		help=OPT_RUN)
 	oparser.add_option("-l", "--lang", action="store", dest="lang",
 		help=OPT_LANG)
 	oparser.add_option("-o", "--output", action="store", dest="output",
@@ -157,12 +160,15 @@ def run( args, output=sys.stdout ):
 	elif options.lang == "c":
 		writer   = c.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
+		assert not options.run
 	elif options.lang == "java":
 		writer   = java.Writer(reporter=reporter)
 		resolver = java.Resolver(reporter=reporter)
+		assert not options.run
 	elif options.lang in ("s", "sg", "sugar"):
 		writer   = modelwriter.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
+		assert not options.run
 	else:
 		print "Please specify a valid language (js or c)"
 		return -1
@@ -173,6 +179,9 @@ def run( args, output=sys.stdout ):
 	# 3 -- Program prcocessing passes (typing, resolution, etc)
 	# 4 -- Generate the output files
 	modules = []
+	if options.run:
+		output = StringIO.StringIO()
+		output.write(writer.getRuntimeSource())
 	for source_path in args:
 		try:
 		#if True:
@@ -199,6 +208,13 @@ def run( args, output=sys.stdout ):
 				print error_msg
 	if options.api:
 		apidoc(modules, options.api)
+	if options.run:
+		f, path = tempfile.mkstemp(prefix="Sugar")
+		os.write(f, output.getvalue())
+		# TODO: Run the program main
+		os.close(f)
+		os.system("js '%s'" % (path))
+		os.unlink(path)
 
 # ------------------------------------------------------------------------------
 #
