@@ -1,0 +1,17 @@
+@shared Frame
+
+@class Window
+	@property awtUI
+	@constructor title
+		awtUI = new Frame(title)
+		awtUI setSize (300,200)
+		awtUI setVisible (True)
+	@end
+@end
+
+@function initialize
+	Frame = Packages java awt Frame
+	new Window()
+@end
+
+initialize()

@@ -1,0 +1,9 @@
+# FEATURE: Default value
+# SYNTAX: ( EXPRESSION | EXPRESSION )
+@function f
+	return Undefined
+@end
+
+@function g
+	return (f()|True)
+@end

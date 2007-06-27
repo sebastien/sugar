@@ -1,0 +1,47 @@
+More operations for if:
+
+		if self._views.main is undefined:
+					return
+		end
+
+		==, !=, <=, >=, <, >, "and", "or", "is", "not"
+							
+Add with:
+
+	with  (value | assignation | declaration) :
+		DotValue *
+	end
+
+Add default/named arguments:
+
+	
+	function i ( a=0, b=1, c=2 ):
+	end
+
+	function i ( a, b, rest... ):
+	end
+
+	function i ( a, b, rest..., options=... ):
+	end
+
+
+	function i ( a, b, rest..., options=... ):
+	end
+
+Macros:
+
+	@macro name( a, b, c )
+		$a = pouet
+		$b = pouet
+		$c = pouet
+	@end
+
+	@name(a,b,c)
+	will produce the code $a, $b, $c
+
+		function( a, b, c ):
+			a = pouet
+			b = pouet
+			c = pouet
+		end
+

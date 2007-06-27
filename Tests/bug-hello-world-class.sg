@@ -1,0 +1,9 @@
+@class Hello
+	@property world="world"
+	@method hello
+		print ("Hello,", world, "!")
+	@end
+@end
+
+(new Hello()) hello()
+

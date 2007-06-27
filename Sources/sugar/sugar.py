@@ -210,10 +210,13 @@ def run( args, output=sys.stdout ):
 		apidoc(modules, options.api)
 	if options.run:
 		f, path = tempfile.mkstemp(prefix="Sugar")
-		os.write(f, output.getvalue())
+		code = output.getvalue()
+		os.write(f,code )
 		# TODO: Run the program main
 		os.close(f)
-		os.system("js '%s'" % (path))
+		interpreter = os.getenv("SUGAR_JS") or "rhino"
+		command = "%s '%s'" % (interpreter, path)
+		os.system(command)
 		os.unlink(path)
 
 # ------------------------------------------------------------------------------
