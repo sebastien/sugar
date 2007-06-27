@@ -14,13 +14,22 @@
 		points = []
 	@end
 
-	@method addPoint pointPoint
+	@method addPoint point:Point
 		return points append(point)
+	@end
+
+	@method addAnotherPoint point:Point
+		return addPoint(point)
 	@end
 
 	@operation shapeCount
 		return COUNT
 	@end
+
+	@operation otherShapeCount
+		return shapeCount()
+	@end
+
 
 @end
 

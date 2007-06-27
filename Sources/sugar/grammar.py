@@ -163,11 +163,12 @@ def d_SpecificTarget(t):
 def d_Specific(t, nodes):
 	'''Specific:
           '@specific' SpecificTarget+ EOL
+          Documentation?
 	      (  
 	         (INDENT
 	         Code
 	         DEDENT)
-	      |'@specific'SpecificTarget+ EOL
+	      |'@specific'SpecificTarget+ EOL Documentation?
 	      )+
 	      '@end'
 	'''

@@ -1,7 +1,8 @@
+# FEATURE: Inheritance and use of 'super'
 @class A
 
 	@method foo
-		print ("Foo" + this getClass())
+		print ("Foo (def in A)")
 	@end
 
 @end
@@ -9,7 +10,8 @@
 @class B : A
 
 	@method foo
-		super() pouet
+		super foo()
+		print ("Foo (def in B)")
 	@end 
 
 @end
@@ -17,8 +19,28 @@
 @class C: B
 
 	@method foo
-		super(A) foo()
-		super(B) foo()
+		super foo()
+		super super foo()
+		print ("Foo (def in C)")
 	@end
 
 @end
+
+@class D: C
+@end
+
+@main
+	var a = new A()
+	var b = new B()
+	var c = new C()
+	var d = new D()
+	print "a foo()"
+	a foo()
+	print "b foo()"
+	b foo()
+	print "c foo()"
+	c foo()
+	print "d foo()"
+	d foo()
+@end
+# EOF
