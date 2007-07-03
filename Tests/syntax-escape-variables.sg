@@ -1,0 +1,7 @@
+# FEATURE: Escape reserved keywords
+# SYNTAX: Prefix the keywords with '\'
+$("selector") \is ".visibile"
+var \when   = 1
+var \target = pouet
+var \self   = pouet
+# EOF

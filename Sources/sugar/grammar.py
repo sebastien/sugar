@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   26-Jun-2007
+# Last mod.         :   03-Jul-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -1010,10 +1010,11 @@ def d_RC(t):
 	return str(t)
 
 def d_NAME(t, spec):
-	''' NAME: "[$A-Za-z_]+[$0-9A-Za-z_]*" '''
+	''' NAME: "\\\\?[$A-Za-z_]+[$0-9A-Za-z_]*" '''
 	if spec and t[0] in KEYWORDS:
 		return Reject
 	else:
+		if t[0][0] == "\\": return t[0][1:]
 		return t[0]
 	
 def d_EOL(t):
