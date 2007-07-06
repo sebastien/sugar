@@ -1,0 +1,22 @@
+# FEATURE: Test the giving of callbacks as parameters
+# PROBLEM: Unless typing is implemented stuff like 'a doThis' won't use
+# getMethod
+@class A
+
+	@operation DoThis
+	@end
+
+	@method doThis
+	@end
+
+	@method setCallback a
+		a giveCallback (doThis)
+		a giveCallback (DoThis)
+	@end
+@end
+
+var a = new A()
+var b = new Object()
+b setCallback (A DoThis)
+b setCallback (a doThis)
+# EOF

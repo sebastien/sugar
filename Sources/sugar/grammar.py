@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "and or not has is var new in for return when yield otherwise break".split()
+KEYWORDS = "as and or not has is var new in for return when yield otherwise break".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
@@ -119,7 +119,6 @@ def d_Program(t):
 	map(m.annotate, annotations)
 	if t[2]: m.setDocumentation(t[2] and t[2][0])
 	#FIXME: bind the imported module to the slot
-#	imports = t[3] and t[3][0] or ()
 	code = []
 	code.extend(t[3])
 	code.extend(t[4])
@@ -395,10 +394,15 @@ def d_ImportOperations(t):
 	return t[0]
 
 def d_ImportOperation(t):
-	'''ImportOperation: '@import' NAME ('as' NAME )? EOL'''
+	'''ImportOperation: '@import' NAME+ ('as' NAME )? EOL'''
 	alias = None
 	if t[2] and t[2][1]: alias = F._ref(t[2][1])
-	return F.imports(F._ref(t[1]),alias)
+	names   = list(tuple(t[1]))
+	resolve = None
+	for i in range(len(names)):
+		ref = F._ref(names[i])
+		resolve = F.resolve(ref, resolve)
+	return F.imports(resolve,alias)
 
 def d_ModuleDeclarations(t):
 	'''ModuleDeclarations: Shared+'''

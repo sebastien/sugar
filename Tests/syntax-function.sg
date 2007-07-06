@@ -17,7 +17,7 @@
 	return 1 + a + b + d
 @end
 
-@function d  aint, bint, cint, dint
+@function d  a:int, b:int, c:int, d:int
 	return 1 + a + b + d
 @end
 

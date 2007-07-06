@@ -3,6 +3,11 @@
 	@property x:double
 	@property y:double
 
+	@constructor px, py
+		x = px
+		y = py
+	@end
+
 @end
 
 @class Shape
