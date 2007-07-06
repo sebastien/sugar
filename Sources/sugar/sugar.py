@@ -14,7 +14,7 @@ import os, sys, shutil, traceback, tempfile, StringIO
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
-from lambdafactory import javascript, java, c, modelwriter
+from lambdafactory import javascript, java, c, pnuts, modelwriter
 
 __version__ = "0.7.9"
 
@@ -165,6 +165,9 @@ def run( args, output=sys.stdout ):
 		writer   = java.Writer(reporter=reporter)
 		resolver = java.Resolver(reporter=reporter)
 		assert not options.run
+	elif options.lang == "pnuts":
+		writer   = pnuts.Writer(reporter=reporter)
+		resolver = pnuts.Resolver(reporter=reporter)
 	elif options.lang in ("s", "sg", "sugar"):
 		writer   = modelwriter.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
@@ -214,8 +217,12 @@ def run( args, output=sys.stdout ):
 		os.write(f,code )
 		# TODO: Run the program main
 		os.close(f)
-		interpreter = os.getenv("SUGAR_JS") or "rhino"
-		command = "%s '%s'" % (interpreter, path)
+		if options.lang in ("js","javascript") or not options.lang:
+			interpreter = os.getenv("SUGAR_JS") or "rhino"
+			command = "%s '%s'" % (interpreter, path)
+		elif options.lang == "pnuts":
+			interpreter = os.getenv("SUGAR_PNUTS") or "pnuts"
+			command = "%s '%s'" % (interpreter, path)
 		os.system(command)
 		os.unlink(path)
 
