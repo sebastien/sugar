@@ -1,17 +1,22 @@
 @shared Frame
+@shared Button
 
 @class Window
 	@property awtUI
 	@constructor title
 		awtUI = new Frame(title)
+		awtUI add (new Button "Hello, Sugar ;)")
 		awtUI setSize (300,200)
 		awtUI setVisible (True)
 	@end
 @end
 
 @function initialize
-	Frame = Packages java awt Frame
+	Frame  = Packages java awt Frame
+	Button = Packages java awt Button
 	new Window()
 @end
 
 initialize()
+
+# EOF

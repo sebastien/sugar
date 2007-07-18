@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   03-Jul-2007
+# Last mod.         :   18-Jul-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -79,6 +79,7 @@ def t_setCode( process, code, context=None ):
 	return process
 
 def t_split( array, element ):
+	"""Splits the given list using the given element."""
 	res = []
 	cur = None
 	for a in array:
@@ -90,7 +91,7 @@ def t_split( array, element ):
 			cur.append(a)
 	if cur != None:	res.append(cur)
 	return res
-	
+
 # ----------------------------------------------------------------------------
 # Statements
 # ----------------------------------------------------------------------------
@@ -225,7 +226,7 @@ def d_Statement(t):
 	return t[0][0]
 
 def d_Declaration(t):
-	'''Declaration : (Main|AbstractFunction|Interface|Function|Class) EOL '''
+	'''Declaration : (Main|AbstractFunction|Interface|Function|Class|Exception) EOL '''
 	return t[0][0]
 
 # ----------------------------------------------------------------------------
@@ -270,6 +271,31 @@ def d_AbstractFunction(t):
 	if t[6]: f.setDocumentation(t[5] and t[6][0])
 	f.setAbstract(True)
 	return f
+
+def d_Exception(t):
+	'''Exception:
+		'@exception' NAME (':' Expression)? EOL
+		Documentation?
+		(INDENT
+			Attribute
+			Method
+			Constructor
+			Comment
+			EOL
+		DEDENT)?
+		'@end'
+	'''
+		# TODO: Parents support
+	parents = []
+	parents.extend(t[2])
+	parents = t_filterOut(":", parents)
+	parents = t_filterOut(",", parents)
+	# FIXME: Doesn't work
+	# if not parents: parents.append(F.resolve(F._ref("Exception")))
+	c = F.createClass(t[1] , parents)
+	if t[4]: c.setDocumentation(t[4] and t[4][0])
+	t_setCode(None, t[5], c)
+	return c
 
 def d_Class(t):
 	# FIXME: Change Name to Reference
@@ -625,7 +651,7 @@ def d_Match(t):
 # ----------------------------------------------------------------------------
 
 def d_Interruption(t):
-	'''Interruption: Termination|Breaking '''
+	'''Interruption: Termination|Breaking|Except'''
 	return t[0]
 
 def d_Termination(t):
@@ -635,6 +661,10 @@ def d_Termination(t):
 def d_Breaking(t):
 	'''Breaking : 'break' '''
 	return F.breaks()
+
+def d_Except(t):
+	'''Except: 'raise' Expression '''
+	return F.exception(t[1])
 
 def d_Iteration(t):
 	'''Iteration : IterationExpression | ForIteration|WhileIteration'''
@@ -783,12 +813,39 @@ def d_AllocationMultiple(t):
 		code.append(F.allocate(F._slot(var, vartype),F.slice(expression, F._number(i))))
 	return code
 
+def d_Interception(t):
+	'''Interception:
+	   'try' EOL
+	        INDENT Code DEDENT
+	    ('catch' NAME EOL
+	        INDENT Code DEDENT
+	    )?
+	    ('finally' EOL
+	        INDENT Code DEDENT
+	    )?
+	    'end'
+	'''
+	try_catch   = t[5]
+	try_finally = t[6]
+	try_code = F.createBlock()
+	t_setCode(try_code, t[3])
+	if try_catch:
+		arg        = F._arg(try_catch[1])
+		closure    = F.createClosure([arg])
+		t_setCode(closure, try_catch[4])
+		try_catch  = closure
+	if try_finally: 
+		try_finally = F.createBlock()
+		t_setCode(try_finally, t[6][3])
+	return F.intercept(try_code, try_catch, try_finally)
+
 # ----------------------------------------------------------------------------
 # Expressions
 # ----------------------------------------------------------------------------
 
 def d_Expression(t):
-	'''Expression : Iteration | Instanciation | Slicing | InvocationOrResolution | Assignation |
+	'''Expression : Interception | Iteration | Instanciation | Slicing |
+	   InvocationOrResolution | Assignation |
 	   ConditionExpression |
 	   Computation | Value | LP Expression RP
 	'''

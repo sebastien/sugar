@@ -1,0 +1,27 @@
+# PROBLEM: Declare, raise and intercept and exception
+
+# STEP 1: Declare the exception
+@exception MyException
+@end
+
+# STEP 2: Raise the exception in a function
+@function f
+	raise new MyException()
+@end
+
+# STEP 3: Intercept the exception
+@function g
+	var a = 0
+	try
+		f()
+	catch e
+		print ("Exception has happened", e)
+		a = 1
+	finally
+		print ("There was an exception:", a)
+	end
+@end
+
+g()
+
+# EOF
