@@ -704,7 +704,7 @@ def d_Computation(t):
 	'''Computation:
 		('not' Expression)
 	|	(
-			Expression (
+			Expression ( ( ";\s*\n+\t*" )?
 				(
 					'+'|'-'|'*'|'/'|'%'|'//'|'and '|'or '
 					|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
@@ -719,6 +719,7 @@ def d_Computation(t):
 		return F.compute(F._op('not', 9999), t[0][1])
 	else:
 		t       = t[0]
+		t       = filter(lambda x:type(x) != str or x[0] != ";", t)
 		result  = None
 		left    = t[0]
 		op      = None
