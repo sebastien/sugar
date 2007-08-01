@@ -7,24 +7,25 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   03-Jul-2007
+# Last mod.         :   01-Aug-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, tempfile, StringIO
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
-from lambdafactory import javascript, java, c, pnuts, modelwriter
+from lambdafactory import javascript, java, c, pnuts, actionscript, modelwriter
 
-__version__ = "0.7.9"
+__version__ = "0.8.0"
 
-OPT_LANG       = "Specifies the target language (js, c, py)"
-OPT_OUTPUT     = "Name of the output file containing the processed source files"
+OPT_LANG       = "Specifies the target language (js, java, pnuts, actionscript)"
+OPT_OUTPUT     = "Specifies the output where the files will be generated (stdout, file or folder)"
 OPT_VERBOSE    = "Verbose parsing output (useful for debugging)"
 OPT_API        = "Generates SDoc API documentation (give the apifilename)"
 OPT_TEST       = "Tells wether the source code is valid or not"
 OPT_DEFINE     = "Defines a specific target (for @specific)"
-OPT_RUN        = "Directly runs the script"
+OPT_RUN        = "Directly runs the script (default)"
+OPT_COMPILE    = "Compiles the given code to the output (current) directory"
 OPT_VERSION    = "Ensures that Sugar is at least of the given version"
 DESCRIPTION    = """\
 Sugar is a meta-language that can be easily converted to other languages such
@@ -120,11 +121,13 @@ def run( args, output=sys.stdout ):
 	# We create the parse and register the options
 	oparser = OptionParser(prog="sugar", description=DESCRIPTION,
 	usage=USAGE, version="Sugar " + __version__)
-	oparser.add_option("-r", "--run", action="store_true", dest="run",
+	oparser.add_option("-r", "--run",  action="store_true", dest="run",
 		help=OPT_RUN)
+	oparser.add_option("-c", "--compile", action="store_true", dest="compile",
+		help=OPT_COMPILE)
 	oparser.add_option("-l", "--lang", action="store", dest="lang",
 		help=OPT_LANG)
-	oparser.add_option("-o", "--output", action="store", dest="output",
+	oparser.add_option("-o", "--output", action="store", dest="output", 
 		help=OPT_OUTPUT)
 	oparser.add_option("-v", "--verbose", action="store_true", dest="verbose",
 		help=OPT_VERBOSE)
@@ -154,6 +157,11 @@ def run( args, output=sys.stdout ):
 			parser.options.addTarget(target)
 	writer, resolver = None, None
 	reporter         = DefaultReporter
+	if not options.lang and args:
+		if args[0].endswith("js"): options.lang = "js"
+		elif args[0].endswith("java"): options.lang = "java"
+		elif args[0].endswith("pnuts"): options.lang = "pnuts"
+		elif args[0].endswith("c"): options.lang = "c"
 	if options.lang in ("js","javascript") or not options.lang:
 		writer   = javascript.Writer(reporter=reporter)
 		resolver = javascript.Resolver(reporter=reporter)
@@ -168,6 +176,9 @@ def run( args, output=sys.stdout ):
 	elif options.lang == "pnuts":
 		writer   = pnuts.Writer(reporter=reporter)
 		resolver = pnuts.Resolver(reporter=reporter)
+	elif options.lang in ("as", "actionscript"):
+		writer   = actionscript.Writer(reporter=reporter)
+		resolver = actionscript.Resolver(reporter=reporter)
 	elif options.lang in ("s", "sg", "sugar"):
 		writer   = modelwriter.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
@@ -182,23 +193,17 @@ def run( args, output=sys.stdout ):
 	# 3 -- Program prcocessing passes (typing, resolution, etc)
 	# 4 -- Generate the output files
 	modules = []
+	if not options.run and not options.compile:
+		options.run = True
 	if options.run:
 		output = StringIO.StringIO()
 		output.write(writer.getRuntimeSource())
+	# We parse the source files
 	for source_path in args:
 		try:
 		#if True:
 			source, module = parser.parse(source_path)
 			modules.append(module)
-			# FIXME: This should be split off
-			resolver.flow(parser.program())
-			if options.test:
-				writer.write(module)
-				print "%-40s [%s]" % (source_path,  'OK')
-			elif module.isAbstract():
-				writer.write(module)
-			else:
-				output.write( writer.write(module) + "\n")
 		#if False:
 		except Exception, e:
 			if options.test:
@@ -209,14 +214,32 @@ def run( args, output=sys.stdout ):
 				traceback.print_exc(file=error_msg)
 				error_msg = error_msg.getvalue()
 				print error_msg
+	# We flow everything
+	resolver.flow(parser.program())
+	# Then we execute the operations
 	if options.api:
 		apidoc(modules, options.api)
-	if options.run:
+	if options.compile:
+		# FIXME: Should ask the program for a proper module ordering so that
+		# dependency conflicts are avoided
+		for module in modules:
+			if options.output is None:
+				output.write( writer.write(module) )
+				output.write( writer.write(module) + "\n")
+			elif os.path.isdir(options.output):
+				splitter = modelwriter.FileSplitter(options.output)
+				splitter.fromString(writer.write(module))
+			else:
+				f = file(options.output, "w")
+				f.write(writer.write(module))
+				f.close()
+	elif options.run:
 		f, path = tempfile.mkstemp(prefix="Sugar")
 		code = output.getvalue()
 		os.write(f,code )
 		# TODO: Run the program main
 		os.close(f)
+		# FIXME: LambdaFactory should support compilers and runners
 		if options.lang in ("js","javascript") or not options.lang:
 			interpreter = os.getenv("SUGAR_JS") or "rhino"
 			command = "%s '%s'" % (interpreter, path)
