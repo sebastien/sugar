@@ -162,23 +162,29 @@ def run( args, output=sys.stdout ):
 		elif args[0].endswith("java"): options.lang = "java"
 		elif args[0].endswith("pnuts"): options.lang = "pnuts"
 		elif args[0].endswith("c"): options.lang = "c"
+		elif args[0].endswith("as"): options.lang = "as"
 	if options.lang in ("js","javascript") or not options.lang:
 		writer   = javascript.Writer(reporter=reporter)
 		resolver = javascript.Resolver(reporter=reporter)
+		parser.options.addTarget("JavaScript")
 	elif options.lang == "c":
 		writer   = c.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
+		parser.options.addTarget("C")
 		assert not options.run
 	elif options.lang == "java":
 		writer   = java.Writer(reporter=reporter)
-		resolver = java.Resolver(reporter=reporter)
+		options = java.Resolver(reporter=reporter)
+		parser.options.addTarget("Java")
 		assert not options.run
 	elif options.lang == "pnuts":
 		writer   = pnuts.Writer(reporter=reporter)
 		resolver = pnuts.Resolver(reporter=reporter)
+		parser.options.addTarget("Pnuts")
 	elif options.lang in ("as", "actionscript"):
 		writer   = actionscript.Writer(reporter=reporter)
 		resolver = actionscript.Resolver(reporter=reporter)
+		parser.options.addTarget("ActionScript")
 	elif options.lang in ("s", "sg", "sugar"):
 		writer   = modelwriter.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
@@ -224,7 +230,6 @@ def run( args, output=sys.stdout ):
 		# dependency conflicts are avoided
 		for module in modules:
 			if options.output is None:
-				output.write( writer.write(module) )
 				output.write( writer.write(module) + "\n")
 			elif os.path.isdir(options.output):
 				splitter = modelwriter.FileSplitter(options.output)
