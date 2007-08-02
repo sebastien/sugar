@@ -1,11 +1,11 @@
-@shared attribute1String
-@shared attribute2String
+@shared attribute1:String
+@shared attribute2:String
 
 @function getAttribute1
 	return attribute1
 @end
 
-@init
+@function init
 	attribute1 = "Hello"
 	attribute2 = "World"
 @end

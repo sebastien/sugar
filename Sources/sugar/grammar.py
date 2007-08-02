@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   18-Jul-2007
+# Last mod.         :   02-Aug-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -124,10 +124,11 @@ def d_Program(t):
 	code.extend(t[3])
 	code.extend(t[4])
 	code.extend(t[5])
-	f = F.createFunction(F.ModuleInit, ())
-	# FIXME: Rename to addStatements
-	t_setCode(f,code,m)
-	m.setSlot(F.ModuleInit, f, True)
+	if code:
+		f = F.createFunction(F.ModuleInit, ())
+		# FIXME: Rename to addStatements
+		t_setCode(f,code,m)
+		m.setSlot(F.ModuleInit, f, True)
 	return m
 
 def d_Code(t, spec):
@@ -226,8 +227,9 @@ def d_Statement(t):
 	return t[0][0]
 
 def d_Declaration(t):
-	'''Declaration : (Main|AbstractFunction|Interface|Function|Class|Exception) EOL '''
-	return t[0][0]
+	'''Declaration : (Main|AbstractFunction|Interface|Function|Class|Exception) EOL | Shared'''
+	if type(t[0]) in (tuple,list): return t[0][0]
+	else: return t[0]
 
 # ----------------------------------------------------------------------------
 # Declarations
@@ -420,10 +422,15 @@ def d_ImportOperations(t):
 	return t[0]
 
 def d_ImportOperation(t):
-	'''ImportOperation: '@import' NAME+ ('as' NAME )? EOL'''
+	'''ImportOperation: 
+	'@import' NAME+ ('as' NAME )? EOL |
+	'@import' NAME+ '*' EOL
+	'''
 	alias = None
-	if t[2] and t[2][1]: alias = F._ref(t[2][1])
 	names   = list(tuple(t[1]))
+	if t[2] == "*":
+		names.append("*")
+	elif t[2] and t[2][1]: alias = F._ref(t[2][1])
 	resolve = None
 	for i in range(len(names)):
 		ref = F._ref(names[i])
@@ -979,8 +986,8 @@ def d_Litteral(t):
 	return t[0]
 
 def d_Integer(t):
-	'''Integer : "-?[0-9]+" '''
-	return F._number(int(t[0]))
+	'''Integer : "-?[0-9]+" | "-?0x[A-Fa-f0-9]+"'''
+	return F._number(eval(t[0]))
 
 def d_Float(t):
 	'''Float : "-?[0-9]+\.[0-9]+" '''

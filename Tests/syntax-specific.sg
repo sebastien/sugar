@@ -1,5 +1,10 @@
 # FEATURE: Conditional compilations
 
+@specific ActionScript
+	@shared console  = Undefined
+	@shared document = Undefined
+@end
+
 @specific TARGET -OTHERTARGET
 	@function f
 		return 0
@@ -26,6 +31,5 @@
 		a  = 20
 	@end
 @end
-
 
 # EOF
