@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   01-Aug-2007
+# Last mod.         :   03-Aug-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, tempfile, StringIO
@@ -26,6 +26,7 @@ OPT_TEST       = "Tells wether the source code is valid or not"
 OPT_DEFINE     = "Defines a specific target (for @specific)"
 OPT_RUN        = "Directly runs the script (default)"
 OPT_COMPILE    = "Compiles the given code to the output (current) directory"
+OPT_RUNTIME    = "Outputs the runtime as well when compiled"
 OPT_VERSION    = "Ensures that Sugar is at least of the given version"
 DESCRIPTION    = """\
 Sugar is a meta-language that can be easily converted to other languages such
@@ -125,6 +126,8 @@ def run( args, output=sys.stdout ):
 		help=OPT_RUN)
 	oparser.add_option("-c", "--compile", action="store_true", dest="compile",
 		help=OPT_COMPILE)
+	oparser.add_option("-R", "--runtime", action="store_true", dest="runtime",
+		help=OPT_RUNTIME)
 	oparser.add_option("-l", "--lang", action="store", dest="lang",
 		help=OPT_LANG)
 	oparser.add_option("-o", "--output", action="store", dest="output", 
@@ -228,14 +231,31 @@ def run( args, output=sys.stdout ):
 	if options.compile:
 		# FIXME: Should ask the program for a proper module ordering so that
 		# dependency conflicts are avoided
+		mode = "w"
+		splitter = None
+		# We write the runtime if it is specified
+		if options.runtime:
+			source = writer.getRuntimeSource()
+			if options.output is None:
+				output.write( source )
+			elif os.path.isdir(options.output):
+				if splitter is None:
+					splitter = modelwriter.FileSplitter(options.output)
+				splitter.fromString(source)
+			else:
+				f = file(options.output, mode) ; mode = "a"
+				f.write(source)
+				f.close()
+		# Then we write the modules
 		for module in modules:
 			if options.output is None:
 				output.write( writer.write(module) + "\n")
 			elif os.path.isdir(options.output):
-				splitter = modelwriter.FileSplitter(options.output)
+				if splitter is None:
+					splitter = modelwriter.FileSplitter(options.output)
 				splitter.fromString(writer.write(module))
 			else:
-				f = file(options.output, "w")
+				f = file(options.output, mode) ; mode = "a"
 				f.write(writer.write(module))
 				f.close()
 	elif options.run:
