@@ -14,9 +14,9 @@ import os, sys, shutil, traceback, tempfile, StringIO
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
-from lambdafactory import javascript, java, c, pnuts, actionscript, modelwriter
+from lambdafactory import javascript, java, c, pnuts, actionscript, python, modelwriter
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 
 OPT_LANG       = "Specifies the target language (js, java, pnuts, actionscript)"
 OPT_OUTPUT     = "Specifies the output where the files will be generated (stdout, file or folder)"
@@ -166,6 +166,7 @@ def run( args, output=sys.stdout ):
 		elif args[0].endswith("pnuts"): options.lang = "pnuts"
 		elif args[0].endswith("c"): options.lang = "c"
 		elif args[0].endswith("as"): options.lang = "as"
+		elif args[0].endswith("py"): options.lang = "python"
 	if options.lang in ("js","javascript") or not options.lang:
 		writer   = javascript.Writer(reporter=reporter)
 		resolver = javascript.Resolver(reporter=reporter)
@@ -188,6 +189,10 @@ def run( args, output=sys.stdout ):
 		writer   = actionscript.Writer(reporter=reporter)
 		resolver = actionscript.Resolver(reporter=reporter)
 		parser.options.addTarget("ActionScript")
+	elif options.lang in ("py", "python"):
+		writer   = python.Writer(reporter=reporter)
+		resolver = python.Resolver(reporter=reporter)
+		parser.options.addTarget("Python")
 	elif options.lang in ("s", "sg", "sugar"):
 		writer   = modelwriter.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
@@ -228,7 +233,7 @@ def run( args, output=sys.stdout ):
 	# Then we execute the operations
 	if options.api:
 		apidoc(modules, options.api)
-	if options.compile:
+	if options.compile or options.run:
 		# FIXME: Should ask the program for a proper module ordering so that
 		# dependency conflicts are avoided
 		mode = "w"
@@ -258,7 +263,7 @@ def run( args, output=sys.stdout ):
 				f = file(options.output, mode) ; mode = "a"
 				f.write(writer.write(module))
 				f.close()
-	elif options.run:
+	if options.run:
 		f, path = tempfile.mkstemp(prefix="Sugar")
 		code = output.getvalue()
 		os.write(f,code )
@@ -271,6 +276,11 @@ def run( args, output=sys.stdout ):
 		elif options.lang == "pnuts":
 			interpreter = os.getenv("SUGAR_PNUTS") or "pnuts"
 			command = "%s '%s'" % (interpreter, path)
+		elif options.lang == "python":
+			interpreter = os.getenv("SUGAR_PYTHON") or "python"
+			command = "%s '%s'" % (interpreter, path)
+		else:
+			print "No runtime available for language:", options.lang
 		os.system(command)
 		os.unlink(path)
 

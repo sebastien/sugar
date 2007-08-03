@@ -1293,7 +1293,7 @@ class Parser:
 		given file."""
 		# FIXME: For now, we have a single-level
 		res = os.path.splitext(os.path.basename(modulePath))[0]
-		res = res.replace("-", "_").replace(".", "_")
+		res = res.replace("-", "").replace(".", "")
 		return res
 
 	def warn( self, message ):
