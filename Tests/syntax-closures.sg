@@ -22,3 +22,11 @@ test = {a|
 	print ("Hello", a)
 	return {x|return 1 + x}
 }
+
+var b = 10
+test = {
+	return {x|return b + x }
+}
+print (text()(1) == 11)
+b = 20
+print (text()(1) == 11)

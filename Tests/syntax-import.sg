@@ -1,6 +1,7 @@
 @target Pnuts
 @import java awt Frame
 @import java awt Button as Btn
+@import java awt *
 
 var f = new java awt Frame ("Hello, World")
 var b = new Btn("Click Me")
