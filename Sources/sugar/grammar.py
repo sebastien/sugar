@@ -132,7 +132,7 @@ def d_Program(t):
 	return m
 
 def d_Code(t, spec):
-	'''Code : (EOL | Embed | Specific | (CHECK (Declaration|Condition|Statement|Comment)))* '''
+	'''Code : (EOL | Embed | Specific | Rewrite | (CHECK (Declaration|Condition|Statement|Comment)))* '''
 	# FIXME: Declarations should not go into code
 	return t_filterOut(None, t[0])
 
@@ -155,6 +155,30 @@ def d_Embed(t, nodes):
 		lines.append(line[line.find("|")+1:])
 	return F.embed(language, "\n".join(lines))
 
+def d_Rewrite(t, nodes):
+	'''Rewrite:
+		'@rewrite' '(' NAME ')' (
+			":[^\\n]*" 
+		|	EOL
+			( '|' "[^\\n]*" EOL )+
+			'@end'
+		)
+	'''
+	target = t[2]
+	template = t[-1]
+	# We have a multiple-line template
+	if template[0] is None:
+		buf = nodes[0].buf
+		code = buf[nodes[4].start_loc.s:nodes[4].end]
+		lines = []
+		for line in code.split("\n")[1:-1]:
+			lines.append(line[line.find("|")+1:])
+		template = "\n".join(lines)
+	# Or we have a single line
+	else:
+		template = template[0][1:]
+	return F.embedTemplate(target, template)
+	
 def d_SpecificTarget(t):
 	'''SpecificTarget: "[\+\-]"? NAME'''
 	if t[0]: target=t[0][0] + t[1]

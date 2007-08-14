@@ -14,7 +14,7 @@ import os, sys, shutil, traceback, tempfile, StringIO
 import grammar
 
 from lambdafactory.reporter import DefaultReporter
-from lambdafactory import javascript, java, c, pnuts, actionscript, python, modelwriter
+from lambdafactory import javascript, java, c, pnuts, actionscript, python, modelwriter, typer
 
 __version__ = "0.8.1"
 
@@ -222,6 +222,15 @@ def run( args, output=sys.stdout ):
 	if options.run:
 		output = StringIO.StringIO()
 		output.write(writer.getRuntimeSource())
+	# We parse the interfaces
+	interfaces_dir = os.path.join(os.path.dirname(os.path.abspath(modelwriter.__file__)), "runtimes", "interfaces")
+	for interface in os.listdir(interfaces_dir):
+		interface_path = os.path.join(interfaces_dir, interface)
+		if not interface_path.endswith(".sg") or not os.path.isfile(interface_path):
+			continue
+		if options.verbose:
+			print "Loading interface", interface_path
+		parser.parse(interface_path)
 	# We parse the source files
 	for source_path in args:
 		if options.verbose:
@@ -242,6 +251,8 @@ def run( args, output=sys.stdout ):
 				print error_msg
 	# We flow everything
 	resolver.flow(parser.program())
+	# We type everything
+	typer.type(parser.program())
 	# Then we execute the operations
 	if options.api:
 		apidoc(modules, options.api)

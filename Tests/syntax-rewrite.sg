@@ -1,0 +1,31 @@
+# DESCRIPTION: @rewrite allows functions/methods to be rewritten for a specific
+# target. 
+# TODO: Support more targets
+@class List
+
+	@constructor
+		@rewrite(Python):[]
+	@end
+
+	@method push v
+		@rewrite(Python):${self}.append(${v})
+	@end
+
+	@method pop
+		@rewrite(Python):${self}.pop()
+	@end
+
+	@method length
+		@rewrite(Python):${self}.length
+	@end
+
+	@method swap a,b
+		@rewrite(Python)
+		|${?s} = ${self}[${a}]
+		|${self}[${a}] = ${self}[${b}]
+		|${self}[${b}] = ${?s}
+		@end
+	@end
+@end
+
+# EOF
