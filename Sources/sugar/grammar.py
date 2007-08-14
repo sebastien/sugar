@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   02-Aug-2007
+# Last mod.         :   14-Aug-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -236,14 +236,16 @@ def d_Declaration(t):
 # ----------------------------------------------------------------------------
 
 def d_Main(t):
-	'''Main: '@main' EOL
+	'''Main: '@main' NAME? EOL
 		  (INDENT
 	      Code
 	      DEDENT)?
 	   '@end'
 	'''
-	f = F.createFunction(F.MainFunction , ())
-	t_setCode(f, t[2] and t[2][1] or ())
+	args = t[1] or ["args"]
+	args = map(F._arg, args)
+	f = F.createFunction(F.MainFunction , args)
+	t_setCode(f, t[3] and t[3][1] or ())
 	return f
 
 def d_Function(t):
@@ -455,7 +457,7 @@ def d_Shared(t):
 
 def d_Attribute(t):
 	'''Attribute: 
-		'@property' NAME (':' Type)? ('=' Value)?  EOL
+		'@property' NAME (':' Type)? ('=' (Value | Expression))?  EOL
 		Documentation ?
 	 '''
 	a = F._attr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
@@ -965,12 +967,14 @@ def d_Arguments(t):
 	return r
 
 def d_Argument(t):
-	'''Argument: NAME (':' Type)? ('?'|'...'|'=' (Litteral|'C' Expression ')')) ? '''
+	'''Argument: NAME (':' Type)? ('?'|'...'|'=' (Litteral| Expression )) ? '''
 	is_optional = t[2] and t[2][0] == '?'
 	is_rest     = t[2] and t[2][0] == '...'
+	has_value   = t[2] and t[2][0] == '='
 	arg = F._arg(t[0], t[1] and t[1][1] or None)
 	if is_optional: arg.setOptional(True)
 	if is_rest: arg.setRest(True)
+	if has_value: arg.setDefault(t[2][-1])
 	return arg
 
 def d_Type(t):
