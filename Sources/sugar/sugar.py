@@ -154,13 +154,14 @@ def run( args, output=sys.stdout ):
 		print "Current version is %s, but required version is %s" % (__version__, options.version)
 		return -1
 	# Otherwise, we are in interpreter mode
-	parser           = grammar.Parser(verbose=options.verbose)
+	parser           = grammar.Parser(verbose=False)
 	if options.targets:
 		for target in options.targets:
 			parser.options.addTarget(target)
 	writer, resolver = None, None
 	reporter         = DefaultReporter
 	if not options.lang and args:
+		print args
 		if args[0].endswith("js"): options.lang = "js"
 		elif args[0].endswith("java"): options.lang = "java"
 		elif args[0].endswith("pnuts"): options.lang = "pnuts"
@@ -171,31 +172,38 @@ def run( args, output=sys.stdout ):
 		writer   = javascript.Writer(reporter=reporter)
 		resolver = javascript.Resolver(reporter=reporter)
 		parser.options.addTarget("JavaScript")
+		options.lang = "javascript"
 	elif options.lang == "c":
 		writer   = c.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
 		parser.options.addTarget("C")
 		assert not options.run
+		options.lang = "c"
 	elif options.lang == "java":
 		writer   = java.Writer(reporter=reporter)
 		options = java.Resolver(reporter=reporter)
 		parser.options.addTarget("Java")
 		assert not options.run
+		options.lang = "java"
 	elif options.lang == "pnuts":
 		writer   = pnuts.Writer(reporter=reporter)
 		resolver = pnuts.Resolver(reporter=reporter)
 		parser.options.addTarget("Pnuts")
+		options.lang = "pnuts"
 	elif options.lang in ("as", "actionscript"):
 		writer   = actionscript.Writer(reporter=reporter)
 		resolver = actionscript.Resolver(reporter=reporter)
 		parser.options.addTarget("ActionScript")
+		options.lang = "actionscript"
 	elif options.lang in ("py", "python"):
 		writer   = python.Writer(reporter=reporter)
 		resolver = python.Resolver(reporter=reporter)
 		parser.options.addTarget("Python")
+		options.lang = "python"
 	elif options.lang in ("s", "sg", "sugar"):
 		writer   = modelwriter.Writer(reporter=reporter)
 		resolver = c.Resolver(reporter=reporter)
+		options.lang = "sugar"
 		assert not options.run
 	else:
 		print "Please specify a valid language (js or c)"
@@ -207,6 +215,8 @@ def run( args, output=sys.stdout ):
 	# 3 -- Program prcocessing passes (typing, resolution, etc)
 	# 4 -- Generate the output files
 	modules = []
+	if options.test:
+		options.run = options.compile = False
 	if not options.run and not options.compile:
 		options.run = True
 	if options.run:
@@ -214,6 +224,8 @@ def run( args, output=sys.stdout ):
 		output.write(writer.getRuntimeSource())
 	# We parse the source files
 	for source_path in args:
+		if options.verbose:
+			print "Parsing", source_path
 		try:
 		#if True:
 			source, module = parser.parse(source_path)
@@ -223,7 +235,7 @@ def run( args, output=sys.stdout ):
 			if options.test:
 				print "%-40s [%s]" % (source_path,  'FAILED')
 			#else:
-			if True:
+			if not options.test or options.verbose :
 				error_msg = StringIO.StringIO()
 				traceback.print_exc(file=error_msg)
 				error_msg = error_msg.getvalue()
