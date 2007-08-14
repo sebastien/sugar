@@ -6,7 +6,7 @@
 	return 0
 @end
 
-@function f2 a:Int=1, b:Bool=True, f:Function=({x|x + 1})
+@function f2 a:Int=1, b:Bool=True, f:Function={x|x + 1}
 	return 0
 @end
 
@@ -17,3 +17,5 @@
 @function f4:Number a:Int=1, b:Bool=True, f:Function=({x|x + 1})
 	return 0
 @end
+
+# EOF
