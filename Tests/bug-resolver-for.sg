@@ -1,0 +1,13 @@
+# PROBLEM: Iterations do not seem to define the slots in the dataflow properly
+
+# This works (I don't get why)
+for v,i in [10,11,12,13,14]
+	print ("v:", v, "i:", i)
+end
+
+# This does not work (says that j is undefined)
+for j in 0..10
+	print ("1:", j)
+end
+
+# EOF

@@ -1,0 +1,6 @@
+@class A
+	@constructor
+		# This should fire up a warning
+		super()
+	@end
+@end
