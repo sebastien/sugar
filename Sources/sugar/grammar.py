@@ -998,7 +998,7 @@ def d_Argument(t):
 	arg = F._arg(t[0], t[1] and t[1][1] or None)
 	if is_optional: arg.setOptional(True)
 	if is_rest: arg.setRest(True)
-	if has_value: arg.setDefault(t[2][-1])
+	if has_value: arg.setDefaultValue(t[2][-1])
 	return arg
 
 def d_Type(t):
