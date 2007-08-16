@@ -1,0 +1,48 @@
+if 1
+	print 'One'
+end
+
+if 1
+	print 'One'
+if 2
+	print 'Two'
+end
+
+if 1
+	print 'One'
+else
+	print 'Two'
+end
+
+# Nested if
+if 1
+	if 3
+		print "Impossible"
+	if 4
+		print "Impossible"
+	end
+else
+	print 'Two'
+end
+
+# In closure
+var f = {a|
+	if 1
+		if 3
+			print "Impossible"
+		if 4
+			print "Impossible"
+		end
+	else
+		print 'Two'
+	end
+}
+
+@function inArea pos, area
+| This is a snippet that failed parsing at some point
+	if (pos[0] < area x)            -> return false
+	if (pos[0] > (area x + area w)) -> return false
+	if (pos[1] > area y)            -> return false
+	if (pos[1] > (area y + area y)) -> return false
+	else -> return true
+@end

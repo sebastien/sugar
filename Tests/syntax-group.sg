@@ -21,7 +21,7 @@
 		@end
 		
 		@method bindHTML e
-		@when   e and e boundHTML is undefined
+		@if   e and e boundHTML is undefined
 			a = 0
 		@end
 		
@@ -41,7 +41,7 @@
 		@end
 		
 		@method getUserWish
-		@when accessor
+		@if accessor
 			return $(".input.wish", element) get (0) value
 		@end
 	@end

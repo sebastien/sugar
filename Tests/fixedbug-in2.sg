@@ -3,12 +3,12 @@
 @function getPageContent
 	var iframe  = $("#editableArea")[0]
 	var content = Undefined
-	when (jQuery browser msie)
+	if (jQuery browser msie)
 		# PROBLEM
 		content = iframe contentWindow document body innerHTML
 		# SOLUTION
 		#content = (iframe contentWindow document body innerHTML)
-	otherwise
+	else
 		# PROBLEM
 		content = iframe contentWindow body innerHTML
 		# SOLUTION

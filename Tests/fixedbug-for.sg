@@ -7,10 +7,10 @@
 @function cellInQueue cell
 | Tells if the given cell is in the waiting queue for this stream
 	for cell in cells
-		when (c id == cell id) -> return True
+		if (c id == cell id) -> return True
 	end
 	for cell in syncCells
-		when (c id == cell id) -> return True
+		if (c id == cell id) -> return True
 	end
 	return False
 @end

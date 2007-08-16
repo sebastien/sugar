@@ -1,5 +1,5 @@
 # PROBLEM: JavaScript and ActionScript backend got the order of the iteration
-# wrong at some point when we had -X...Y
+# wrong at some point if we had -X...Y
 for i in 0..1
 	print ("1:", i)
 end

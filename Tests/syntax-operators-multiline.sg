@@ -1,7 +1,7 @@
-# PROBLEM: When we have long conditions for when, we'd like to span more than
+# PROBLEM: When we have long conditions for if, we'd like to span more than
 # one line
 # SYNTAX: Allow
-# when condition ;
+# if condition ;
 # (and|or) condition ;
 # (and|or) condition
 # NOTE: This only works for computation, before the operator
@@ -10,7 +10,7 @@
 	var averylongvariable = 1
 	var anotherverylongvariable = 1
 
-	when averylongvariable == 1 ;
+	if averylongvariable == 1 ;
 	and anotherverylong variable ;
 	or anotherverylong
 		print "OK"

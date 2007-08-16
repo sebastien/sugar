@@ -1,24 +1,24 @@
-when 1
+if 1
 	print (True)
 end
 
-when 1 -> print (True)
+if 1 -> print (True)
 
-when 2 
+if 2 
 	print (True)
-otherwise
+else
 	print (False)
 end
 
 
-when 1    -> print True
-otherwise -> print False
+if 1    -> print True
+else -> print False
 
-when 3
+if 3
 	print (True)
-when 4
+if 4
 	print (False)
-otherwise
+else
 	print ()
 end
 

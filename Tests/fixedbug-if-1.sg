@@ -3,8 +3,9 @@
 #    assert isinstance(rule, interfaces.IMatchProcessOperation)
 @class Application
 	@operation searchContent criteria
-		when criteria is Undefined -> criteria = $ "#searchBox" val()
-		when matching_pages length > 0
+		if criteria is Undefined -> criteria = $ "#searchBox" val()
+		if matching_pages length > 0
+			print "POUET"
 		end
 	@end
 

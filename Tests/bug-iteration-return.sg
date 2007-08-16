@@ -3,7 +3,7 @@
 # need to properly define this edge case.
 @function f
 	0..10 :: {i|
-		when i == 9
+		if i == 9
 			return True
 		end
 	}

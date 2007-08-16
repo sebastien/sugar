@@ -1,0 +1,13 @@
+# PROBLEM: 'if targetAnchor' was printed as 'if.targetAnchor' in  JavaScript
+# TEST EMPTY sugar -ljs $FILE | grep 'if.targetAnchor'
+@class bozo
+	@method bozozo targetAnchor
+		if targetAnchor == "E" 
+			if  True -> return false
+		if targetAnchor == "W" or targetAnchor == "NW" or targetAnchor == "N"
+			return False
+		end
+		
+		return true
+	@end
+@end

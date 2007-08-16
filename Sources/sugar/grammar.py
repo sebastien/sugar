@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   14-Aug-2007
+# Last mod.         :   16-Aug-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "as and or not has is var new in for return when yield otherwise break".split()
+KEYWORDS = "as and or not has is var new in for return if yield else break".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
@@ -630,27 +630,27 @@ def d_Condition(t):
 
 def d_ConditionWhenMultiLine(t):
 	''' ConditionWhenMultiLine: 
-		'when' Expression EOL+ 
+		'if' Expression EOL+ 
 			INDENT Code DEDENT
 	'''
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[4]))
 
 def d_ConditionWhenSingleLine(t):
 	''' ConditionWhenSingleLine: 
-		'when' Expression '->' Line EOL
+		'if' Expression '->' Line EOL
 	'''
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseMultiLine(t):
 	''' ConditionOtherwiseMultiLine: 
-		'otherwise' EOL+ 
+		'else' EOL+ 
 			INDENT Code DEDENT
 	'''
 	return F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseSingleLine(t):
 	''' ConditionOtherwiseSingleLine: 
-		'otherwise' '->' Line EOL?
+		'else' '->' Line EOL?
 	'''
 	return F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[2]))
 
@@ -894,20 +894,21 @@ def d_Expression(t):
 
 def d_ConditionExpression(t):
 	''' ConditionExpression:
-		'when' Expression '->' Expression
-		('|' 'when' Expression '->' Expression) *
-		('|' 'otherwise' Expression) ?
+		'if' Expression '->' Expression
+		('|' Expression '->' Expression) *
+		('|' Expression) ?
 	'''
 	res = F.select()
 	m   = F.matchExpression(t[1], t[3])
 	res.addRule(m)
 	rules = t[4]
 	while rules:
-		predicate, _, expression = rules[2:5]
+		print rules[1:4]
+		predicate, _, expression = rules[1:4]
 		res.addRule(F.matchExpression(predicate, expression))
-		rules = rules[5:]
+		rules = rules[4:]
 	if t[5]:
-		res.addRule(F.matchExpression(F._ref("True"), t[5][2]))
+		res.addRule(F.matchExpression(F._ref("True"), t[5][1]))
 	return res
 
 def d_Value(t):
