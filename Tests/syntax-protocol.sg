@@ -1,7 +1,7 @@
 @module jQuery
 @as Interface
 
-@interface jQueryEngine
+@protocol jQueryEngine
 	@group Core
 		@abstract @method each Function
 		@abstract @method eq Number

@@ -161,7 +161,6 @@ def run( args, output=sys.stdout ):
 	writer, resolver = None, None
 	reporter         = DefaultReporter
 	if not options.lang and args:
-		print args
 		if args[0].endswith("js"): options.lang = "js"
 		elif args[0].endswith("java"): options.lang = "java"
 		elif args[0].endswith("pnuts"): options.lang = "pnuts"
