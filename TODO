@@ -1,3 +1,7 @@
+Support for casting
+
+	((List)asas) length()
+
 More operations for if:
 
 		if self._views.main is undefined:
@@ -13,7 +17,6 @@ Add with:
 	end
 
 Add default/named arguments:
-
 	
 	function i ( a=0, b=1, c=2 ):
 	end

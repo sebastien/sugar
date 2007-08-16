@@ -1,0 +1,11 @@
+@function f
+	var triggered = []
+	# PROBLEM: The following line is translated in JS to
+	# 		if ( (triggered.find(1) == -1) )
+	# while find should be rewritten, as specified in the DataTypes.sg module.
+	# this means that the invocation in the if is not linked properly to the
+	# triggered slot defined above.
+	if triggered find (1) == -1
+		print "OK"
+	end
+@end
