@@ -1293,6 +1293,11 @@ class Parser:
 		text = open(filepath, 'r').read()
 		return self.parseModule(self.pathToModuleName(filepath), text, filepath)
 
+	def clean(self):
+		for f in "d_parser_mach_gen.g.md5 d_parser_mach_gen.g.d_parser.dat".split():
+			if os.path.exists(f):
+				os.unlink(f)
+				
 	def parseModule( self, name, text, sourcepath=None ):
 		# And ensure that there is an EOL
 		if text[-1] != "\n":
@@ -1308,7 +1313,10 @@ class Parser:
 				res.setSource("file://" + os.path.abspath(sourcepath))
 			# FIXME: Add support for modules which are part of other modules
 			self._program.setSlot(name, res)
+			self.clean()
 			return ( text, res )
+		else:
+			self.clean()
 		# And catch possible exceptions
 		#except tpg.SyntacticError:
 		#	self.syntaxError(sourcepath)
