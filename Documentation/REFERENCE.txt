@@ -1,0 +1,283 @@
+== Sugar v0.8.2
+== Language Reference
+-- Author: Sebastien Pierre <sebastien@ivy.fr>
+-- Revision: 21-Aug-2007 (21-Aug-2007)
+
+1. About Sugar
+==============
+
+ - Code as data
+ - Meta-programming (compiled and interpreted)
+ - Plastic
+ - Dynamic, Reflexive
+ - Concurrency
+ - Advanced type system
+ - Compiles to many backends (JavaScript, ActionScript, Python, Pnuts)
+
+Benefits
+
+ - Write your own DSL or custom syntax
+ - Easy to refactor
+ - You can manipulate your code
+
+2. Syntax
+=========
+
+  2.1 Basics
+  ------
+
+   - Case sensitive
+   - Indentation matters
+   - Tabs are required
+
+  2.2 Design
+  ------
+
+   - Short learning curve for JavaScript, Python or Ruby programmers
+   - Be explicit
+   - Limit possibilities of variations between coding styles
+   - Easy to parse, easy to write tools
+
+
+  2.3 Expressions and statements
+  ------------------------------
+
+  In Sugar, most constructs are _expressions_ (they can be evaluated, meaning
+  they can be substituted to a value) something). Expressions can be as simple
+  as computations, or as complex as function declarations. Here is a list of
+  expressions:
+
+   - Computation
+   - Invocation
+   - Literal declaration (strings, numbers, primitive types)
+   - Anonymous function declaration
+   - Inline conditional
+
+  On the other hand, _statements_ are operations that do not substitute to a
+  value (as opposed to expressions). These operations typically trigger
+  language-specific side effects, such as returning a result, raising an
+  exception, etc. Sugar statements are:
+
+   - Allocation (declaring a variable)
+   - Assignment  (assigning a value to a variable)
+   - Termination (return statement)
+   - Interruption (raising an exception)
+   - Control structures (most conditionals, loops, etc)
+
+  _type expressions_ (see [type system]()).
+
+  2.4 Keywords
+  ------------
+
+  >   var                                       (variable declaration)
+  >   as and or not has is in                   (operators)
+  >   new                                       (instanciation)
+  >   if else                                   (conditionals)
+  >   for while                                 (iterations/repetitions)
+  >   return break continue yield raise         (control flow manipulation)
+  >   end                                       (syntax block terminator)
+
+  2.5 Symbols
+  -----------
+
+  Symbols are elements of the syntax that 
+
+  2.6 Literals
+  -------------
+
+  Literals are values that can be fully described when they are declared.
+  Literals include numbers, strings and primitive datatypes.
+
+  Numbers
+  -------
+
+  Number are either _integers_ or _floats_, expressed using various notations:
+
+  >   1                                          # (integer)
+  >   -10                                        # (integer)
+  >   1.0                                        # (float)
+  >    .0                                        # (float)
+  >   -2.0                                       # (float)
+  >   0xFFEE00                                   # (integer in hexadecimal)
+
+  Strings are the same as in C (syntax additions coming soon !):
+
+  >   "Hello, World"
+  >   "Hello, \"World\" !"
+
+
+    Note _____________________________________________________________________
+    There is no way right now to define an encoding for the string (no unicode
+    string support).
+
+  Lists
+  -----
+
+  Sugar also supports lists and dictionaries as literal (we call them composite
+  primitive types):
+
+  >   []
+  >   [1,2,3]
+  >   [1,2,3,["a", "b", "c", "d"]]
+  
+  Arrays can have any value in them (this includes arrays, of course).
+
+  >   {}
+  >   {one:1,two:2,three:3}
+  >   {id:0,attributes:{name:"Bob",email:"bob@email.org"}}
+
+  Dictionaries
+  ------------
+
+  Dictionaries are defines as a comma-separated 'KEY : VALUE' list. The key is a
+  regular sugar _symbol_, or can be an _expression_ when the key is surrounded
+  by parens:
+
+  >   {("one"):1, ("two"):2}
+
+  also, keys do not need to be symbols or strings:
+
+  >   {(1):1, (2):2, (3):3}
+
+
+    Note _____________________________________________________________________
+    Some back-ends may not support declaration of dictionaries with expressions
+    as keys (but the main ones do !). In this case, an error will be produced at
+    compilation time.
+
+  2.2 Symbolic values
+  -------------------
+
+  Symbolic values are specific values of the programming language like 'None' in
+  Python or 'null' or 'undefined' in JavaScript. They represent singleton
+  values.
+
+# TODO: Better explanation
+
+  Sugar defines the following symbolic values:
+
+    - 'Undefined', meaning that a value is undefined (there was no value bound
+      to it at allocation -- see [allocation](@allocations).
+
+    - 'None', representing the absence of value.
+
+    - 'Null'
+
+    - 'Error', can be used to indicate that an error happened
+
+  2.2. Allocations
+  ----------------
+
+  Values have to be bound to variables to be usable. A variable is a symbol that
+  references a slot (of the context in the current scope). A variable is
+  declared by using the following statement:
+
+  >   var SYMBOL (=EXPRESSION)?
+
+  like
+
+  >   var fruits = ["apple", "cherry", "banana"]
+
+  you can also declare a slot without a value (in which case the slot value will
+  be 'Undefined').
+
+  >   var fruits
+
+  When declaring a slot, you have the opportunity to associate a _type
+  declaration_ with the slot:
+
+  >   var SYMBOL:TYPE (=EXPRESSION)?
+
+  the 'TYPE' declaration is a type expression that allows to constrain the usage
+  of the slot:
+
+
+  >   var fruits:List
+
+  will indicate that the 'fruits' is a slot whose values must be compatible with
+  type 'List' (see [type system]()]
+
+# TODO: multiple values, slicing assignment
+
+  2.2 Assignments
+  ---------------
+
+  Assignments are actually a subset of allocations in the sense that allocations
+  both allocate a slot, and assign a value (bind the value to the slot).
+  Assignments in Sugar are made using the '=' operator:
+
+  >   SYMBOL = EXPRESSION
+
+  here is an example:
+
+  >   fruits = ["orange", "pear", "tangerine"]
+
+  but you can also assign a value  to more than one variables, in which case the
+  'EXPRESSION' will be sliced (its value must be _sliceable_) and the pieces
+  will be distributed to assigned variables:
+
+  >   orange, pear, tangerine = ["orange", "pear", "tangerine"]
+
+  where 'orange' is '"orange", and 'pear' is '"pear"' and 'tangerine' is
+  '"tangerine'". However:
+
+  >   orange, pear_tangerine = ["orange", "pear", "tangerine"]
+
+  will fail (at runtime) because there is one more element. What we (and people
+  familiar with _functional programming_) would want to do is rather this:
+
+  >   orange | pear_tangerine = ["orange", "pear", "tangerine"]
+
+  where 'orange' will be '"orange'" and 'pear_tangerine' will be the _rest_
+  ('["pear","tangerine"]'). The '|' in the assignment meaning the rest, you can
+  combine ',' and '|' in one statement:
+
+  >   orange, pear | tangerine = ["orange", "pear", "tangerine"]
+
+  in which case 'orange' will be '"orange"', 'pear' will be '"pear"' and
+  'tangerine' will be '["tangerine"]' (the rest being always a list or a subset
+  of the original container).
+
+  Summary:
+
+  >   SYMBOL = EXPRESSION                        (single assignment)
+  >   SYMBOL (,SYMBOL)* = EXPRESSION             (multiple assignment)
+  >   SYMBOL (,SYMBOL) | SYMBOL = EXPRESSION     (split assignment)
+
+  2.2 Computations
+  ----------------
+
+
+3. Object model
+===============
+
+  3.1 Class
+  ----------
+
+  3.2 Protocols
+  -------------
+
+  3.3 Modules
+  -----------
+
+4. Type system
+===============
+
+5. Meta-programming
+===================
+
+
+  5.1 Embedding code
+  ------------------
+
+
+  5.2 Specific sections
+  ---------------------
+
+  5.3 Rewriting invocations
+  -------------------------
+
+6. Standard library
+===================
+
+# EOF - vim: ts=2 sw=2 et syn=kiwi
