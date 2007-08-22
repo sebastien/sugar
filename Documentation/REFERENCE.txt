@@ -145,7 +145,7 @@ Benefits
     as keys (but the main ones do !). In this case, an error will be produced at
     compilation time.
 
-  2.2 Symbolic values
+  2.7 Symbolic values
   -------------------
 
   Symbolic values are specific values of the programming language like 'None' in
@@ -161,11 +161,21 @@ Benefits
 
     - 'None', representing the absence of value.
 
+    - 'True'
+
+    - 'False'
+
     - 'Null'
 
     - 'Error', can be used to indicate that an error happened
 
-  2.2. Allocations
+    - 'Success'
+
+    - 'Timeout'
+
+
+
+  2.8 Allocations
   ----------------
 
   Values have to be bound to variables to be usable. A variable is a symbol that
@@ -199,7 +209,13 @@ Benefits
 
 # TODO: multiple values, slicing assignment
 
-  2.2 Assignments
+  Summary:
+
+  >   var SYMBOL                                 (allocation)
+  >   var SYMBOL = EXPRESSION                    (allocation + assignment)
+# >   var ASSIGNMENT                             (multiple allocation + assignment)
+
+  2.9 Assignments
   ---------------
 
   Assignments are actually a subset of allocations in the sense that allocations
@@ -218,7 +234,7 @@ Benefits
 
   >   orange, pear, tangerine = ["orange", "pear", "tangerine"]
 
-  where 'orange' is '"orange", and 'pear' is '"pear"' and 'tangerine' is
+  where 'orange' is '"orange"', and 'pear' is '"pear"' and 'tangerine' is
   '"tangerine'". However:
 
   >   orange, pear_tangerine = ["orange", "pear", "tangerine"]
@@ -244,9 +260,167 @@ Benefits
   >   SYMBOL (,SYMBOL)* = EXPRESSION             (multiple assignment)
   >   SYMBOL (,SYMBOL) | SYMBOL = EXPRESSION     (split assignment)
 
-  2.2 Computations
+
+  2.10 Computations
+  -----------------
+
+  Computations are basic arithmetic operations applied to values. Each
+  computation uses an operators, which can be:
+
+   - an arithmetic operator: '+', '-', '/', '*', '%'
+   - a comparison operator: '<', '>', '==', '!='
+   - a logic operator: 'and', 'or', 'not'
+   - specific operators: 'is', 'has'
+
+  most operators take two operands, excepted the 'not' operator which only takes
+  one operand to its right. The general form of computations is as follows:
+
+  >   OPERATOR EXPRESSION                        (single-operand operation)
+  >   EXPRESSION OPERATOR EXPRESSION             (operation with two operands)
+
+
+    Note _____________________________________________________________________
+    Sugar does not define suffix operations (like '--' or '++' as in C), but we
+    may add them as a later point. There are not bit-manipulation operators
+    ('||' '&&', '<<' and ''>>') yet.
+
+  Here are example of operations using _arithmetic operators_:
+
+  >   1 + 1                                      (addition)
+  >   5 * 2                                      (multiplication)
+  >   5 / 2                                      (division)
+  >   5 % 2                                      (modulo)
+
+  here are _comparison operators_:
+
+  >   1 < 2                                      (smaller than)
+  >   2 > 2                                      (greater than)
+  >   1 <= 2                                     (smaller or equal to)
+  >   1 >= 2                                     (greater or equal to)
+  >   1 == 1                                     (equal to)
+  >   5 != 2                                     (not equal to)
+
+  here are _logic operators_:
+
+  >   not True                                   (negation)
+  >   True or False                              (logical union)
+  >   True and False                             (logical intersection)
+
+  _specific operators_ have a semantic that will be detailed later in the
+  [object model]() section. They are all related to doing queries on object:
+
+   - _object identification_ allows to tell wether two values are actually the
+     exact same object.
+   - _object slot querying_ allows to tell if an object defines a particular slot
+
+# TODO: isa like
+
+  >   object_a is object_b                       (value identification)
+  >   object has name                            (slot querying)
+
+  Additionally, it is possible to combine assignment and operations for a subset
+  of arithmetic operations:
+
+  >   a += 1                                     (a = a + 1)
+  >   a -= 1                                     (a = a - 1)
+
+  Summary:
+
+  >   OPERATOR EXPRESSION                        (single-operand operation)
+  >   EXPRESSION OPERATOR EXPRESSION             (operation with two operands)
+  >   SYMBOL += EXPRESSION                       (assignment with addition)
+  >   SYMBOL -= EXPRESSION                       (assignment with substraction)
+
+  2.11 Invocations
   ----------------
 
+  An invocation is the application of a set of values to a value that can be
+  invoked (we call them ''invocables''). The invocation will typically result in
+  a value (an invocation is an expression, as it substitutes to a value).
+
+  In Sugar, invocations have a syntax very similar to what you'd expect:
+
+  >   EXPRESSION ( EXPRESSION, EXPRESSION, EXPRESSION, ... )
+
+  where the first 'EXPRESSION' must evaluate to something that can be invoked.
+  These expression are typically references to _functions_ (see [next
+  section]()).
+
+  When your invocation has long expression as arguments, Sugar allows you to
+  make the invocation span multiple lines:
+
+  >   EXPRESSION ( EXPRESSION, EXPRESSION,
+  >   <tab>EXPRESSION
+  >   )
+
+  when using newlines, you can omit the trailing comma
+
+  >   EXPRESSION ( EXPRESSION
+  >   <tab>EXPRESSION
+  >   )
+
+  also, you're not forced to put an argument after the opening paren:
+
+  >   EXPRESSION (
+  >   <tab>EXPRESSION
+  >   <tab>EXPRESSION
+  >   )
+
+  # TODO: EXPRESSION (...EXPRESSION)
+  # TODO: EXPRESSION (SYMBOL=EXPRESSION)
+
+  2.13 Anonymous functions
+  -----------------------
+
+  Sugar allows _anonymous functions_ to be defined and used a values, like
+  numbers, strings, lists and dictionaries. An anonymous function is composed of
+  a set of statements (the function _body_) as well as the specification of the
+  function _arguments_:
+
+  >   { ARGUMENT, ARGUMENT | STATEMENTS }
+
+  the list of arguments can be empty, in which case you can write the function
+  as follows (provided it cannot be mis-interpreted with a dictionary literal).
+
+  >   { STATEMENTS }
+
+  As Sugar is quite strict about whitespace, the 'STATEMENTS' have to follow a
+  very specific scheme:
+
+  >   var SYMBOL                                 (allocation)
+  >   { ARGUMENTS | STATEMENT ; STATEMENT }      (one-liner)
+  >   
+  >   { ARGUMENTS | STATEMENT                    (more than one line)
+  >   <tab>STATEMENT
+  >   }
+  >   
+  >   { ARGUMENTS |                              (more than one line variant)
+  >   <tab>STATEMENT
+  >   }
+
+  this syntax is designed to enforce a consistent presentation of anonymous
+  functions.
+
+  Also, Sugar _anonymous functions_ are actually _closures_, meaning that you
+  can use variables defined in the enclosing scope. When you use these
+  variables, they reference the value of the variable at the time of the
+  function declaration, not invocation.
+
+  >   var a = 1
+  >   var f = { return a }
+  >   a = 10
+  >   f() == 1                                   (will evaluate 'True')
+
+  in a sense, variables implicitly referenced in anonymous function could be
+  rewritten as:
+
+  >   var a = 1
+  >   var f = { var a=1 ; return a }
+
+  2.12 Function declaration
+  -------------------------
+
+  Functions are the elements that 
 
 3. Object model
 ===============
