@@ -1,0 +1,7 @@
+for line:String in file readlines()
+	line split "." [-1:1]
+end
+
+for line:List in file readlines()
+	line length()
+end

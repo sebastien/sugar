@@ -1,0 +1,15 @@
+# DESC: This is to test the type translation system, where the calls 'append',
+# 'prepent', 'length', etc are defined in the LambdaFactory runtime interface,
+# and should be translated to the apporpriate basic types depending on the
+# target.
+@function f
+	var l = []
+	l swap (0,1)
+	print ("length:", l length())
+@end
+
+@function g aList:List
+	aList swap(0,1)
+@end
+
+g([])
