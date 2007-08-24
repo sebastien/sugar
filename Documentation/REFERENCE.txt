@@ -353,7 +353,8 @@ Benefits
   >   <tab>EXPRESSION
   >   )
 
-  when using newlines, you can omit the trailing comma
+  when using newlines, you can omit the trailing comma on the first line (but)
+  trailing commas on the body lines aren't allowed:
 
   >   EXPRESSION ( EXPRESSION
   >   <tab>EXPRESSION
