@@ -1,0 +1,25 @@
+# GOAL: Allow definition methods that will be used for specific operators
+@class
+
+	@operator + value
+		return self value + value
+	@end
+
+	@operator - value
+		return self value + value
+	@end
+
+
+	@operator string value
+		return ("My value is:" + value)
+	@end
+
+	@operator slice start, end
+	@end
+
+	@operator iterate start, end
+		return Iterator(...)
+	@end
+
+@end
+# EOF

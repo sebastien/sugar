@@ -1,0 +1,108 @@
+# GOAL: Check that rewrite works in all situations
+# EXPECTS: That the rewrite operation is the same everywhere
+@class A
+	@shared   P:String = ""
+	@property p:String = ""
+	@method m
+		var s = ""
+		var S:String = ""
+		var i = p length()
+		i = P length()
+		i = s length()
+		i = S length()
+		p length()
+		P length()
+		s length()
+		S length()
+		for i in 0..10
+			p length()
+			P length()
+			s length()
+			S length()
+		end
+		for i in p length()
+			pass
+		end
+		for i in P length()
+			pass
+		end
+		for i in s length()
+			pass
+		end
+		for i in S length()
+			pass
+		end
+		var _f = {
+			p length()
+			P length()
+			s length()
+			S length()
+		}
+		while (p length() and False)
+			p length()
+			P length()
+			s length()
+			S length()
+		end
+		while (P length() and False)
+			pass
+		end
+		while (s length() and False)
+			pass
+		end
+		while (S length() and False)
+			pass
+		end
+	@end
+@end
+
+@shared MP=""
+@shared mp:String=""
+@function f
+	var s = ""
+	var S:String = ""
+	mp length()
+	MP length()
+	s length()
+	S length()
+	for i in 0..10
+		mp length()
+		MP length()
+		s length()
+		S length()
+	end
+	for i in mp length()
+		pass
+	end
+	for i in MP length()
+		pass
+	end
+	for i in s length()
+		pass
+	end
+	for r in S length()
+		pass
+	end
+	var _f = {
+		mp length()
+		MP length()
+		s length()
+		S length()
+	}
+	while (mp length() and False)
+		mp length()
+		MP length()
+		s length()
+		S length()
+	end
+	while (MP length() and False)
+		pass
+	end
+	while (s length() and False)
+		pass
+	end
+	while (S length() and False)
+		pass
+	end
+@end
+# EOF

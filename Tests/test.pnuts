@@ -1,0 +1,37 @@
+package("pouet")
+class Point
+{
+	Object x
+	Object y
+	Point(px,py){
+		x=px
+		y=py
+	}
+}
+
+class Shape
+{
+	Object points
+	Shape(){
+		__this__=this
+		__this__.points = new java.util.ArrayList()
+	}
+	addPoint(point){
+		__this__=this
+		return __this__.points.add(point)
+	}
+	addAnotherPoint(point){
+		__this__=this
+		return __this__.addPoint(point)
+	}
+}
+
+class RectangleShape extends pouet.Shape
+{
+	RectangleShape(){
+		__this__=this
+	}
+}
+
+s = new Shape()
+s.addPoint(new Point(10,20))
