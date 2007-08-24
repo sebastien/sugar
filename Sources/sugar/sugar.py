@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # Encoding: ISO-8859-1
 # vim: ts=4 textwidth=79
-# -----------------------------------------------------------------------------
-# Project           :   Sugar                         <http://www.ivy.fr/sugar>
-# Author            :   Sebastien Pierre                     <sebastien@ivy.fr>
+# ----------------------------------------------------------------------------
+# Project           :   Sugar                        <http://www.ivy.fr/sugar>
+# Author            :   Sebastien Pierre                    <sebastien@ivy.fr>
 # License           :   Lesser GNU Public License
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   03-Aug-2007
-# -----------------------------------------------------------------------------
+# Last mod.         :   23-Aug-2007
+# ----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, tempfile, StringIO
 import grammar
@@ -16,7 +16,7 @@ import grammar
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, java, c, pnuts, actionscript, python, modelwriter, typer
 
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 
 OPT_LANG       = "Specifies the target language (js, java, pnuts, actionscript)"
 OPT_OUTPUT     = "Specifies the output where the files will be generated (stdout, file or folder)"
@@ -231,7 +231,13 @@ def run( args, output=sys.stdout ):
 			print "Loading interface", interface_path
 		parser.parse(interface_path)
 	# We parse the source files
-	for source_path in args:
+	if options.run:
+		sources_to_parse  = [args[0]]
+		runtime_arguments = args[1:]
+	else:
+		sources_to_parse  = args
+		runtime_arguments = []
+	for source_path in sources_to_parse:
 		if options.verbose:
 			print "Parsing", source_path
 		try:
@@ -291,16 +297,17 @@ def run( args, output=sys.stdout ):
 		os.write(f,code )
 		# TODO: Run the program main
 		os.close(f)
+		args_str = " ".join(runtime_arguments)
 		# FIXME: LambdaFactory should support compilers and runners
 		if options.lang in ("js","javascript") or not options.lang:
 			interpreter = os.getenv("SUGAR_JS") or "rhino"
-			command = "%s '%s'" % (interpreter, path)
+			command = "%s '%s' %s" % (interpreter, path, args_str)
 		elif options.lang == "pnuts":
 			interpreter = os.getenv("SUGAR_PNUTS") or "pnuts"
-			command = "%s '%s'" % (interpreter, path)
+			command = "%s '%s' %s" % (interpreter, path, args_str)
 		elif options.lang == "python":
 			interpreter = os.getenv("SUGAR_PYTHON") or "python"
-			command = "%s '%s'" % (interpreter, path)
+			command = "%s '%s' %s" % (interpreter, path, args_str)
 		else:
 			print "No runtime available for language:", options.lang
 		os.system(command)
