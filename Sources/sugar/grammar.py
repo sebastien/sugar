@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   16-Aug-2007
+# Last mod.         :   27-Aug-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = model.Factory(model)
-KEYWORDS = "as and or not has is var new in for return if yield else break".split()
+KEYWORDS = "as and or not has is var new in for return if yield else break raise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
@@ -829,6 +829,8 @@ def d_AllocationMultiple(t):
 		if len(var) == 1:var = var[0]
 		else:var, vartype = var 
 		return F.allocate(F._slot(var, vartype), expression)
+	# FIXME: Here we should use an intemediate slot to store the expression, or
+	# maybe better, define a multiple assignment element in the program model
 	# Here we have heads
 	for var in heads:
 		var = var.split(":") ; vartype = None
@@ -1004,7 +1006,7 @@ def d_Argument(t):
 	return arg
 
 def d_Type(t):
-	'''Type: NAME '''
+	'''Type:  NAME ('.' NAME)* | "<[^\\>]+>" '''
 	return t[0]
 
 # ----------------------------------------------------------------------------
