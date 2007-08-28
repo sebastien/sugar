@@ -1,0 +1,16 @@
+# PROBLEM: The default value for 'a' in B is the 1, should be 2 (especially in
+# Python BE).
+@class A
+	@property a = 1
+	@constructor
+		print ("A:" + a)
+	@end
+@end
+@class B:A
+	@property a = 2
+@end
+
+@main
+	var a = new A()
+	var b = new B()
+@end
