@@ -384,7 +384,7 @@ def d_Interface(t):
 	return f
 
 def d_Annotation(t):
-	'''Annotation: (WhenAnnotation | PostAnnotation| AsAnnotation)'''
+	'''Annotation: (WhenAnnotation | PostAnnotation| AsAnnotation | Decorator)'''
 	return t[0][0]
 
 def d_FunctionAnnotation(t):
@@ -401,6 +401,12 @@ def d_ModuleAnnotations(t):
 		)+
 	'''
 	return t[0]
+
+def d_Decorator(t):
+	'''Decorator: '@(' "[^\)]+" ')' EOL'''
+	annotation = t[1].strip()
+	name, params = annotation.split(" ",1)
+	return F.annotation(name, params)
 
 def d_ModuleAnnotation(t):
 	'''ModuleAnnotation: '@module' NAME EOL'''
@@ -491,9 +497,11 @@ def d_Attribute(t):
 def d_ClassAttribute(t):
 	'''ClassAttribute: 
 		'@shared' NAME (':' Type)?  ('=' Expression)? EOL
+		Annotation*
 		Documentation ? 
 	'''
 	a =  F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
+	for ann in t[-2]: a.annotate(ann)
 	if t[-1]: a.setDocumentation(t[-1] and t[-1][0])
 	return a
 
@@ -716,7 +724,7 @@ def d_ForIteration(t):
 	expr    = t[3]
 	args    = t[1]
 	body    = t[5] and t[5][1] or ()
-	process = F.createFunction(None, args)
+	process = F.createClosure(args)
 	t_setCode(process, body)
 	return F.iterate(expr, process)
 
