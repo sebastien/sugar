@@ -1,0 +1,5 @@
+@class A
+	@shared a
+	@shared b = 1
+	@shared c = [1,2,3]
+@end

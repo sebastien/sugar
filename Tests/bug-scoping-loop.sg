@@ -1,0 +1,38 @@
+# DESCRIPTION: When iterations (for..in) are used, if the body is wrapped in a
+# closure, we must ensure that assignation will actually mutate the enclosing
+# slot, while this should not be the case with closures.
+@function f
+	var a = 1
+	var b = 2
+	var ra = a
+	var rb = b
+	for i in 0..(a * 10)
+		for j in 0..(b * 10)
+			ra = i
+			rb = j
+		end
+	end
+	print ("Expects: ra:9 rb:19")
+	print ("ra:", ra)
+	print ("rb:", rb)
+@end
+@function g
+	var a = 1
+	var b = 2
+	var ra = a
+	var rb = b
+	for i in 0..(a * 10)
+		for j in 0..(b * 10)
+			f = {
+				ra = i
+				rb = j
+			}
+			f()
+		end
+	end
+	print ("Expects: ra:1 rb:1")
+	print ("ra:", ra)
+	print ("rb:", rb)
+@end
+f()
+g()
