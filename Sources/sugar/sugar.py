@@ -253,7 +253,8 @@ def run( args, output=sys.stdout ):
 				error_msg = StringIO.StringIO()
 				traceback.print_exc(file=error_msg)
 				error_msg = error_msg.getvalue()
-				print error_msg
+				print error_msg.rstrip("\n")
+				status = 255
 	# We flow everything
 	resolver.flow(parser.program())
 	# We type everything
@@ -291,6 +292,7 @@ def run( args, output=sys.stdout ):
 				f = file(options.output, mode) ; mode = "a"
 				f.write(writer.write(module))
 				f.close()
+	status = 0
 	if options.run:
 		f, path = tempfile.mkstemp(prefix="Sugar")
 		code = output.getvalue()
@@ -310,8 +312,9 @@ def run( args, output=sys.stdout ):
 			command = "%s '%s' %s" % (interpreter, path, args_str)
 		else:
 			print "No runtime available for language:", options.lang
-		os.system(command)
+		status = (os.system(command) / 256) or status
 		os.unlink(path)
+	return status
 
 # ------------------------------------------------------------------------------
 #
@@ -320,6 +323,6 @@ def run( args, output=sys.stdout ):
 # ------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-	run(sys.argv[1:])
+	sys.exit(run(sys.argv[1:]))
 
 # EOF

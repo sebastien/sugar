@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   27-Aug-2007
+# Last mod.         :   31-Aug-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -70,7 +70,7 @@ def t_setCode( process, code, context=None ):
 		elif context \
 		and  isinstance(o, interfaces.IAssignable) \
 		and  isinstance(o, interfaces.IReferencable):
-		#	print "as slot"
+			assert o.getName(), str(o)
 			context.setSlot(o.getName(), o)
 		elif type(o) in (list, tuple):
 			t_setCode(process, o, context)
@@ -554,6 +554,7 @@ def d_AbstractMethod(t):
 		Documentation?
 	'''
 	m = F.createMethod(t[2], t[4] and t[4][0] or ())
+	m.setAbstract(True)
 	for ann in t[6]:
 		m.annotate(ann)
 	if t[7]: m.setDocumentation(t[7] and t[7][0])
