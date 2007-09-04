@@ -1,21 +1,23 @@
-Requests
+Requests:
 
  - Modules in multiple files
  - Importing modules (automatic resolution)
+ - 'elif' in conditionals
+ - 'is' should be '===' in JS (I think, thanks to Simon)
 
-Support for casting
+Language Features:
 
-	((List)asas) length()
+  - Casting
+    >	((List)asas) length()
 
-More operations for if:
-
-		if self._views.main is undefined:
-					return
-		end
-
-		==, !=, <=, >=, <, >, "and", "or", "is", "not"
+  - More operations for if:
+    >	if self._views.main is undefined:
+    >		return
+    >	end
+    >	==, !=, <=, >=, <, >, "and", "or", "is", "not"
 							
-Add with:
+
+  
 
 	with  (value | assignation | declaration) :
 		DotValue *
@@ -38,18 +40,19 @@ Add default/named arguments:
 
 Macros:
 
-	@macro name( a, b, c )
-		$a = pouet
-		$b = pouet
-		$c = pouet
-	@end
+>	@macro name( a, b, c )
+>		$a = pouet
+>		$b = pouet
+>		$c = pouet
+>	@end
+>	
+>	@name(a,b,c)
+>	will produce the code $a, $b, $c
+>	
+>		function( a, b, c ):
+>			a = pouet
+>			b = pouet
+>			c = pouet
+>		end
 
-	@name(a,b,c)
-	will produce the code $a, $b, $c
-
-		function( a, b, c ):
-			a = pouet
-			b = pouet
-			c = pouet
-		end
 

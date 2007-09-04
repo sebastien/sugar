@@ -111,6 +111,7 @@ def d_Program(t):
 		for a in annotations:
 			if a.getName() == name: return a.getContent()
 		return None
+	# FIXME: Get module if module already exists
 	if get_annotation("module"):
 		m = F.createModule(get_annotation("module"))
 	else:
@@ -465,7 +466,7 @@ def d_ImportSymbol(t):
 	'''
 	imported_symbol = t[1]
 	import_origin   = t[3]
-	import_alias    = t[3]
+	import_alias    = t[4]
 	if import_alias: import_alias = import_alias[-1]
 	return F.importSymbol(imported_symbol, import_origin, import_alias)
 
@@ -1366,7 +1367,7 @@ class Parser:
 			if sourcepath:
 				res.setSource("file://" + os.path.abspath(sourcepath))
 			# FIXME: Add support for modules which are part of other modules
-			self._program.setSlot(name, res)
+			self._program.addModule(res)
 			self.clean()
 			return ( text, res )
 		else:

@@ -259,7 +259,7 @@ def run( args, output=sys.stdout ):
 	# WIP:IMPORT_START
 	import lambdafactory.backends.python.importer as pyimporter
 	env = environment.Environment(parser.program())
-	env.addImporter(pyimporter.Importer(env))
+	#env.addImporter(pyimporter.Importer(env))
 	env.addParser(parser, "sg spy sjs sjava spnuts".split())
 	env.writer = writer ; env.resolver = resolver ; env.reporter = env.writer.report
 	env.addPass(passes.ImportationPass())
