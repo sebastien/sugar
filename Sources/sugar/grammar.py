@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   31-Aug-2007
+# Last mod.         :   04-Sep-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -453,21 +453,62 @@ def d_ImportOperations(t):
 	'''ImportOperations: (ImportOperation)* '''
 	return t[0]
 
+def d_TypeSymbol(t):
+	'''
+	TypeSymbol: ('*'|NAME ('.' NAME)*) 
+	'''
+	return "".join(t_flatten(t))
+
+def d_ImportSymbol(t):
+	''' ImportSymbol:
+		'@import' NAME 'from' TypeSymbol ('as' NAME)? EOL
+	'''
+	imported_symbol = t[1]
+	import_origin   = t[3]
+	import_alias    = t[3]
+	if import_alias: import_alias = import_alias[-1]
+	return F.importSymbol(imported_symbol, import_origin, import_alias)
+
+def d_ImportSymbols(t):
+	''' ImportSymbols:
+		'@import' (NAME (',' NAME)*) ('from' TypeSymbol)? EOL
+	'''
+	imported_symbols = t_filterOut(",", t_flatten(t[1]))
+	import_origin    = t[-2]
+	if import_origin: import_origin = import_origin[-1]
+	return F.importSymbols(imported_symbols, import_origin)
+
+def d_ImportAllSymbols(t):
+	''' ImportAllSymbols:
+		'@import' '*' 'from' TypeSymbol EOL
+	'''
+	import_origin    = t[3]
+	return F.importSymbols("*", import_origin)
+	
+def d_ImportModule(t):
+	'''ImportModule:
+		'@import' TypeSymbol ('as' NAME)? EOL
+	'''
+	module_name = t[1]
+	module_alias = t[2] and t[2][-1]
+	return F.importModule(module_name, module_alias)
+
+def d_ImportModules(t):
+	'''ImportModules:
+		'@import' TypeSymbol (',' TypeSymbol)* EOL
+	'''
+	modules = t_filterOut(",",t_flatten(t[1:-1]))
+	return F.importModules(modules)
+	
 def d_ImportOperation(t):
 	'''ImportOperation: 
-	'@import' NAME+ ('as' NAME )? EOL |
-	'@import' NAME+ '*' EOL
+		ImportSymbols
+	|	ImportSymbol
+	|	ImportModule
+	|	ImportAllSymbols
+	|	ImportModules
 	'''
-	alias = None
-	names   = list(tuple(t[1]))
-	if t[2] == "*":
-		names.append("*")
-	elif t[2] and t[2][1]: alias = F._ref(t[2][1])
-	resolve = None
-	for i in range(len(names)):
-		ref = F._ref(names[i])
-		resolve = F.resolve(ref, resolve)
-	return F.imports(resolve,alias)
+	return t
 
 def d_ModuleDeclarations(t):
 	'''ModuleDeclarations: Shared+'''
@@ -1281,6 +1322,7 @@ class Parser:
 		self.verbose   = verbose
 		self.options   = Options()
 		self._program  = F.createProgram()
+		self._program.setFactory(F)
 
 	def program( self ):
 		"""Returns the program that is implicitely created by parsing the

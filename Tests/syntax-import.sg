@@ -1,9 +1,15 @@
 @target Pnuts
-@import java awt Frame
-@import java awt Button as Btn
-@import java awt *
 
-var f = new java awt Frame ("Hello, World")
-var b = new Btn("Click Me")
+@import Frame from java
+@import Button from java.awt as Btn
+@import Frame, Button from java.awt
+@import * from java.awt
+@import java.awt
+@import java.awt, java.lang.reflect
+
+@import Button from java.awt as Btn
+@import * from java.awt
+
+var f = new Frame ("Hello, World")
 f add (b)
 f setVisible (True)
