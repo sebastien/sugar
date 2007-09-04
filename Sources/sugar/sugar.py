@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # ----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   23-Aug-2007
+# Last mod.         :   31-Aug-2007
 # ----------------------------------------------------------------------------
 
 import os, sys, shutil, traceback, tempfile, StringIO
@@ -15,6 +15,7 @@ import grammar
 
 from lambdafactory.reporter import DefaultReporter
 from lambdafactory import javascript, java, c, pnuts, actionscript, python, modelwriter, typer
+from lambdafactory import passes, environment
 
 __version__ = "0.8.2"
 
@@ -180,7 +181,7 @@ def run( args, output=sys.stdout ):
 		options.lang = "c"
 	elif options.lang == "java":
 		writer   = java.Writer(reporter=reporter)
-		options = java.Resolver(reporter=reporter)
+		resolver = java.Resolver(reporter=reporter)
 		parser.options.addTarget("Java")
 		assert not options.run
 		options.lang = "java"
@@ -255,6 +256,13 @@ def run( args, output=sys.stdout ):
 				error_msg = error_msg.getvalue()
 				print error_msg.rstrip("\n")
 				status = 255
+	env = environment.Environment(parser.program())
+	env.addParser(parser, "sg spy sjs sjava spnuts".split())
+	env.writer = writer ; env.resolver = resolver ; env.reporter = env.writer.report
+	env.addPass(passes.ImportationPass())
+	context = passes.PassContext(env)
+	context.run()
+	#passes.ImportationPass().run(context)
 	# We flow everything
 	resolver.flow(parser.program())
 	# We type everything

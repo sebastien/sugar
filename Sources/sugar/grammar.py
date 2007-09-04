@@ -1287,7 +1287,7 @@ class Parser:
 		different modules."""
 		return self._program
 
-	def parse( self, filepath ):
+	def parse( self, filepath, name=None ):
 		"""Reads and parses the content given of the given file and returns a
 		couple (original source code, AST), where AST is None if there was
 		any error.
@@ -1302,7 +1302,8 @@ class Parser:
 		stands for ProgramBuilder, which is the factory object that constructs
 		the program)."""
 		text = open(filepath, 'r').read()
-		return self.parseModule(self.pathToModuleName(filepath), text, filepath)
+		if name is None:name=self.pathToModuleName(filepath)
+		return self.parseModule(name, text, filepath)
 
 	def clean(self):
 		for f in "d_parser_mach_gen.g.md5 d_parser_mach_gen.g.d_parser.dat".split():
