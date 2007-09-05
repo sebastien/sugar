@@ -1,0 +1,9 @@
+@import IProgram from interfaces as ProgramInterface
+
+@class Program: ProgramInterface
+
+	@method getModulesAlias
+		return getModules()
+	@end
+
+@end

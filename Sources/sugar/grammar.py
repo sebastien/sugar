@@ -7,13 +7,13 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   04-Sep-2007
+# Last mod.         :   05-Sep-2007
 # -----------------------------------------------------------------------------
 
 import os
 from dparser import Parser as DParser
 from dparser import Reject
-from lambdafactory import modelbase as model
+from lambdafactory import modelbase
 from lambdafactory import interfaces
 
 __doc__ = """
@@ -24,7 +24,7 @@ library. This module uses the fantastic D parser Python library.
 # We instanciate LambdaFactory default factory, which will be used in the
 # grammar production rules to create model elements.
 
-F = model.Factory(model)
+F = modelbase.Factory()
 KEYWORDS = "as and or not has is var new in for return if yield else break raise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
@@ -96,8 +96,8 @@ def t_split( array, element ):
 # Statements
 # ----------------------------------------------------------------------------
 
-def d_Program(t):
-	'''Program: 
+def d_Module(t):
+	'''Module: 
 		(Comment | EOL) *
 		ModuleAnnotations?
 		Documentation?
@@ -122,7 +122,9 @@ def d_Program(t):
 	if t[2]: m.setDocumentation(t[2] and t[2][0])
 	#FIXME: bind the imported module to the slot
 	code = []
-	code.extend(t[3])
+	import_ops = t_flatten(t[3])
+	for import_op in import_ops:
+		m.addImportOperation(import_op)
 	code.extend(t[4])
 	code.extend(t[5])
 	if code:
@@ -410,8 +412,8 @@ def d_Decorator(t):
 	return F.annotation(name, params)
 
 def d_ModuleAnnotation(t):
-	'''ModuleAnnotation: '@module' NAME EOL'''
-	return F.annotation('module', t[1])
+	'''ModuleAnnotation: '@module' (NAME ('.' NAME)*) EOL'''
+	return F.annotation('module', "".join(t_flatten(t[1])))
 
 def d_VersionAnnotation(t):
 	'''VersionAnnotation: '@version' VERSION EOL'''
@@ -1282,6 +1284,7 @@ def parseFile( path, verbose=False, options=None ):
 	f = file(path, 'r') ; t = f.read() ; f.close()
 	return parse(t, verbose, options)
 
+# FIXME: Modules should always be asbolutely named
 def parseModule( name, text, verbose=False, options=None ):
 	res = parse(text, verbose, options)
 	module_name = res.getAnnotation("module")

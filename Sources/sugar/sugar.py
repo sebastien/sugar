@@ -257,14 +257,14 @@ def run( args, output=sys.stdout ):
 				print error_msg.rstrip("\n")
 				status = 255
 	# WIP:IMPORT_START
-	import lambdafactory.backends.python.importer as pyimporter
-	env = environment.Environment(parser.program())
+	#import lambdafactory.languages.python.importer as pyimporter
+	#env = environment.Environment(parser.program())
 	#env.addImporter(pyimporter.Importer(env))
-	env.addParser(parser, "sg spy sjs sjava spnuts".split())
-	env.writer = writer ; env.resolver = resolver ; env.reporter = env.writer.report
-	env.addPass(passes.ImportationPass())
-	context = passes.PassContext(env)
-	context.run()
+	#env.addParser(parser, "sg spy sjs sjava spnuts".split())
+	#env.writer = writer ; env.resolver = resolver ; env.reporter = env.writer.report
+	#env.addPass(passes.ImportationPass())
+	#context = passes.PassContext(env)
+	#context.run()
 	# WIP:IMPORT_END
 	#passes.ImportationPass().run(context)
 	# We flow everything

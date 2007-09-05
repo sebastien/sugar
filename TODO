@@ -7,6 +7,8 @@ Requests:
 
 Language Features:
 
+  - Multile-line strings/embedding of raw content
+  - Passing named arguments
   - Casting
     >	((List)asas) length()
 
