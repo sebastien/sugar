@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   05-Sep-2007
+# Last mod.         :   06-Sep-2007
 # -----------------------------------------------------------------------------
 
 import os
@@ -328,9 +328,10 @@ def d_Exception(t):
 	t_setCode(None, t[5], c)
 	return c
 
+
 def d_Class(t):
 	# FIXME: Change Name to Reference
-	'''Class: '@abstract'? '@class' NAME (':' Expression (',' Expression)* )? EOL
+	'''Class: '@abstract'? '@class' NAME (':' TypeSymbol (',' TypeSymbol)* )? EOL
 		  Documentation?
 		  (INDENT
 	      (   ClassAttribute
@@ -354,6 +355,7 @@ def d_Class(t):
 	parents.extend(t[3])
 	parents = t_filterOut(":", parents)
 	parents = t_filterOut(",", parents)
+	parents = map(F._ref, parents)
 	c = F.createClass(t[2] , parents)
 	if t[5]: c.setDocumentation(t[5] and t[5][0])
 	t_setCode(None, t[6], c)

@@ -1,0 +1,352 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Sugar V0.8.2</title>
+<style><!-- 
+body {
+	margin-left: 10%;
+	margin-right: 10%;
+	padding: 20pt;
+	padding-top: 10pt;
+	background: rgb(255,255,255);
+	font:  10.5pt/15pt sans-serif;
+	color: rgb(80,80,80);
+}
+
+h1, h2, h3, h4 {
+	font-family: "Trebuchet MS",sans-serif;
+	color: rgb(22, 130, 178);
+	font-weight: normal;
+	padding-top: 0.5em;
+	cursor: pointer;
+}
+
+hr {
+	color: rgb(150, 220, 238);
+	background: rgb(150, 220, 238);
+	height: 1px;
+	border: 0;
+}
+
+
+b {
+	color: rgb(22,130,178);
+}
+
+strong {
+	color: rgb(103,183,0);
+}
+
+
+a:link, a:active, a:visited {
+	color: rgb(22,130,178);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: none;
+	background-color: #dbecf4;
+}
+
+aimg {
+	border: 0;
+}
+
+#header, #footer {
+	font-size: 7pt;
+	clear: both;
+	width: 100%;
+	color: rgb(177,208,223);
+}
+
+.kiwiContent {
+	text-align: left;
+}
+
+
+#footer {
+	padding-top:  30pt;
+	text-align: right;
+}
+
+/*  Kiwi-specific  */
+
+.title {
+	margin-bottom: 0;
+}
+
+.kiwiMeta {
+	width: 100%;
+	padding: 5pt;
+	margin-bottom:  2em;
+	border-top:  1px solid rgb(150, 220, 238);
+	background-color: rgb(250,250,250);
+}
+
+.kiwiMeta tr td {
+	color: rgb(22, 130, 178);
+}
+
+.kiwiMeta tr td.name {
+	font-weight: bold;
+}
+
+.kiwiContent h1, .kiwiContent h2{
+	padding-bottom: 5pt;
+	border-bottom:  1px dotted rgb(150, 220, 238);
+}
+
+.kiwiContent h1 {
+	font-size: 1.5em;
+	font-weight: normal;
+	padding-top: 1.5em;
+	padding-bottom: 0.5em;
+}
+
+.kiwiContent h2 {
+	font-size: 1.3em;
+}
+
+.kiwiContent h3 {
+	font-size: 1.1em;
+}
+
+.kiwiContent pre {
+	padding: 5pt;
+	border:  1px solid rgb(150, 220, 238);
+	padding-left: 20pt;
+	background-color: rgb(240,240,250);
+	font-size: 8pt;
+	color: rgb(22,130,178);
+}
+
+.kiwiContent code {
+	font-size: 8pt;
+	background-color: rgb(240,240,250);
+}
+
+.kiwiContent dt {
+	color: rgb(22,130,178);
+	font-weight: bold;
+}
+
+.kiwiContent dd {
+	border-left:  1px solid rgb(150, 220, 238);
+	padding-left: 20pt;
+	margin-bottom: 2em;
+}
+
+.kiwiContent dd pre {
+	border-left: 0px;
+}
+
+.kiwiContent ul {
+	padding-top: 0em;
+	margin-top: 0em;
+}
+
+.kiwiContent ul li {
+	padding-bottom: 0.2em;
+}
+
+.kiwiContent ul li.todo {
+	list-style-type: square;
+}
+
+.kiwiContent ul li.todo.done {
+	text-decoration: line-through;
+}
+
+.kiwiContent table {
+	border:  1px solid rgb(150, 220, 238);
+	padding: 0pt;
+}
+
+.kiwiContent table caption {
+	font-family: serif;
+	padding-top: 1em;
+	padding-bottom: 0.5em;
+	font-style: italic;
+	font-size: 90%;
+	color: rgb(22, 130, 178);
+}
+
+.kiwiContent table tbody {
+}
+
+.kiwiContent table tr {
+	margin: 0;
+}
+
+.kiwiContent table tr td {
+	margin: 0;
+	padding: 5pt;
+	font-size: 90%;
+	background-color: rgb(250,250,250);
+	border-bottom: 1px solid rgb(150, 220, 238);
+}
+
+.kiwiContent table tr td.lastRow {
+	border-bottom: none;
+}
+
+.kiwiContent table tr td.lastCol {
+	border-right: none;
+}
+
+.kiwiContent table tr.even td {
+	background-color: #FEFEFE;
+
+}
+
+.kiwiContent table tr.odd td {
+	background-color: rgb(240,240,240);
+}
+
+.kiwiContent .term {
+	color: rgb(22, 130, 178);
+	background: rgb(240, 250, 256);
+}
+
+.kiwiContent .quote {
+	font-style: italic;
+	color: rgb(120, 120, 120);
+}
+
+.kiwiContent .citation {
+	font-style: italic;
+	color: rgb(120, 120, 120);
+}
+
+.kiwiContent div[class^="ann"] {
+	margin-top: 5pt;
+	margin-bottom: 5pt;
+	padding: 5pt;
+	padding-left: 20pt;
+	color: rgb(100, 100, 100);
+}
+
+.kiwiContent div[class^="ann"] .title {
+	font-weight: bold;
+}
+
+.kiwiContent .annNote {
+	border:  1px solid rgb(103,183,0);
+	margin-top: 5pt;
+	margin-bottom: 5pt;
+	padding: 5pt;
+	padding-left: 20pt;
+	background: #fffbe4;
+	color: rgb(100, 100, 100);
+	border:  1px solid #dedac3;
+}
+
+.kiwiContent .annNote .title {
+	font-weight: bold;
+	display: none;
+}
+
+.kiwiReferences {
+	font:  8pt/12pt "Lucida Grande",Lucida,sans-serif;
+	margin-top: 10pt;
+	padding: 5pt;
+	border-top:  1px solid rgb(200, 200, 200);
+	background-color: rgb(250,250,250);
+	color: rgb(200, 200, 200);
+	font-size: 8pt;
+}
+.kiwiReferences a:link, .kiwiReferences a:active, .kiwiReferences a:visited {
+	color: rgb(150,150,150);
+}
+
+.kiwiReferences .entry {
+	padding-top: 5pt;
+	clear: both;
+}
+
+.kiwiReferences .entry .name {
+	float: left;
+	font-weight: bold;
+	padding-right: 5pt;
+}
+
+.kiwiReferences .entry .content {
+	text-align: right;
+}
+
+ --></style>
+</head>
+<body>
+<div
+	class="title"><h1>Sugar V0.8.2</h1><h2>Language Reference</h2></div><table class='kiwiMeta'><tr><td width='0px' class='name'>Author</td><td width='100%' class='value'>Sebastien Pierre &lt;sebastien@ivy.fr&gt;</td></tr><tr><td width='0px' class='name'>Revision</td><td width='100%' class='value'>21-Aug-2007 (21-Aug-2007)</td></tr></table>
+<div class="kiwiContent"><div class='content'><div class="section"><h1 class="heading">About Sugar</h1><div class="level1"><ul><li>Code as data </li><li>Meta-programming (compiled and interpreted) </li><li>Plastic </li><li>Dynamic, Reflexive </li><li>Concurrency </li><li>Advanced type system </li><li>Compiles to many backends (JavaScript, ActionScript, Python, Pnuts)</li></ul><p>Benefits</p><ul><li>Write your own DSL or custom syntax </li><li>Easy to refactor </li><li>You can manipulate your code</li></ul></div></div><div class="section"><h1 class="heading">Syntax</h1><div class="level1"><div class="section"><h2 class="heading">Basics</h2><div class="level2"><ul><li>Case sensitive </li><li>Indentation matters </li><li>Tabs are required</li></ul></div></div><div class="section"><h2 class="heading">Design</h2><div class="level2"><ul><li>Short learning curve for JavaScript, Python or Ruby programmers </li><li>Be explicit </li><li>Limit possibilities of variations between coding styles </li><li>Easy to parse, easy to write tools</li></ul></div></div><div class="section"><h2 class="heading">Expressions and statements</h2><div class="level2"><p>In Sugar, most constructs are <span class='term'>expressions</span> (they can be evaluated, meaning they can be substituted to a value) something). Expressions can be as simple as computations, or as complex as function declarations. Here is a list of expressions:</p><ul><li>Computation </li><li>Invocation </li><li>Literal declaration (strings, numbers, primitive types) </li><li>Anonymous function declaration </li><li>Inline conditional</li></ul><p>On the other hand, <span class='term'>statements</span> are operations that do not substitute to a value (as opposed to expressions). These operations typically trigger language-specific side effects, such as returning a result, raising an exception, etc. Sugar statements are:</p><ul><li>Allocation (declaring a variable) </li><li>Assignment (assigning a value to a variable) </li><li>Termination (return statement) </li><li>Interruption (raising an exception) </li><li>Control structures (most conditionals, loops, etc)</li></ul><p><span class='term'>type expressions</span> (see [type system]()).</p></div></div><div class="section"><h2 class="heading">Keywords</h2><div class="level2"><pre>var                                       (variable declaration)
+as and or not has is in                   (operators)
+new                                       (instanciation)
+if else                                   (conditionals)
+for while                                 (iterations/repetitions)
+return break continue yield raise         (control flow manipulation)
+end                                       (syntax block terminator)</pre></div></div><div class="section"><h2 class="heading">Symbols</h2><div class="level2"><p>Symbols are elements of the syntax that</p></div></div><div class="section"><h2 class="heading">Literals</h2><div class="level2"><p>Literals are values that can be fully described when they are declared. Literals include numbers, strings and primitive datatypes.</p></div></div></div></div><div class="section"><h1 class="heading">Numbers</h1><div class="level1"><p>Number are either <span class='term'>integers</span> or <span class='term'>floats</span>, expressed using various notations:</p><pre>1                                          # (integer)
+-10                                        # (integer)
+1.0                                        # (float)
+ .0                                        # (float)
+-2.0                                       # (float)
+0xFFEE00                                   # (integer in hexadecimal)</pre><p>Strings are the same as in C (syntax additions coming soon !):</p><pre>"Hello, World"
+"Hello, \"World\" !"</pre><div class='annNote'><div class='title'>Note</div><div class='content'>_
+    There is no way right now to define an encoding for the string (no unicode
+    string support).</div></div></div></div><div class="section"><h1 class="heading">Lists</h1><div class="level1"><p>Sugar also supports lists and dictionaries as literal (we call them composite primitive types):</p><pre>[]
+[1,2,3]
+[1,2,3,["a", "b", "c", "d"]]</pre><p>Arrays can have any value in them (this includes arrays, of course).</p><pre>{}
+{one:1,two:2,three:3}
+{id:0,attributes:{name:"Bob",email:"bob@email.org"}}</pre></div></div><div class="section"><h1 class="heading">Dictionaries</h1><div class="level1"><p>Dictionaries are defines as a comma-separated <code>KEY : VALUE</code> list. The key is a regular sugar <span class='term'>symbol</span>, or can be an <span class='term'>expression</span> when the key is surrounded by parens:</p><pre>{("one"):1, ("two"):2}</pre><p>also, keys do not need to be symbols or strings:</p><pre>{(1):1, (2):2, (3):3}</pre><div class='annNote'><div class='title'>Note</div><div class='content'>_
+    Some back-ends may not support declaration of dictionaries with expressions
+    as keys (but the main ones do !). In this case, an error will be produced at
+    compilation time.</div></div><div class="section"><h2 class="heading">Symbolic values</h2><div class="level2"><p>Symbolic values are specific values of the programming language like <code>None</code> in Python or <code>null</code> or <code>undefined</code> in JavaScript. They represent singleton values.</p><p>Sugar defines the following symbolic values:</p><ul><li><code>Undefined</code>, meaning that a value is undefined (there was no value bound to it at allocation&ndash;see <a href="@allocations">allocation</a>.</li></ul><ul><li><code>None</code>, representing the absence of value.</li></ul><ul><li><code>True</code></li></ul><ul><li><code>False</code></li></ul><ul><li><code>Null</code></li></ul><ul><li><code>Error</code>, can be used to indicate that an error happened</li></ul><ul><li><code>Success</code></li></ul><ul><li><code>Timeout</code></li></ul></div></div><div class="section"><h2 class="heading">Allocations</h2><div class="level2"><p>Values have to be bound to variables to be usable. A variable is a symbol that references a slot (of the context in the current scope). A variable is declared by using the following statement:</p><pre>var SYMBOL (=EXPRESSION)?</pre><p>like</p><pre>var fruits = ["apple", "cherry", "banana"]</pre><p>you can also declare a slot without a value (in which case the slot value will be <code>Undefined</code>).</p><pre>var fruits</pre><p>When declaring a slot, you have the opportunity to associate a <span class='term'>type declaration</span> with the slot:</p><pre>var SYMBOL:TYPE (=EXPRESSION)?</pre><p>the <code>TYPE</code> declaration is a type expression that allows to constrain the usage of the slot:</p><pre>
+var fruits:List</pre><p>will indicate that the <code>fruits</code> is a slot whose values must be compatible with type <code>List</code> (see [type system]()]</p><p>Summary:</p><p><pre>var SYMBOL                                 (allocation)
+var SYMBOL = EXPRESSION                    (allocation + assignment)
+</pre></p></div></div><div class="section"><h2 class="heading">Assignments</h2><div class="level2"><p>Assignments are actually a subset of allocations in the sense that allocations both allocate a slot, and assign a value (bind the value to the slot). Assignments in Sugar are made using the <code>=</code> operator:</p><pre>SYMBOL = EXPRESSION</pre><p>here is an example:</p><pre>fruits = ["orange", "pear", "tangerine"]</pre><p>but you can also assign a value to more than one variables, in which case the <code>EXPRESSION</code> will be sliced (its value must be <span class='term'>sliceable</span>) and the pieces will be distributed to assigned variables:</p><pre>orange, pear, tangerine = ["orange", "pear", "tangerine"]</pre><p>where <code>orange</code> is <code>"orange"</code>, and <code>pear</code> is <code>"pear"</code> and <code>tangerine</code> is <code>"tangerine</code>". However:</p><pre>orange, pear_tangerine = ["orange", "pear", "tangerine"]</pre><p>will fail (at runtime) because there is one more element. What we (and people familiar with <span class='term'>functional programming</span>) would want to do is rather this:</p><pre>orange | pear_tangerine = ["orange", "pear", "tangerine"]</pre><p>where <code>orange</code> will be <code>"orange</code>" and <code>pear_tangerine</code> will be the <span class='term'>rest</span> (<code>["pear","tangerine"]</code>). The <code>|</code> in the assignment meaning the rest, you can combine <code>,</code> and <code>|</code> in one statement:</p><pre>orange, pear | tangerine = ["orange", "pear", "tangerine"]</pre><p>in which case <code>orange</code> will be <code>"orange"</code>, <code>pear</code> will be <code>"pear"</code> and <code>tangerine</code> will be <code>["tangerine"]</code> (the rest being always a list or a subset of the original container).</p><p>Summary:</p><pre>SYMBOL = EXPRESSION                        (single assignment)
+SYMBOL (,SYMBOL)* = EXPRESSION             (multiple assignment)
+SYMBOL (,SYMBOL) | SYMBOL = EXPRESSION     (split assignment)</pre></div></div><div class="section"><h2 class="heading">Computations</h2><div class="level2"><p>Computations are basic arithmetic operations applied to values. Each computation uses an operators, which can be:</p><ul><li>an arithmetic operator: <code>+</code>, <code>-</code>, <code>/</code>, <code>*</code>, <code>%</code> </li><li>a comparison operator: <code>&lt;</code>, <code>&gt;</code>, <code>==</code>, <code>!=</code> </li><li>a logic operator: <code>and</code>, <code>or</code>, <code>not</code> </li><li>specific operators: <code>is</code>, <code>has</code></li></ul><p>most operators take two operands, excepted the <code>not</code> operator which only takes one operand to its right. The general form of computations is as follows:</p><pre>OPERATOR EXPRESSION                        (single-operand operation)
+EXPRESSION OPERATOR EXPRESSION             (operation with two operands)</pre><div class='annNote'><div class='title'>Note</div><div class='content'>_
+    Sugar does not define suffix operations (like <code>--</code> or <code>++</code> as in C), but we
+    may add them as a later point. There are not bit-manipulation operators
+    (<code>||</code> <code>&amp;&amp;</code>, <code>&lt;&lt;</code> and ''&gt;&gt;') yet.</div></div><p>Here are example of operations using <span class='term'>arithmetic operators</span>:</p><pre>1 + 1                                      (addition)
+5 * 2                                      (multiplication)
+5 / 2                                      (division)
+5 % 2                                      (modulo)</pre><p>here are <span class='term'>comparison operators</span>:</p><pre>1 &lt; 2                                      (smaller than)
+2 &gt; 2                                      (greater than)
+1 &lt;= 2                                     (smaller or equal to)
+1 &gt;= 2                                     (greater or equal to)
+1 == 1                                     (equal to)
+5 != 2                                     (not equal to)</pre><p>here are <span class='term'>logic operators</span>:</p><pre>not True                                   (negation)
+True or False                              (logical union)
+True and False                             (logical intersection)</pre><p><span class='term'>specific operators</span> have a semantic that will be detailed later in the [object model]() section. They are all related to doing queries on object:</p><ul><li><span class='term'>object identification</span> allows to tell wether two values are actually the exact same object. </li><li><span class='term'>object slot querying</span> allows to tell if an object defines a particular slot</li></ul><pre>object_a is object_b                       (value identification)
+object has name                            (slot querying)</pre><p>Additionally, it is possible to combine assignment and operations for a subset of arithmetic operations:</p><pre>a += 1                                     (a = a + 1)
+a -= 1                                     (a = a - 1)</pre><p>Summary:</p><pre>OPERATOR EXPRESSION                        (single-operand operation)
+EXPRESSION OPERATOR EXPRESSION             (operation with two operands)
+SYMBOL += EXPRESSION                       (assignment with addition)
+SYMBOL -= EXPRESSION                       (assignment with substraction)</pre></div></div><div class="section"><h2 class="heading">Invocations</h2><div class="level2"><p>An invocation is the application of a set of values to a value that can be invoked (we call them &ldquo;<span class='quote'>invocables</span>&rdquo;). The invocation will typically result in a value (an invocation is an expression, as it substitutes to a value).</p><p>In Sugar, invocations have a syntax very similar to what you'd expect:</p><pre>EXPRESSION ( EXPRESSION, EXPRESSION, EXPRESSION, ... )</pre><p>where the first <code>EXPRESSION</code> must evaluate to something that can be invoked. These expression are typically references to <span class='term'>functions</span> (see [next section]()).</p><p>When your invocation has long expression as arguments, Sugar allows you to make the invocation span multiple lines:</p><pre>EXPRESSION ( EXPRESSION, EXPRESSION,
+&lt;tab&gt;EXPRESSION
+)</pre><p>when using newlines, you can omit the trailing comma</p><pre>EXPRESSION ( EXPRESSION
+&lt;tab&gt;EXPRESSION
+)</pre><p>also, you're not forced to put an argument after the opening paren:</p><pre>EXPRESSION (
+&lt;tab&gt;EXPRESSION
+&lt;tab&gt;EXPRESSION
+)</pre></div></div><div class="section"><h2 class="heading">Anonymous functions</h2><div class="level2"><p>Sugar allows <span class='term'>anonymous functions</span> to be defined and used a values, like numbers, strings, lists and dictionaries. An anonymous function is composed of a set of statements (the function <span class='term'>body</span>) as well as the specification of the function <span class='term'>arguments</span>:</p><pre>{ ARGUMENT, ARGUMENT | STATEMENTS }</pre><p>the list of arguments can be empty, in which case you can write the function as follows (provided it cannot be mis-interpreted with a dictionary literal).</p><pre>{ STATEMENTS }</pre><p>As Sugar is quite strict about whitespace, the <code>STATEMENTS</code> have to follow a very specific scheme:</p><pre>var SYMBOL                                 (allocation)
+{ ARGUMENTS | STATEMENT ; STATEMENT }      (one-liner)
+
+{ ARGUMENTS | STATEMENT                    (more than one line)
+&lt;tab&gt;STATEMENT
+}
+
+{ ARGUMENTS |                              (more than one line variant)
+&lt;tab&gt;STATEMENT
+}</pre><p>this syntax is designed to enforce a consistent presentation of anonymous functions.</p><p>Also, Sugar <span class='term'>anonymous functions</span> are actually <span class='term'>closures</span>, meaning that you can use variables defined in the enclosing scope. When you use these variables, they reference the value of the variable at the time of the function declaration, not invocation.</p><pre>var a = 1
+var f = { return a }
+a = 10
+f() == 1                                   (will evaluate 'True')</pre><p>in a sense, variables implicitly referenced in anonymous function could be rewritten as:</p><pre>var a = 1
+var f = { var a=1 ; return a }</pre></div></div><div class="section"><h2 class="heading">Function declaration</h2><div class="level2"><p>Functions are the elements that</p></div></div></div></div><div class="section"><h1 class="heading">Object model</h1><div class="level1"><div class="section"><h2 class="heading">Class</h2><div class="level2"></div></div><div class="section"><h2 class="heading">Protocols</h2><div class="level2"></div></div><div class="section"><h2 class="heading">Modules</h2><div class="level2"></div></div></div></div><div class="section"><h1 class="heading">Type system</h1><div class="level1"></div></div><div class="section"><h1 class="heading">Meta-programming</h1><div class="level1"><div class="section"><h2 class="heading">Embedding code</h2><div class="level2"></div></div><div class="section"><h2 class="heading">Specific sections</h2><div class="level2"></div></div><div class="section"><h2 class="heading">Rewriting invocations</h2><div class="level2"></div></div></div></div><div class="section"><h1 class="heading">Standard library</h1><div class="level1"></div></div></div></div>
+
+</body>
+</html>

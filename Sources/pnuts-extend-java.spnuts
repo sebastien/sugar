@@ -1,0 +1,16 @@
+@import java awt Frame as Frame
+
+@class MyFrame: Frame
+
+	@property name = "Hello"
+	
+	@constructor
+		setSize(300,320)
+		setVisible(True)
+	@end
+
+@end
+
+new MyFrame()
+
+

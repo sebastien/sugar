@@ -21,9 +21,6 @@ class Command(BaseCommand):
 			# FIXME: This should be done by the Parser itself
 			self.environment.addParser(python_reader, "sg spy sjs sjava spnuts sas".split())
 
-	def setupPasses( self ):
-			pass
-
 if __name__ == "__main__":
 	import sys
 	command = Command("sugar")

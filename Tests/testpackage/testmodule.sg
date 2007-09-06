@@ -1,0 +1,9 @@
+@module testpackage.testmodule
+@class A
+	@method methodA
+		return "testpackage.testmodule.A.methodA"
+	@end
+	@method methodB
+		return "testpackage.testmodule.A.methodB"
+	@end
+@end

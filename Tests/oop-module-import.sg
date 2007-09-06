@@ -1,9 +1,25 @@
-@import IProgram from interfaces as ProgramInterface
+@import A from testmodule
+@import testpackage.testmodule
 
-@class Program: ProgramInterface
+@class LocalA: A
 
-	@method getModulesAlias
-		return getModules()
+	@method aliasForMethodA
+		return methodA()
 	@end
 
 @end
+
+@class LocalA2: testpackage.testmodule.A
+
+	@method aliasForMethodA
+		return methodA()
+	@end
+
+@end
+
+var a  = new LocalA()
+var a2 = new LocalA2()
+print (a1 aliasForMethodA())
+print (a2 aliasForMethodA())
+
+# EOF
