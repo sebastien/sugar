@@ -1,4 +1,5 @@
-# New implementation for the Sugar Command line
+#!python
+# # New implementation for the Sugar Command line
 # 
 from lambdafactory.main import Command as BaseCommand
 from lambdafactory.resolver import AbstractResolver
@@ -23,11 +24,11 @@ class Command(BaseCommand):
 
 def sourceFileToJavaScript( path ):
 	command = Command()
-	return command.runAsString(["-cljavascript", path]), command.environment.report
+	return command.runAsString(["-cljavascript", path])
 
 def sourceToJavaScript( text ):
 	command = Command()
-	return command.runAsString(["-cljavascript", "-ssg", text]), command.environment.report
+	return command.runAsString(["-cljavascript", "-ssg", text])
 
 if __name__ == "__main__":
 	import sys
