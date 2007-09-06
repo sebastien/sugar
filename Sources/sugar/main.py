@@ -21,6 +21,14 @@ class Command(BaseCommand):
 			# FIXME: This should be done by the Parser itself
 			self.environment.addParser(python_reader, "sg spy sjs sjava spnuts sas".split())
 
+def sourceFileToJavaScript( path ):
+	command = Command()
+	return command.runAsString(["-cljavascript", path]), command.environment.report
+
+def sourceToJavaScript( text ):
+	command = Command()
+	return command.runAsString(["-cljavascript", "-ssg", text]), command.environment.report
+
 if __name__ == "__main__":
 	import sys
 	command = Command("sugar")

@@ -1292,7 +1292,7 @@ def parseModule( name, text, verbose=False, options=None ):
 	module_name = res.getAnnotation("module")
 	if module_name:
 		res.setName(module_name.getContent())
-	else:
+	elif name:
 		res.setName(name)
 	return res
 
@@ -1353,6 +1353,9 @@ class Parser:
 		if name is None:name=self.pathToModuleName(filepath)
 		return self.parseModule(name, text, filepath)
 
+	def parseSource( self, source ):
+		return self.parseModule(None, source)
+
 	def clean(self):
 		for f in "d_parser_mach_gen.g.md5 d_parser_mach_gen.g.d_parser.dat".split():
 			if os.path.exists(f):
@@ -1366,7 +1369,7 @@ class Parser:
 		# We try to parse the file
 		#try:
 		if True:
-			name = self.pathToModuleName(name)
+			name = name and self.pathToModuleName(name)
 			res = parseModule(name, text, self.verbose, self.options)
 			# We set the module file path (for informative purpose only)
 			if sourcepath:
