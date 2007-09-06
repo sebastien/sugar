@@ -1353,8 +1353,8 @@ class Parser:
 		if name is None:name=self.pathToModuleName(filepath)
 		return self.parseModule(name, text, filepath)
 
-	def parseSource( self, source ):
-		return self.parseModule(None, source)
+	def parseSource( self, source, moduleName=None ):
+		return self.parseModule(moduleName, source)
 
 	def clean(self):
 		for f in "d_parser_mach_gen.g.md5 d_parser_mach_gen.g.d_parser.dat".split():
