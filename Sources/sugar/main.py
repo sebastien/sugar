@@ -1,4 +1,4 @@
-#!python
+#!/usr/bin/env python
 # # New implementation for the Sugar Command line
 # 
 from lambdafactory.main import Command as BaseCommand
