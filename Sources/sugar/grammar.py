@@ -10,7 +10,7 @@
 # Last mod.         :   06-Sep-2007
 # -----------------------------------------------------------------------------
 
-import os
+import os,sys
 from dparser import Parser as DParser
 from dparser import Reject
 from lambdafactory import modelbase
@@ -825,7 +825,7 @@ def d_Computation(t):
 			#      A op (B op C) 
 			if isinstance(left, interfaces.IComputation) and \
 			getPriority(op) > left.getOperator().getPriority():
-				left.setRightOperand(F.compute(F._op(op, getPriority(op)), left.getRightOperand(), right))
+				left.setRightOperand(F.compute(F._op(op, getPriority(op)), left.getRightOperand().detach(), right))
 				result = left
 			else:
 				result = F.compute(F._op(op, getPriority(op)), left, right)
@@ -845,7 +845,9 @@ def d_Assignation(t):
 		return F.assign(t[0], t[2])
 	else:
 		op = op[0]
-		return F.assign(t[0], F.compute(F._op(op, getPriority(op)), t[0], t[2]))
+		# FIXME: We should clone the expressions here
+		c  =  F.compute(F._op(op, getPriority(op)), t[0], t[2])
+		return F.assign(t[0].copy().detach(),c)
 
 def d_Allocation(t):
 	'''Allocation: AllocationSingle|AllocationMultiple'''
@@ -889,10 +891,11 @@ def d_AllocationMultiple(t):
 	# Here we have heads
 	for var in heads:
 		var = var.split(":") ; vartype = None
+		# FIXME: We should have a element for that
 		if len(var) == 1:
-			code.append(F.allocate(F._slot(var[0], None),F.access(expression, F._number(i)))) 
+			code.append(F.allocate(F._slot(var[0], None),F.access(expression.copy(), F._number(i)))) 
 		else:
-			code.append(F.allocate(F._slot(var[0], var[1]),F.access(expression, F._number(i))))
+			code.append(F.allocate(F._slot(var[0], var[1]),F.access(expression.copy(), F._number(i))))
 		i += 1
 	# And maybe a tail too
 	if tail:
@@ -1006,7 +1009,7 @@ def d_InvocationOrResolution(t):
 	# reference (a name) and we make the invocation fail
 	if len(p) == 1:
 		if isinstance(p[0], interfaces.IList) and len(p[0].getValues()) == 1:
-			return F.access(t[0], p[0].getValue(0))
+			return F.access(t[0], p[0].getValue(0).detach())
 		if isinstance(p[0], interfaces.IReference):
 			return F.resolve(p[0], t[0])
 		else:
