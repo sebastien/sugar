@@ -476,7 +476,7 @@ def d_ImportSymbol(t):
 
 def d_ImportSymbols(t):
 	''' ImportSymbols:
-		'@import' (NAME (',' NAME)*) ('from' TypeSymbol)? EOL
+		'@import' (NAME (',' NAME)*) 'from' TypeSymbol EOL
 	'''
 	imported_symbols = t_filterOut(",", t_flatten(t[1]))
 	import_origin    = t[-2]
