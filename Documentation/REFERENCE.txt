@@ -1,7 +1,7 @@
 == Sugar v0.8.2
 == Language Reference
 -- Author: Sebastien Pierre <sebastien@ivy.fr>
--- Revision: 21-Aug-2007 (21-Aug-2007)
+-- Revision: 19-Sep-2007 (21-Aug-2007)
 
 1. About Sugar
 ==============
@@ -24,14 +24,14 @@ Benefits
 =========
 
   2.1 Basics
-  ------
+  ----------
 
    - Case sensitive
    - Indentation matters
    - Tabs are required
 
   2.2 Design
-  ------
+  ----------
 
    - Short learning curve for JavaScript, Python or Ruby programmers
    - Be explicit
@@ -69,6 +69,9 @@ Benefits
   2.4 Keywords
   ------------
 
+  Sugar defines a set of keywords that should be avoided as naming elements
+  (variables, functions, etc).
+
   >   var                                       (variable declaration)
   >   as and or not has is in                   (operators)
   >   new                                       (instanciation)
@@ -77,16 +80,38 @@ Benefits
   >   return break continue yield raise         (control flow manipulation)
   >   end                                       (syntax block terminator)
 
+  Note ________________________________________________________________________
+  Sugar default parser is rather flexible, so for instance you can name a
+  variable 'end', though it is a keyword, and the parser will figure out whether
+  it's the keyword or a variable.
+
   2.5 Symbols
   -----------
 
-  Symbols are elements of the syntax that 
+  Symbols are elements that allow abstraction from values. For instance, when
+  you say 'a = 1', you say that the symbol 'a' abstracts the value '1', and we
+  can then say that the symbol 'a' can be _evaluated_ to '1'.
+
+  Anyway, symbols are used everywhere do declare and references variables,
+  functions, classes, modules, etc.
+
+  Symbols in Sugar are sequence of characters that:
+
+  - Start with any of these '_$' or letters
+  - Are composed of any letter, digit or any of '_$'
+
+  Here are example uses of symbols
+
+  >   var a                                      # (variable declaration)
+  >   a + 10                                     # (computation)
+  >   @function f                                # (class declaration)
 
   2.6 Literals
   -------------
 
   Literals are values that can be fully described when they are declared.
-  Literals include numbers, strings and primitive datatypes.
+  Literals include numbers, strings and primitive data-types such as lists and
+  dictionaries (yes, Sugar is a modern language !).
 
   Numbers
   -------
@@ -100,11 +125,13 @@ Benefits
   >   -2.0                                       # (float)
   >   0xFFEE00                                   # (integer in hexadecimal)
 
-  Strings are the same as in C (syntax additions coming soon !):
+  Strings are the same as in C, excpeted that you can use both single and double
+  quotes to delimit the string (syntax additions coming soon !):
 
-  >   "Hello, World"
-  >   "Hello, \"World\" !"
-
+  >   "Hello, World"                             # (double quote)
+  >   'Hello, World'                             # (single quote)
+  >   'Hello, "World" !'                         # (single quote)
+  >   "Hello, \"World\" !"                       # (escaping)
 
     Note _____________________________________________________________________
     There is no way right now to define an encoding for the string (no unicode
@@ -113,37 +140,43 @@ Benefits
   Lists
   -----
 
-  Sugar also supports lists and dictionaries as literal (we call them composite
-  primitive types):
+  Sugar also supports lists and dictionaries as literal (we call them _primitive
+  compound types_):
 
   >   []
   >   [1,2,3]
   >   [1,2,3,["a", "b", "c", "d"]]
   
-  Arrays can have any value in them (this includes arrays, of course).
+  Lists can have any value in them (this includes lists, of course).
 
-  >   {}
-  >   {one:1,two:2,three:3}
-  >   {id:0,attributes:{name:"Bob",email:"bob@email.org"}}
+  >   []
+  >   ["one",2]
+  >   [1,[2,[3,[4]]]]
 
   Dictionaries
   ------------
 
   Dictionaries are defines as a comma-separated 'KEY : VALUE' list. The key is a
-  regular sugar _symbol_, or can be an _expression_ when the key is surrounded
-  by parens:
+  regular sugar _symbol_:
+  
+  >   {one:1, two:2}
 
-  >   {("one"):1, ("two"):2}
+  or can be an _expression_ when the key is surrounded by parentheses:
 
-  also, keys do not need to be symbols or strings:
-
+  >   {("o" + "ne"):1, ("tw" + "o"):2}
   >   {(1):1, (2):2, (3):3}
+
+  Dicts can have any value in them (this includes dicts and lists, of course).
+
+  >   {}
+  >   {one:1,two:2,three:3}
+  >   {id:0,attributes:{name:"Bob",email:"bob@email.org"}}
 
 
     Note _____________________________________________________________________
     Some back-ends may not support declaration of dictionaries with expressions
     as keys (but the main ones do !). In this case, an error will be produced at
-    compilation time.
+    program translation time.
 
   2.7 Symbolic values
   -------------------
@@ -152,101 +185,148 @@ Benefits
   Python or 'null' or 'undefined' in JavaScript. They represent singleton
   values.
 
-# TODO: Better explanation
-
   Sugar defines the following symbolic values:
 
-    - 'Undefined', meaning that a value is undefined (there was no value bound
-      to it at allocation -- see [allocation](@allocations).
+    - 'Undefined' allowing to denote something that is not defined yet
+      (typically a declared variable that has not been affected a value)
 
-    - 'None', representing the absence of value.
+    - 'None', representing the absence of value (typically the value returned by
+      functions returning no other value).
 
-    - 'True'
+    - 'True', the well-known and well-named (typically something not false ;)
 
-    - 'False'
+    - 'False', the well-known and well-named (typically something not not false ;)
 
-    - 'Null'
+    - 'NaN', a value indicating that a computation went bad (typically used when
+      you express some computation that was not computable).
 
-    - 'Error', can be used to indicate that an error happened
+    - 'Error', can be used to indicate that an error happened in a process
+      (typically used in asynchronous programming and pattern-matching)
 
-    - 'Success'
+    - 'Success' indicates that a process succeeded
+      (typically used in asynchronous programming and pattern-matching)
 
-    - 'Timeout'
+    - 'Timeout' indicates that a timeout happened in a process
+      (typically used in asynchronous programming and pattern-matching)
 
+    - '_' which is the well-known ''joker'' symbol from Prolog (see
+      [pattern-matching]())
 
+  This may seem like a lot of values, but it's a good thing to learn them and
+  understand their role. You'll find this very useful in the long run !
 
   2.8 Allocations
   ----------------
 
-  Values have to be bound to variables to be usable. A variable is a symbol that
-  references a slot (of the context in the current scope). A variable is
-  declared by using the following statement:
+  Values have to be bound to symbols to be usable in the program. Variables
+  represent _slots_ (think of a named box to put stuff in) that can hold values,
+  and can be referenced with a _symbol_ (the variable name).
 
-  >   var SYMBOL (=EXPRESSION)?
+  Slots are _allocated_ by declaring a variable (a symbol that will represent
+  the slot) using the 'var' keyword:
 
-  like
+  >   var SYMBOL                                 # (allocation)
+
+  An initial value can be _bound_ to the slot. This value is represented by an
+  expression. The operation that will evaluate the expression and bind the
+  resulting value to the slot is called an _assignment_.
+
+  >   var SYMBOL = EXPRESSION                    # (allocation and assignment)
+
+  in practice:
 
   >   var fruits = ["apple", "cherry", "banana"]
 
-  you can also declare a slot without a value (in which case the slot value will
-  be 'Undefined').
+  if declare a slot without a value, its value will be 'Undefined'
 
   >   var fruits
 
   When declaring a slot, you have the opportunity to associate a _type
   declaration_ with the slot:
 
-  >   var SYMBOL:TYPE (=EXPRESSION)?
+  >   var SYMBOL:TYPE (=EXPRESSION)?             (type declaration)
 
   the 'TYPE' declaration is a type expression that allows to constrain the usage
-  of the slot:
-
+  of the slot. We'll talk about this in more detail in the [type system]
+  section. As a simple illustration:
 
   >   var fruits:List
 
-  will indicate that the 'fruits' is a slot whose values must be compatible with
-  type 'List' (see [type system]()]
+  will indicate that the 'fruits' symbol references a slot which values must be
+  compatible with type 'List'. If you try to _assign_ a number or a string to
+  'fruits', you'll have a warning (if the compiler is not too strict) or an error.
 
-# TODO: multiple values, slicing assignment
+  Allocations also support the declaration of multiple variables at once as well
+  as the assignment of ''slices'' of a value. We'll detail multiple variables
+  declaration here, but leave the _slices assignment_ to the next section.
+
+  So multiple values can be declared like this
+
+  >   var a,b                                    # (multiple allocations)
+  >   var a=1,b=2b                               # (mult. alloc. and assign.)
+  >   var a:List, b=2, c:String="Hello"          # (mult. alloc. with type)
+
+  in general you can put multiple 'var' declarations in one single line using
+  this syntax. However, we recommend to only use it for simple cases where you
+  only assign literals:
+
+  >   var one=1, two=2
 
   Summary:
 
   >   var SYMBOL                                 (allocation)
+  >   var SYMBOL:TYPE                            (allocation + type)
   >   var SYMBOL = EXPRESSION                    (allocation + assignment)
-# >   var ASSIGNMENT                             (multiple allocation + assignment)
+  >   var SYMBOL:TYPE = EXPRESSION               (allocation + type + assignment)
+  >   var SYM:TYP=EXP, SYM:TYP=EXP, ...          (multiple alloc+type+assign)
 
   2.9 Assignments
   ---------------
 
   Assignments are actually a subset of allocations in the sense that allocations
-  both allocate a slot, and assign a value (bind the value to the slot).
+  both allocate a slot, and assign a value (bind the value to the slot). In this
+  respect, they share the same syntax, excepted that you have the 'var' keyword
+  prefix for allocations.
+
   Assignments in Sugar are made using the '=' operator:
 
-  >   SYMBOL = EXPRESSION
+  >   SYMBOL = EXPRESSION                        (assignment)
 
-  here is an example:
+  here is a very trivial example.
 
   >   fruits = ["orange", "pear", "tangerine"]
 
-  but you can also assign a value  to more than one variables, in which case the
-  'EXPRESSION' will be sliced (its value must be _sliceable_) and the pieces
-  will be distributed to assigned variables:
+  this is a perfect example to introduce the _slices assignment_ we mentioned
+  earlier. Some values may provide support for slicing ('[1,2,3]' can be sliced
+  in '1', '2', '3'), in which case the slices can be directly assigned to
+  variables:
 
   >   orange, pear, tangerine = ["orange", "pear", "tangerine"]
 
-  where 'orange' is '"orange"', and 'pear' is '"pear"' and 'tangerine' is
-  '"tangerine'". However:
+  will assign '"orange"' to 'orange', and '"pear"' to 'pear' (ha !) and
+  '"tangerine"' to 'tangerine'. However:
 
   >   orange, pear_tangerine = ["orange", "pear", "tangerine"]
 
-  will fail (at runtime) because there is one more element. What we (and people
-  familiar with _functional programming_) would want to do is rather this:
+  will fail because there is one more element that was not assigned.
+  
+    Note ______________________________________________________________________
+    When using slices assignment, you have to make sure that every slice is
+    assigned to a variable. This limits the practical use cases for that to the
+    places where you are sure of the type of expression you assign from.
+
+  Sugar offers an alternative syntax for the _slices assignment_ that allows you
+  to care less about the number of slices:
+  this:
 
   >   orange | pear_tangerine = ["orange", "pear", "tangerine"]
 
-  where 'orange' will be '"orange'" and 'pear_tangerine' will be the _rest_
-  ('["pear","tangerine"]'). The '|' in the assignment meaning the rest, you can
-  combine ',' and '|' in one statement:
+  will assign '"orange"' to 'orange', and 'pear_tangerine' will be assigned with
+  the _rest_ of the expression:'["pear","tangerine"]'. This is something that
+  people coming from functional programming languages will be familiar with.
+  
+  The '|' in the assignment meaning the rest, you can combine ',' and '|' in one
+  statement: 
 
   >   orange, pear | tangerine = ["orange", "pear", "tangerine"]
 
@@ -254,30 +334,50 @@ Benefits
   'tangerine' will be '["tangerine"]' (the rest being always a list or a subset
   of the original container).
 
+  If you ask the rest of an empty list, you'll have 'None'
+
+  >   orange | pear = ['orange']
+
+  in this case, 'pear' will be 'None', and you won't get any error. However, if
+  you do
+
+  >   orange, pear | tangerine = ['orange']
+
+  you will have an error because your expression won't have enough slices
+
+
+    Note ______________________________________________________________________
+    When using the _rest_ operator, you still have to make sure that your
+    expression has as many slices as there are symbols before the rest
+    operators, otherwise the assignment won't be able to complete.
+
+  As mentioned in [allocations](), you can simply prefix assignments with 'var' to
+  turn the assignments into allocations and assignments.
+
   Summary:
 
   >   SYMBOL = EXPRESSION                        (single assignment)
-  >   SYMBOL (,SYMBOL)* = EXPRESSION             (multiple assignment)
-  >   SYMBOL (,SYMBOL) | SYMBOL = EXPRESSION     (split assignment)
-
+  >   SYMBOL (,SYMBOL)* = EXPRESSION             (spice assignment)
+  >   SYMBOL (,SYMBOL) | SYMBOL = EXPRESSION     (slice assignment with rest)
 
   2.10 Computations
   -----------------
 
-  Computations are basic arithmetic operations applied to values. Each
-  computation uses an operators, which can be:
+  Computations are what everybody's most familiar with: basic arithmetic
+  operations applied to values. Each computation uses an operator, chosen among
+  the following list:
 
-   - an arithmetic operator: '+', '-', '/', '*', '%'
+   - an arithmetic operator: '+', '-', '/', '*', '^' '%'
    - a comparison operator: '<', '>', '==', '!='
    - a logic operator: 'and', 'or', 'not'
-   - specific operators: 'is', 'has'
+   - specific operators: 'is', 'like', 'has'
+#  - bit-wise operators: '&', '|', '<<', '>>' 
 
   most operators take two operands, excepted the 'not' operator which only takes
   one operand to its right. The general form of computations is as follows:
 
   >   OPERATOR EXPRESSION                        (single-operand operation)
   >   EXPRESSION OPERATOR EXPRESSION             (operation with two operands)
-
 
     Note _____________________________________________________________________
     Sugar does not define suffix operations (like '--' or '++' as in C), but we
@@ -288,6 +388,7 @@ Benefits
 
   >   1 + 1                                      (addition)
   >   5 * 2                                      (multiplication)
+  >   5 ^ 2                                      (power)
   >   5 / 2                                      (division)
   >   5 % 2                                      (modulo)
 
@@ -309,13 +410,18 @@ Benefits
   _specific operators_ have a semantic that will be detailed later in the
   [object model]() section. They are all related to doing queries on object:
 
-   - _object identification_ allows to tell wether two values are actually the
+   - _object identification_ allows to tell whether two values are actually the
      exact same object.
-   - _object slot querying_ allows to tell if an object defines a particular slot
 
-# TODO: isa like
+   - _object approximation_ allows to tell whether two values are ''like'' each
+     other (they do not need to be the exact same, but should be used
+     interchangeably)
+
+   - _object slot querying_ allows to tell if an object defines a particular
+     slot (even if the slot value is 'Undefined').
 
   >   object_a is object_b                       (value identification)
+  >   object_a like object_b                     (value approximation)
   >   object has name                            (slot querying)
 
   Additionally, it is possible to combine assignment and operations for a subset
@@ -334,19 +440,23 @@ Benefits
   2.11 Invocations
   ----------------
 
-  An invocation is the application of a set of values to a value that can be
-  invoked (we call them ''invocables''). The invocation will typically result in
-  a value (an invocation is an expression, as it substitutes to a value).
+  An invocation is the application of a set of values to a value (a function)
+  that can be invoked (we call them _invocables_). The invocation will typically
+  result in a value (the invocation is then an expression, as it ''evaluates to a
+  value'').
 
-  In Sugar, invocations have a syntax very similar to what you'd expect:
+  In Sugar, invocations have a very common syntax:
 
   >   EXPRESSION ( EXPRESSION, EXPRESSION, EXPRESSION, ... )
 
-  where the first 'EXPRESSION' must evaluate to something that can be invoked.
-  These expression are typically references to _functions_ (see [next
-  section]()).
+  where the first 'EXPRESSION' must (of course) evaluate to something that can
+  be invoked.  These expression are typically references to functions, which
+  we'll introduce [soon](functions).
 
-  When your invocation has long expression as arguments, Sugar allows you to
+  The 'EXPRESSION's within parentheses are the (actual) _arguments_ (parameters)
+  to the invocable (function).
+
+  When your invocation has long expressions as arguments, Sugar allows you to
   make the invocation span multiple lines:
 
   >   EXPRESSION ( EXPRESSION, EXPRESSION,
@@ -367,8 +477,63 @@ Benefits
   >   <tab>EXPRESSION
   >   )
 
-  # TODO: EXPRESSION (...EXPRESSION)
-  # TODO: EXPRESSION (SYMBOL=EXPRESSION)
+  Sugar also provides way to indicate _named arguments_, in case you'd like to
+  specify the arguments out of order. Here is how to do this
+
+  >   EXPRESSION (SYMBOL=EXPRESSION,...)         # (named arguments)
+
+  and here is an example of two similar invocations:
+
+  >   juice( "orange", spice="cinnamon", blend="thin" )
+  >   juice( "orange", blend="cinnamon", spice="thin" )
+
+  When using _named_ arguments, you have to make sure they appear after the
+  non-named arguments.
+
+  Sugar also offers a way to specify optional arguments as a list
+
+  >   EXPRESSION (...EXPRESSION)                 # (optional arguments)
+
+  in practice:
+
+  >   var fruits = ["apple", "orange", "tangerine")
+  >   juice(...fruits)
+  
+  will be equivalent to
+
+  >   juice("apple", "orange", "tangerine")
+
+  you can do the same with named arguments:
+
+  >   EXPRESSION (...=EXPRESSION)                # (optional arguments)
+
+  in practice:
+
+  >   var fruits = {fruit:"orange", spice="cinnamon", blend="thin")
+  >   juice(...=fruits)
+  
+  will be equivalent to
+
+  >   juice(fruit="orange", spice="cinnamon", blend="thin")
+
+  When using '...' or '...=', you have to make sure they are the last to appear
+  in the arguments. When both are used '...=' should be the last. Here is a
+  complete example:
+
+  >   fooize("orange", ...(["tangerine", "cherry"]), ...=({spice:"cinnamon}))
+
+  Summary:
+
+  >   EXPRESSION()                               (invocation w/o arguments)
+  >   EXPRESSION(EXPRESSON)                      (invocation w/ argument)
+  >   EXPRESSION(SYMBOL=ARGUMENTS)               (name arguments)
+  >   EXPRESSION(...ARGUMENTS)                   (optional arguments)
+  >   EXPRESSION(...=ARGUMENTS)                  (optional named arguments)
+  >   EXPRESSION(ARG,...ARG,...=ARG)             (combination)
+  >   
+  >   EXPRESSION(                                (multi-line invocation)
+  >   <tab>EXPRESSION
+  >   )
 
   2.13 Anonymous functions
   -----------------------
