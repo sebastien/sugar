@@ -521,7 +521,7 @@ def d_ModuleDeclarations(t):
 
 def d_Shared(t):
 	'''Shared:
-	    '@shared' NAME (':' Type)? ('=' Value)?  EOL
+	    '@shared' NAME (':' Type)? ('=' Expression)?  EOL
 	    Documentation?
 	'''
 	s_name  = t[1]
