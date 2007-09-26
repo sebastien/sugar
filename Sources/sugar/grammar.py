@@ -963,7 +963,6 @@ def d_ConditionExpression(t):
 	res.addRule(m)
 	rules = t[4]
 	while rules:
-		print rules[1:4]
 		predicate, _, expression = rules[1:4]
 		res.addRule(F.matchExpression(predicate, expression))
 		rules = rules[4:]
@@ -1275,23 +1274,26 @@ def disambiguate( nodes ):
 #_PARSER = Parser(make_grammar_file=0)
 _PARSER = DParser()
 
-def parse( text, verbose=True, options=None ):
+def parse( text, verbose=True, options=None, environment=None ):
 	_PARSER.indentStack = []
 	_PARSER.isNewline   = True
 	_PARSER.requiredIndent = 0
 	_PARSER.previousLine   = 0
 	if options is None: options = Options()
+	if environment:
+		for opt in environment.options.keys():
+			options.addTarget(opt)
 	_PARSER.options = options
 	res = _PARSER.parse(text,initial_skip_space_fn=skip_whitespace,ambiguity_fn=disambiguate, print_debug_info=(verbose and 1 or 0))
 	return res
 
-def parseFile( path, verbose=False, options=None ):
+def parseFile( path, verbose=False, options=None, environment=None ):
 	f = file(path, 'r') ; t = f.read() ; f.close()
-	return parse(t, verbose, options)
+	return parse(t, verbose, options, environment)
 
 # FIXME: Modules should always be asbolutely named
-def parseModule( name, text, verbose=False, options=None ):
-	res = parse(text, verbose, options)
+def parseModule(name, text, verbose=False, options=None, environment=None):
+	res = parse(text, verbose, options, environment)
 	module_name = res.getAnnotation("module")
 	if module_name:
 		res.setName(module_name.getContent())
@@ -1332,6 +1334,7 @@ class Parser:
 		self.options   = Options()
 		self._program  = F.createProgram()
 		self._program.setFactory(F)
+		self.environment = None
 
 	def program( self ):
 		"""Returns the program that is implicitely created by parsing the
@@ -1373,7 +1376,7 @@ class Parser:
 		#try:
 		if True:
 			name = name and self.pathToModuleName(name)
-			res = parseModule(name, text, self.verbose, self.options)
+			res = parseModule(name, text, self.verbose, self.options, self.environment)
 			# We set the module file path (for informative purpose only)
 			if sourcepath:
 				res.setSource("file://" + os.path.abspath(sourcepath))
