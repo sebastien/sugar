@@ -17,6 +17,7 @@ class Command(BaseCommand):
 			actionscript_plugin.addRecognizedExtension("sas")
 			python_plugin.reader = grammar.Parser
 			python_reader = python_plugin.reader()
+			python_reader.environment = self.environment
 			# FIXME: This is temporary, until we use the proper reader interface
 			python_reader._program = self.environment.getProgram()
 			# FIXME: This should be done by the Parser itself

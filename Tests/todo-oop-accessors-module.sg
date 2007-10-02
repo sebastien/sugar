@@ -1,0 +1,5 @@
+@shared valueString get = (getValue set={v| ensure(v length() > 0) ; value = v})
+
+@function getValue
+	return getValue
+@end

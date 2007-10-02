@@ -1,0 +1,7 @@
+@function f
+	# PROBLEM: This will be converted to
+	# r
+	# instead of
+	# r = None
+	var r
+@end
