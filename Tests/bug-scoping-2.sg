@@ -1,0 +1,5 @@
+# PROBLEM: SNIP should not be resolved to the local snip at that point
+@shared SNIP
+@class AbstractWriter: Pass
+	@shared SNIP = SNIP
+@end

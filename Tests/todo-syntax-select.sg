@@ -1,0 +1,47 @@
+# SYNTAX: select is like an 'if on a single expression that you run against a
+# set of (partial) predicate expressions. The preficate is the first line or the
+# left part of the '->'
+@main
+	print "POUET"
+	select 1 as a
+		as 1
+			print 'One'
+		end
+	end
+
+	select 2
+		like 1
+			print 'Failed'
+		like 2
+			print 'Succeeded'
+		end
+	end
+
+	select 2
+		1 -> print 'Failed'
+		2 -> print 'Succeeded'
+	end
+
+	select 2 as a
+		(a==1) -> print 'Failed'
+		(a==2) -> print 'Succeeded'
+	end
+
+	select 2 as a
+		(a==1) -> print 'Failed'
+		_      -> print 'Succeeded'
+	end
+
+	select name
+		is "var"   -> context values [value] = context ["currentValue"]		
+		is "in"    -> iterated_values        = context values [value]
+		is "apply" -> apply_template         = value
+	end
+
+	select 2 as a
+		> 2 -> print 'Greater than two'
+		< 1 -> print 'Lower than one'
+	end
+
+@end
+# EOF

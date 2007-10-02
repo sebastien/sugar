@@ -1,0 +1,45 @@
+@class Context
+
+	@property text:String
+	@property textLength:<Integer.Positive>
+	@property offset:<Integer.Positive> = 0
+
+	@constructor text, offset=0
+		if text
+			setText(text, offset)
+		end
+	@end
+
+	@method setText text, offset=0
+		self text   = text
+		self offset = offset
+		textLength  = len(text)
+	@end
+
+	# FIXME: Don't know if this should be in context
+	@method skip expression
+	| Skips the characters matching the given expression (if any), starting from
+	| the current offset.
+		if expression
+			var match = expression match (text, offset)
+			print ("MATCH", match)
+			# PROBLEM: match is resolved as a method, while it should be
+			# resolved as a variable in the if.
+			if match
+				offset = match end()
+			end
+		end
+	@end
+
+	@method match expression
+		# TODO: Add skip ignored characters
+		return expression match (text, offset)
+	@end
+
+	@method search expression
+		return expression search (text, offset)
+	@end
+
+@end
+
+

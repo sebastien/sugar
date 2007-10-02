@@ -1,0 +1,8 @@
+@function f
+	# PROBLEM: v should be undefined (but no error is reported)
+	var v = v + 1
+	# PROBLEM: y should be undefined (but no error is reported)
+	var x = y + 10
+	var y = 1
+@end
+# EOF

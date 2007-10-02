@@ -1,0 +1,28 @@
+# PROBLEM: In JavaScript, this resulted in
+# // 8< ---[cells.js]---
+# var cells={}
+# cells.A=Extend.Class({
+# 	name:'cells.A', parent:undefined,
+# 	shared:{
+# 		Pouet:0
+# 	}
+# })
+# cells.B=Extend.Class({
+# 	name:'cells.Pouet', parent:cells.A,
+# 	shared:{
+# 		Pouet:0
+# 	}
+# })
+# cells.init=	function(){
+# 		var __this__=cells;
+# 	}
+# cells.init()
+# // --
+# DATE:    2007-10-24
+@class A
+	@shared   Pouet:Number = 0
+@end
+@class B: A
+@end
+
+
