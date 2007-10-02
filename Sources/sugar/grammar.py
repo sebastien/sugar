@@ -762,6 +762,8 @@ def d_IterationExpression(t):
 	'''IterationExpression : Expression '::' Expression'''
 	return F.iterate(t[0], t[2])
 
+# FIXME: This should not be argumnets, but the same thing as the l-value for an
+# assignment
 def d_ForIteration(t):
 	'''ForIteration :
 		'for' Arguments 'in' Expression EOL
@@ -1051,14 +1053,16 @@ def d_Arguments(t):
 	return r
 
 def d_Argument(t):
-	'''Argument: NAME (':' Type)? ('?'|'...'|'=' (Litteral| Expression )) ? '''
+	'''Argument: NAME (':' Type)? ('?'|'=...'|'...'|'=' (Litteral| Expression )) ? '''
 	is_optional = t[2] and t[2][0] == '?'
 	is_rest     = t[2] and t[2][0] == '...'
+	is_kwrest   = t[2] and t[2][0] == '=...'
 	has_value   = t[2] and t[2][0] == '='
 	arg_type    = t[1] and t[1][1] or None
 	arg = F._arg(t[0], arg_type)
 	if is_optional: arg.setOptional(True)
 	if is_rest: arg.setRest(True)
+	if is_kwrest: arg.setKeywordsRest(True)
 	if has_value: arg.setDefaultValue(t[2][-1])
 	return arg
 
