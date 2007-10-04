@@ -23,7 +23,7 @@ $(TEST_DIR)/as/%.as: %.sg $(TEST_DIR)/as
 $(TEST_DIR)/py/%.py: %.sg $(TEST_DIR)/py
 	$(SUGAR) -clpython $< > $@
 
-$(TEST_DIR)/pnuts/%.pnuts: %.pnuts $(TEST_DIR)/pnuts
+$(TEST_DIR)/pnuts/%.pnuts: %.sg $(TEST_DIR)/pnuts
 	$(SUGAR) -clpnuts $< > $@
 
 $(TEST_DIR)/pnuts:

@@ -4,4 +4,3 @@ print ("POUET" + e inPlaceEditor)
 print ("POUET" + (e inPlaceEditor))
 print ("POUET" + e andPlaceEditor)
 print ("POUET" + e orPlaceEditor)
-var a = 1 + e nota
