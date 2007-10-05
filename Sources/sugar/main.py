@@ -12,9 +12,12 @@ class Command(BaseCommand):
 			python_plugin       = self.environment.loadLanguage("python")
 			javascript_plugin   = self.environment.loadLanguage("javascript")
 			actionscript_plugin = self.environment.loadLanguage("actionscript")
+			pnuts_plugin        = self.environment.loadLanguage("pnuts")
 			python_plugin.addRecognizedExtension("spy")
 			javascript_plugin.addRecognizedExtension("sjs")
 			actionscript_plugin.addRecognizedExtension("sas")
+			pnuts_plugin.addRecognizedExtension("spnuts")
+			pnuts_plugin.addRecognizedExtension("spnut")
 			python_plugin.reader = grammar.Parser
 			python_reader = python_plugin.reader()
 			python_reader.environment = self.environment

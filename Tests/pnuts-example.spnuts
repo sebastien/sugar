@@ -1,7 +1,6 @@
 @target Pnuts
-@import java awt Frame
-@import java awt Button as Btn
-@import e ptextarea PTextArea as PTextArea
+@import java.awt.Frame
+@import java.awt.Button as Btn
 
 var f = new java awt Frame ("Hello, World")
 var b = new PTextArea()
