@@ -1,10 +1,15 @@
 == Sugar v0.8.2
 == Language Reference
 -- Author: Sebastien Pierre <sebastien@ivy.fr>
--- Revision: 19-Sep-2007 (21-Aug-2007)
+-- Revision: 23-Oct-2007 (21-Aug-2007)
 
 1. About Sugar
 ==============
+
+Main thing:
+
+ - Simple semantics
+ - Syntax as clear as possible
 
  - Code as data
  - Meta-programming (compiled and interpreted)
@@ -14,11 +19,16 @@
  - Advanced type system
  - Compiles to many backends (JavaScript, ActionScript, Python, Pnuts)
 
-Benefits
+Benefits (of relying on LambdaFactory):
 
  - Write your own DSL or custom syntax
  - Easy to refactor
  - You can manipulate your code
+
+A word about LambdaFactory and Sugar:
+
+ - Many things specific to the back-end
+ - Sugar only a syntax
 
 2. Syntax
 =========
@@ -370,7 +380,7 @@ Benefits
    - an arithmetic operator: '+', '-', '/', '*', '^' '%'
    - a comparison operator: '<', '>', '==', '!='
    - a logic operator: 'and', 'or', 'not'
-   - specific operators: 'is', 'like', 'has'
+   - specific operators: 'is', 'isa', 'like', 'has'
 #  - bit-wise operators: '&', '|', '<<', '>>' 
 
   most operators take two operands, excepted the 'not' operator which only takes
@@ -408,19 +418,25 @@ Benefits
   >   True and False                             (logical intersection)
 
   _specific operators_ have a semantic that will be detailed later in the
-  [object model]() section. They are all related to doing queries on object:
+  [object model]() section. They are all related to doing queries on values (and
+  objects in particular):
 
-   - _object identification_ allows to tell whether two values are actually the
+   - _value identification_ allows to tell whether two values are actually the
      exact same object.
 
-   - _object approximation_ allows to tell whether two values are ''like'' each
+   - value approximation_ allows to tell whether two values are ''like'' each
      other (they do not need to be the exact same, but should be used
      interchangeably)
+
+   - _object type identification_ allows to tell whether the given value/object
+     is of the given type/class. This is basically what 'instanceof' do in other
+     languages.
 
    - _object slot querying_ allows to tell if an object defines a particular
      slot (even if the slot value is 'Undefined').
 
   >   object_a is object_b                       (value identification)
+  >   object_a isa ObjectClass                   (value type identification)
   >   object_a like object_b                     (value approximation)
   >   object has name                            (slot querying)
 
@@ -440,7 +456,7 @@ Benefits
   2.11 Invocations
   ----------------
 
-  An invocation is the application of a set of values to a value (a function)
+  An invocation is the application of a set of values to another value (a function)
   that can be invoked (we call them _invocables_). The invocation will typically
   result in a value (the invocation is then an expression, as it ''evaluates to a
   value'').
@@ -522,6 +538,11 @@ Benefits
 
   >   fooize("orange", ...(["tangerine", "cherry"]), ...=({spice:"cinnamon}))
 
+    Note ______________________________________________________________________
+    It may be useful to note that some (or most) functions may not accept extra
+    named or unnamed parameters. Have a look at the [functions] section to know
+    a little bit more about the why.
+
   Summary:
 
   >   EXPRESSION()                               (invocation w/o arguments)
@@ -536,7 +557,7 @@ Benefits
   >   )
 
   2.13 Anonymous functions
-  -----------------------
+  ------------------------
 
   Sugar allows _anonymous functions_ to be defined and used a values, like
   numbers, strings, lists and dictionaries. An anonymous function is composed of
@@ -583,21 +604,227 @@ Benefits
   >   var a = 1
   >   var f = { var a=1 ; return a }
 
+    Note _____________________________________________________________________
+    To the difference of other languages (JavaScript, for instance),
+    referencing and re-assigning an external variable from within a closure
+    won't affect the external variable. External variables are actually copied
+    in the scope of the closure, exactly as illustrated by the above example.
+
+  Summary:
+
+  >   {|}                                        (empty function)
+  >   {ARGUMENT|STATEMENT}                       (single argument and statement)
+  >   {A1,A2,A3|STATEMENT}                       (multi arg. single statement)
+  >   {A1,A2,A3|S1;S2;S3}                        (multi argument and statement)
+
   2.12 Function declaration
   -------------------------
 
-  Functions are the elements that 
+  Functions in Sugar are a bit different from Anonymous Functions/Closures, both
+  from their syntax and semantics. Functions are only defined within _modules_
+  (we'll see them soon) and don't ''close'' on their environment as closures do.
+
+  From a syntactic point of view, functions are a little bit more verbose:
+
+  >   @function f
+  >     print ("Hello, World !")
+  >   @end
+
+  Which is less compact than the closure-equivalent:
+
+  >   {print ("Hello, World !")}
+
+  So functions are always declared by using the following form
+
+  >   @function NAME ARG, ARG=VAL, REST..., KWARGS=...
+  >   <INDENT> STATEMENT
+  >   <INDENT> ...
+  >   @end
+
+  First thing to notice here is that the function _body_ (the statements within
+  the function) has to be indented (use tabs !), and that the function
+  declaration ends explicitly with the '@end' keyword.
+
+  This is a common pattern in Sugar syntax, where declarations always start with
+  '@something', have an indented body and end with '@end'.
+
+  You'll notice that the above function declaration has different syntaxes for
+  the argument, which all denote a specific role for the argument:
+
+  - 'ARG' is a ''standard'' argument
+  - 'ARG=VAL' is an argument with a _default value_
+  - 'ARGS...' is an argument that represents the rest of the arguments
+  - 'ARGS=...' is an argument that represents the rest of the named parameters
+    passed at invocation time.
+
+  Those knowing Python won't find this difficult to understand, but this may
+  need some explanation. Imagine you have
+
+  >   @function f a, b=1, args..., kwargs...
+  >       ...
+  >   @end
+  
+  and you do this successive invocations
+
+  >   f(1)                                       [1]
+  >   f(1,2)                                     [2]
+  >   f(1,2,3)                                   [3]
+  >   f(1,2,3,4)                                 [4]
+  >   f(a=1,b=2)                                 [5]
+  >   f(a=1,b=2,c=3)                             [6]
+  >   f(1,2,3,d=4)                               [7]
+
+  You'll have:
+
+  - in case 1, 'a' as '1', b as '1', 'args' as '[]' and 'kwargs' as '{}'
+  - in case 2, 'a' as '1', b as '2', 'args' as '[]' and 'kwargs' as '{}'
+  - in case 3, 'a' as '1', b as '2', 'args' as '[3]' and 'kwargs' as '{}'
+  - in case 4, 'a' as '1', b as '2', 'args' as '[3,4]' and 'kwargs' as '{}'
+  - in case 5, 'a' as '1', b as '2', 'args' as '[]' and 'kwargs' as '{}'
+  - in case 6, 'a' as '1', b as '2', 'args' as '[]' and 'kwargs' as '{c:3}'
+  - in case 6, 'a' as '1', b as '2', 'args' as '[3]' and 'kwargs' as '{c:3}'
+
+  The pattern here is rather simple:
+
+  - 'args' and 'kwargs' both represents extra arguments that were not formally
+    named in the function declaration
+  - 'args' will contain the list of extra arguments passed without names at
+    invocation time (see [invocations])
+  - 'kwargs' will contain the list of extra arguments passed with names at
+    invocation time.
+
+  Note that if you specify both 'ARGS...' and 'ARGS=...', 'ARG...' must come
+  first. Also if you don't specify 'ARGS...' your function won't accept an
+  invocation with a different number of unnamed parameters, and if you don't
+  specify 'ARGS=...' in you function, it won't accept an invocation with extra
+  named parameters.
+
+  Summary:
+
+  >   @function NAME ARG, ARG, ARG               (function declaration start)
+  >   <tab>STATEMENT                             (function body)
+  >   @end                                       (function declaration end)
+  >   ARG                                        (unnamed argument)
+  >   ARG:TYPE                                   (unnamed typed argument)
+  >   NAME=ARG                                   (named argument)
+  >   NAME:TYPE=ARG                              (named typed argument)
+  >   ARGS...                                    (extra unnamed arguments)
+  >   ARGS=...                                   (extra named arguments)
+
+
+  2.12 An example
+  ---------------
+
+  We've finished the first important section of this manual, and you should now
+  have a good idea of the basics of Sugar. Here is an example that sums up what
+  we've learned so far:
+
+  >   TODO
 
 3. Object model
 ===============
 
-  3.1 Class
-  ----------
+  Sugar was designed as an object-oriented programming language, because it's
+  hard to live without objects when you do software engineering. Sugar
+  object-model is _class-based_ (as opposed to _prototype-based_) and is very
+  similar to what you know from commonly practiced OO languages such as Java,
+  C++, C#, Python or Ruby.
 
-  3.2 Protocols
+  As Sugar was designed as an easy-to-learn language for people familiar with
+  existing OO languages, we decided not to use (by default) something more
+  elegant (but trickier) such as prototypes.
+
+  3.1 LambdaFactory and hosts
+  ---------------------------
+
+  It's good to recall that Sugar is merely a syntax for the LambdaFactory
+  program modeling API. In that sense, Sugar only provide a ''syntactic sugar''
+  (no pun intended ;) to the creation of a LambdaFactory program tree.
+
+  The side-effect of that, is that most of the properties of the object model
+  are left up to the host language to which LambdaFactory trees can be
+  translated.
+
+  If you translate to Python, you'll have an actual class-based object model,
+  but if you translate to JavaScript, you'll have a class-based object model
+  sitting on top of a prototype-based object model.
+
+  LambdaFactory runtime provides support for class-based OO model for every
+  host language it supports, so that in practice, you don't have to think too
+  much about what language your Sugar code will be translated to.
+
+  3.2 Objects
+  -----------
+
+  Objects in Sugar are conceptually viewed as ''entities communicating by
+  message-passing'', which is basically the definition that Smalltalk people
+  would give for objects. In practice, Sugar gives you objects which are ''a
+  state and a set of operations to access and manipulate this state'', which is
+  more like the Java/C++ definition of objects.
+
+  Again, as Sugar relies on LambdaFactory, which itself abstracts from different
+  programming-languages (''hosts''), the actual object model depends
+  on the model provided by the ''host''.
+
+  So, to make a long story short, object are composed of:
+
+  - a _state_, which is the aggregation of the object _attributes_
+  - _operations_, which is the collection of the _methods_ available to the
+    object
+
+  Objects also carry _type information_, but this is something that we'll cover
+  in the next section. In the class-based object model, the basic object type
+  information is simply being able to get the _class_ to which the object
+  belongs, or a least offer an operation that allows to tell if an object
+  belongs to a class.
+
+  Object state and operations are two separated things in the Sugar object-model:
+
+  - Objects have _slots_ to which values can be _bound_. The state of an object,
+    aka its attributes is implemented as values bound to slots.
+
+  - Object operations, or _methods_ are not necessarily implemented as functions
+    bound to slots (this depends on the host language). Conceptually, an object
+    responds to a message (method invocation), and the way it responds to this
+    message it up to the object itself (that's the encapsulation principle) --
+    so it doesn't matter where the object looks into his slots or looks in a
+    class definition to resolve the actual piece of code that makes up the
+    operation.
+
+  Note _________________________________________________________________________
+  It's important to note that because of possible different implementations of
+  attributes/operations, it's not allowed in Sugar to have an operation with the
+  same name as an attribute.
+
+  Summary:
+
+  >        ---------------------
+  >       |    OBJECT:CLASS     |       An OBJECT has a parent CLASS
+  >       |---------------------|
+  >       | SLOT=VALUE          |       The object SLOTS hold values for
+  >       | SLOT=VALUE          |       the object ATTRIBUTES.
+  >       | ...                 |
+  >       |---------------------|
+  >       | METHOD(...)         |       The object METHODS are MESSAGES
+  >       | METHOD(...)         |       to which the object responds.
+  >       | ...                 |
+  >        --------------------- 
+
+  3.3 Class
+  ---------
+
+  As we just said, Sugar object model is _class-based_, meaning that you define
+  abstractions by declaring a class. I won't go into the details of what a class
+  is conceptually (there is plenty of good literature on that topic), but I can
+  at least detail what a Sugar class is:
+
+  - A Sugar class is a collection of _attributes_ and _method_ declarations
+
+
+  3.4 Protocols
   -------------
 
-  3.3 Modules
+  3.5 Modules
   -----------
 
 4. Type system
