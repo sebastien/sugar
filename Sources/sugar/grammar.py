@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   06-Sep-2007
+# Last mod.         :   07-Dec-2007
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -480,7 +480,7 @@ def d_ImportSymbols(t):
 	'''
 	imported_symbols = t_filterOut(",", t_flatten(t[1]))
 	import_origin    = t[-2]
-	if import_origin: import_origin = import_origin[-1]
+	if import_origin and type(import_origin)==list: import_origin = import_origin[-1]
 	return F.importSymbols(imported_symbols, import_origin)
 
 def d_ImportAllSymbols(t):
