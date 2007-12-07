@@ -1,6 +1,6 @@
 # FEATURE: Module Constructor
 @shared a = 1
-@constructor
+@initialize
 	a = 1
 @end
 # EOF

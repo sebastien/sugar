@@ -1,6 +1,7 @@
 Requests:
 
  - Modules in multiple files
+ - Support module.submodule
  - Importing modules (automatic resolution)
  - 'elif' in conditionals
  - 'is' should be '===' in JS (I think, thanks to Simon)
