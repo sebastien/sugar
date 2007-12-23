@@ -29,7 +29,7 @@ KEYWORDS = "as and or not has is var new in for return if yield else break raise
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
-OPERATORS_PRIORITY_2 = "not > >= < <= != is has in ==".split() ; OPERATORS_PRIORITY_1.append("is not")
+OPERATORS_PRIORITY_2 = "not > >= < <= != is has in ==".split() ; OPERATORS_PRIORITY_2.append("is not")
 OPERATORS_PRIORITY_3 = "+ -".split()
 OPERATORS_PRIORITY_4 = "/ * % //".split()
 OPERATORS_PRIORITY_5 = "+= -=".split()
