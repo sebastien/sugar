@@ -8,7 +8,7 @@
 	return 0
 @end
 
-@function f3 b, c?, d..., d=...
+@function f3 b, c?, d..., e=...
 	return 0
 @end
 
