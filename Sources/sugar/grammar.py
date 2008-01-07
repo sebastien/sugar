@@ -982,7 +982,7 @@ def d_Value(t):
 # ----------------------------------------------------------------------------
 
 def d_Instanciation(t):
-	'''Instanciation: 'new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
+	'''Instanciation: "new\s" Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
 	'''
 	p = t[2]
 	if len(p) == 1:

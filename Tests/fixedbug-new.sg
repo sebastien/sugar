@@ -1,0 +1,10 @@
+@class A
+	@method newFile
+	@end
+	@method fromStream stream, addEOL=False
+		newFile(path)
+	@end
+@end
+
+var a = A()
+a fromStream()
