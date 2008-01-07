@@ -233,7 +233,7 @@ def d_Specific(t, nodes):
 
 # FIXME: Exchange LINE and STATEMENT
 def d_Line(t):
-	'''Line : (Select|Allocation|Interruption|Expression) ( ';' Line )* '''
+	'''Line : (Select|Allocation|Assignation|Interruption|Expression) ( ';' Line )* '''
 	r = [t[0][0]]
 	r.extend(t[1])
 	r = t_filterOut(";", r)
@@ -844,6 +844,7 @@ def d_Assignation(t):
 	''' Assignation: Expression ('='|'-='|'+=') Expression '''
 	op = t[1][0]
 	if op == "=":
+		
 		return F.assign(t[0], t[2])
 	else:
 		op = op[0]
@@ -941,7 +942,7 @@ def d_Interception(t):
 
 def d_Expression(t):
 	'''Expression : Interception | Iteration | Instanciation | Slicing |
-	   InvocationOrResolution | Assignation |
+	   InvocationOrResolution |
 	   ConditionExpression |
 	   Computation | Value | LP Expression RP
 	'''
@@ -1023,8 +1024,8 @@ def d_InvocationOrResolution(t):
 
 def d_InvocationParameters(t):
 	'''InvocationParameters:
-		LP Expression? ("," Expression)*
-			(','? EOL INDENT (Line EOL+)+ DEDENT)?
+		LP InvocationParameter? ("," InvocationParameter)*
+			(','? EOL INDENT (InvocationParameter EOL+)+ DEDENT)?
 		RP
 	'''
 	r = []
@@ -1033,6 +1034,26 @@ def d_InvocationParameters(t):
 	for line in t_filterOut(",", t[3]):
 		if line is None: continue
 		r.extend(line)
+	return r
+
+def d_InvocationParameter(t):
+	'''InvocationParameter:
+		(NAME '=' Expression)
+	|	('...'  '=' Expression)
+	|	('...'      Expression)
+	|   Expression
+	'''
+	t = t[0]
+	is_list = type(t) is list
+	if is_list and len(t) == 3 and t[1] == "=":
+		if t[0] == "...":
+			r = F._param(name=t[0],value=t[2],asMap=True)
+		else:
+			r = F._param(name=t[0],value=t[2])
+	elif is_list and len(t) == 2 and t[0] == "...":
+		r = F._param(value=[1],asList=True)
+	else:
+		r = F._param(value=t)
 	return r
 
 # ----------------------------------------------------------------------------
