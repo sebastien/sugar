@@ -1024,7 +1024,7 @@ def d_InvocationOrResolution(t):
 			if type(p[0]) in (tuple, list):
 				return F.invoke(t[0], *p[0])
 			else:
-				return F.invoke(t[0], p[0])
+				return F.invoke(t[0], F._param(value=p[0]))
 	else:
 		assert None, "This should not happen !"
 
