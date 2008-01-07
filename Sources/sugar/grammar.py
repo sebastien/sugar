@@ -981,9 +981,15 @@ def d_Value(t):
 # Operations
 # ----------------------------------------------------------------------------
 
-def d_Instanciation(t):
-	'''Instanciation: "new\s" Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
+def d_Instanciation(t,nodes,spec):
+	'''Instanciation: 'new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
 	'''
+	# This is a dirty hack to preven newXXX to be interpreted assert new XXX
+	if spec:
+		node_new  = nodes[0]
+		node_expr = nodes[1]
+		if node_expr.start_loc.s - node_new.end == 0:
+			return Reject
 	p = t[2]
 	if len(p) == 1:
 		return F.instanciate(t[1], *p)
