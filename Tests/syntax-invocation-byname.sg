@@ -1,0 +1,15 @@
+@function f a=1,b=2,c=3,d=4,e=5
+	return [a,b,c,d,e]
+@end
+
+f(b=0)
+f(b=0,c=2)
+print  "Expects: [1, 2, 3, 4, 5]"
+print ("1:      ", f())
+print  "Expects: [1, 0, 3, 4, 5]"
+print ("2:      ", f(b=0))
+print  "Expects: [1, 2, 3, 4, 4]"
+print ("3:      ", f(e=4))
+# Should do an error
+print  "Expects: [1, 0, 3, 4, 5]"
+print ("4:      ", f(f=6))
