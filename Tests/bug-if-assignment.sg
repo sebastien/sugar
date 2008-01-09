@@ -1,0 +1,14 @@
+# DATE: 09-Feb-2008
+# This was compiled to JavaScript as
+#
+#		if ( states )
+#		{__this__.statePredicates} = states;
+#		if ( triggerOperation )
+#		{__this__.triggerCallback} = triggerOperation; 
+#
+if states -> statePredicates = states
+if triggerOperation -> triggerCallback = triggerOperation
+if triggerOperation -> (triggerCallback = triggerOperation ; pouet = 1 ;
+kapouet)
+= 2
+d
