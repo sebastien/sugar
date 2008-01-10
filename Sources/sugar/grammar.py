@@ -233,10 +233,10 @@ def d_Specific(t, nodes):
 
 # FIXME: Exchange LINE and STATEMENT
 def d_Line(t):
-	'''Line : (Select|Allocation|Assignation|Interruption|Expression) ( ';' Line )* '''
+	'''Line : (Assignment|Select|Allocation|Interruption|Expression) ( ';' Line )* '''
 	r = [t[0][0]]
-	r.extend(t[1])
-	r = t_filterOut(";", r)
+	for e in t[1]:
+		if e != ";": r.extend(e) 
 	return r
 
 def d_Comment(t):
@@ -251,7 +251,7 @@ def d_Documentation(t):
 
 def d_Statement(t):
 	'''Statement : Line EOL '''
-	return t[0][0]
+	return t[0]
 
 def d_Declaration(t):
 	'''Declaration : (Main|AbstractFunction|Interface|Function|Class|Exception) EOL | Shared'''
@@ -694,6 +694,7 @@ def d_ConditionWhenSingleLine(t):
 	''' ConditionWhenSingleLine: 
 		'if' Expression '->' Line EOL
 	'''
+	print "SINGLE LINE", t
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseMultiLine(t):
@@ -840,8 +841,8 @@ def d_PrefixComputation(t):
 	return F.compute(F._op(t[0][0]),t[1])
 
 # FIXME: Rename Assignment ?
-def d_Assignation(t):
-	''' Assignation: Expression ('='|'-='|'+=') Expression '''
+def d_Assignment(t):
+	''' Assignment: Expression ('='|'-='|'+=') Expression '''
 	op = t[1][0]
 	if op == "=":
 		
@@ -944,6 +945,7 @@ def d_Expression(t):
 	'''Expression : Interception | Iteration | Instanciation | Slicing |
 	   InvocationOrResolution |
 	   ConditionExpression |
+	   Assignment |
 	   Computation | Value | LP Expression RP
 	'''
 	if len(t) == 1:

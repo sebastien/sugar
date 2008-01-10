@@ -1,0 +1,5 @@
+# DESCRIPTION: The rest of a ';' joined statement list is swallowed
+# DATE: 10-Feb-2008
+var a = 1 
+var a = 1 ; a = 2
+var a = 1 ; a = 2 ; var c
