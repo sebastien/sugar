@@ -694,7 +694,7 @@ def d_ConditionWhenSingleLine(t):
 	''' ConditionWhenSingleLine: 
 		'if' Expression '->' Line EOL
 	'''
-	print "SINGLE LINE", t
+	print "CONDITION", t
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseMultiLine(t):
