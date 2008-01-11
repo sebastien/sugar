@@ -1041,7 +1041,10 @@ def d_InvocationParameters(t):
 	r.extend(t_filterOut(",", t[2]))
 	for line in t_filterOut(",", t[3]):
 		if line is None: continue
-		r.extend(line)
+		if type(line) in (tuple,list):
+			r.extend(line)
+		else:
+			r.append(line)
 	return r
 
 def d_InvocationParameter(t):
