@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>@class ${1:TestName}:UnitTest
+	
+	@constructor _name
+		super( _name ) 		
+	@end
+	
+	@method setup
+		$0
+	@end
+	
+@end</string>
+	<key>name</key>
+	<string>UnitTest</string>
+	<key>scope</key>
+	<string>source.sjs</string>
+	<key>tabTrigger</key>
+	<string>test</string>
+	<key>uuid</key>
+	<string>EF6B1DDE-9C5E-42D0-A49D-77BC16E21D8C</string>
+</dict>
+</plist>

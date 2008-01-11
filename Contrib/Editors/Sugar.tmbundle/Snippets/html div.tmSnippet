@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>var ${1:varname} = html div({class:"${2:classname}"}
+	${0:content}
+)
+</string>
+	<key>name</key>
+	<string>html div</string>
+	<key>scope</key>
+	<string>source.sjs</string>
+	<key>tabTrigger</key>
+	<string>div</string>
+	<key>uuid</key>
+	<string>1A205830-A880-46F9-88F0-53FE6AE59B61</string>
+</dict>
+</plist>

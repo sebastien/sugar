@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string># Quick script to show error number of a sugar erro
+source "$TM_SUPPORT_PATH/lib/webpreview.sh"
+html_header "Sugar validator" "validating sugar... "
+
+if sugar $TM_FILEPATH 2&gt;&amp;1 | grep -q line: ; then
+	echo "&lt;div style=\"background:red ; heigh : 100px; width 300px;\"&gt;ERRRROR!&lt;/div&gt;"
+	sugar $TM_FILEPATH 2&gt;&amp;1 | grep line:
+	echo "&lt;pre&gt;"
+	sugar $TM_FILEPATH 2&gt;&amp;1
+	echo "&lt;/pre&gt;"
+else
+	echo "&lt;div style=\"background:green ; heigh : 100px; width 300px;\"&gt;No errors found ! :-)&lt;/div&gt;"
+fi
+
+html_footer</string>
+	<key>input</key>
+	<string>none</string>
+	<key>keyEquivalent</key>
+	<string>@r</string>
+	<key>name</key>
+	<string>Syntax Validator</string>
+	<key>output</key>
+	<string>showAsHTML</string>
+	<key>scope</key>
+	<string>source.sjs</string>
+	<key>uuid</key>
+	<string>EDE8E06B-FFD6-484F-9CEE-D2339BC73BD2</string>
+</dict>
+</plist>

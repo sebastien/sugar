@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>echo "Definition of $TM_SELECTED_TEXT : "
+egrep "(@method|@function|@class).*$TM_SELECTED_TEXT\b" -s -n  -d recurse $TM_PROJECT_DIRECTORY | grep ".sjs"
+</string>
+	<key>fallbackInput</key>
+	<string>word</string>
+	<key>input</key>
+	<string>selection</string>
+	<key>keyEquivalent</key>
+	<string>@</string>
+	<key>name</key>
+	<string>Show class / method definition</string>
+	<key>output</key>
+	<string>showAsTooltip</string>
+	<key>scope</key>
+	<string>source.sjs</string>
+	<key>uuid</key>
+	<string>4FFFED41-B90E-45AB-8D82-09467656D959</string>
+</dict>
+</plist>

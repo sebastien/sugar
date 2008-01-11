@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleUUID</key>
+	<string>C5F73589-7D9B-4E77-9D55-9CF0F4DBA689</string>
+	<key>content</key>
+	<string>\$( ${1:triggerElement} ) trigger( "${0:eventname}" )</string>
+	<key>name</key>
+	<string>trigger</string>
+	<key>scope</key>
+	<string>source.sjs</string>
+	<key>tabTrigger</key>
+	<string>trigger</string>
+	<key>uuid</key>
+	<string>94DE9338-4681-431B-916D-4E209CF4851D</string>
+</dict>
+</plist>

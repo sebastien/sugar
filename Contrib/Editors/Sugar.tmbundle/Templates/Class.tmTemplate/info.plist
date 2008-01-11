@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>command</key>
+	<string>if [[ ! -f "$TM_NEW_FILE" ]]; then
+   TM_YEAR=`date +%Y` \
+   TM_DATE=`date +%Y-%m-%d` \
+   TM_USERNAME=`niutil -readprop / /users/\$USER realname` \
+   perl -pe 's/\$\{([^}]*)\}/$ENV{$1}/g' \
+      &lt; class.sjs &gt; "$TM_NEW_FILE"
+fi</string>
+	<key>extension</key>
+	<string>sjs</string>
+	<key>keyEquivalent</key>
+	<string>@C</string>
+	<key>name</key>
+	<string>Class</string>
+	<key>scope</key>
+	<string>source.sjs</string>
+	<key>uuid</key>
+	<string>2F5E1B8C-002E-47E4-A85C-EBF2A8C7ABC6</string>
+</dict>
+</plist>

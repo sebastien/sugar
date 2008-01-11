@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleUUID</key>
+	<string>C5F73589-7D9B-4E77-9D55-9CF0F4DBA689</string>
+	<key>content</key>
+	<string>\$( ${1:bindelement} ) click ({
+	${0:content}
+})</string>
+	<key>name</key>
+	<string>click</string>
+	<key>scope</key>
+	<string>source.sjs</string>
+	<key>tabTrigger</key>
+	<string>click</string>
+	<key>uuid</key>
+	<string>CA8D1539-EA7B-4DC8-BC37-A135D8FD4857</string>
+</dict>
+</plist>

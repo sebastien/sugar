@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>comment</key>
+	<string>Sugar JavaScript</string>
+	<key>fileTypes</key>
+	<array>
+		<string>sjs</string>
+	</array>
+	<key>foldingStartMarker</key>
+	<string>(?x)^
+	    (\s*+
+	        (@module|@method|@class|@function|@constructor|@group
+	        |if ))
+
+	</string>
+	<key>foldingStopMarker</key>
+	<string>(?x)
+		(   (^|;) \s*+ @end   \s*+ ([#].*)? $
+		|    (^|;) \s*+ end   \s*+ ([#].*)? $
+		|   ^     \s*+ [}\]] \s*+ ([#].*)? $
+		|   [#] .*? \(end\) \s*+ $    # Sune’s special marker
+		)</string>
+	<key>keyEquivalent</key>
+	<string>~@S</string>
+	<key>name</key>
+	<string>Sugar JavaScript</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>match</key>
+			<string>(@(shared|end|group|property|exception|embed))|\b(try|catch|finally|super|var|return|for|while|if|end|else|new)\b</string>
+			<key>name</key>
+			<string>keyword.control.sjs</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.class.sjs</string>
+				</dict>
+				<key>4</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.type</string>
+				</dict>
+				<key>6</key>
+				<dict>
+					<key>name</key>
+					<string>entity.other.inherited-class.sugar</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(?x)^
+				(
+					 (^\s*(@class|@module)\s+(\w+))(\s*:\s*(\w+))? #for normal stuff
+				)
+			</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>0</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.function</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.declaration.sjs</string>
+				</dict>
+				<key>7</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.declaration.sjs</string>
+				</dict>
+				<key>8</key>
+				<dict>
+					<key>name</key>
+					<string>variable.parameter</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(?x)^
+				(
+					 (^\s*(@(method|group|operation|function|abstract|protocol|specific))(\s+\w+)) #for normal stuff
+				    | (^\s*(@constructor)) #for constructor
+				)
+				 ((,?\s+\w+)*)(.*,?.*)  # for the parameters
+			</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>0</key>
+				<dict>
+					<key>name</key>
+					<string>meta.function-call</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>\b[a-z$][$A-Za-z0-9_\-]+(?=\((.*)\))</string>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>"</string>
+			<key>end</key>
+			<string>"</string>
+			<key>name</key>
+			<string>string.quoted.double.sjs</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>match</key>
+					<string>\\.</string>
+					<key>name</key>
+					<string>constant.character.escape.sjs</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(#).*$\n?</string>
+			<key>name</key>
+			<string>comment.line.number-sign.sjs</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>comment.line.documentation.sjs</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^\s*(\|.*$\n?)</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(\b)(&lt;|&gt;|&lt;\=|&gt;\=|\=\=|!\=|&lt;&gt;|and|is|or|not)(\b)</string>
+			<key>name</key>
+			<string>keyword.operator.comparison.sugar</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\=</string>
+			<key>name</key>
+			<string>keyword.operator.assignment.sugar</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(\b)(this|self|target|null|true|false|True|False|Undefined)(\b)</string>
+			<key>name</key>
+			<string>constant.language.sugar</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>((?&lt;=var )[a-zA-Z0-9\-_]+\b)|((?&lt;=@property )[a-zA-Z0-9\-_]+\b)|((?&lt;=@shared )[a-zA-Z0-9\-_]+\b)</string>
+			<key>name</key>
+			<string>variable.other.sugar</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(-|\+)?\s*[0-9]+(\.[0-9]+)?</string>
+			<key>name</key>
+			<string>constant.numeric.sugar</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>source.sjs</string>
+	<key>uuid</key>
+	<string>5C74AC12-869D-41D8-935B-65CCA1BD7D7E</string>
+</dict>
+</plist>

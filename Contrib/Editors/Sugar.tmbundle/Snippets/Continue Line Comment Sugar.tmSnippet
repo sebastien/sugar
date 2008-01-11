@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>
+`# extract comment type from the scope name
+# and convert it to the actual character(s)
+CH=$(perl &lt;&lt;&lt;$TM_SCOPE -pe 's/.*\bcomment\.line\.([^. ]*).*/$1/')
+grep -w ^$CH &lt;&lt;EOF|cut -f2|tr -d \n
+number-sign	#
+documentation	|
+EOF` $0</string>
+	<key>keyEquivalent</key>
+	<string></string>
+	<key>name</key>
+	<string>Continue Line Comment Sugar</string>
+	<key>scope</key>
+	<string>comment.line</string>
+	<key>uuid</key>
+	<string>B7F5980A-4BCD-4AED-8E92-AD6111ACC8AF</string>
+</dict>
+</plist>

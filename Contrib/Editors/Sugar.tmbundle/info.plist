@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>deleted</key>
+	<array>
+		<string>CCFD55DB-BE07-4F24-97D8-197744BBFDF4</string>
+	</array>
+	<key>name</key>
+	<string>Sugar</string>
+	<key>ordering</key>
+	<array>
+		<string>5C74AC12-869D-41D8-935B-65CCA1BD7D7E</string>
+		<string>79C7CB07-4696-4A0F-BA02-3F9F2DB6F19E</string>
+		<string>EDE8E06B-FFD6-484F-9CEE-D2339BC73BD2</string>
+		<string>B09F3057-CBF4-4CC6-9A05-86AEEE03C3E6</string>
+		<string>B7F5980A-4BCD-4AED-8E92-AD6111ACC8AF</string>
+		<string>EC248975-E866-4B8D-802B-C4491695DCCA</string>
+		<string>5B15130D-E3D0-4896-8069-4EE0C0493281</string>
+		<string>330B55B8-9C64-4979-AA38-1B88726B08A8</string>
+		<string>66072416-FE42-451B-AAAD-B132C8B1FEE4</string>
+		<string>1A205830-A880-46F9-88F0-53FE6AE59B61</string>
+		<string>C7AD658B-BED4-4A40-90DD-8221117D66AF</string>
+		<string>EEEBF1B0-BCCF-4197-9943-4545B1085237</string>
+		<string>2970E86D-F674-4468-A9FE-EB188F8F86BF</string>
+		<string>ACACF068-0A2C-4D21-A1CE-74DBB21461D7</string>
+		<string>2F260EC2-0D07-4E94-AF74-E888A38AD60B</string>
+		<string>CA8D1539-EA7B-4DC8-BC37-A135D8FD4857</string>
+		<string>ED66DC33-26A3-45EA-A6C9-84C8D73A3A96</string>
+		<string>2DABFBF8-7346-4CE9-94F9-E825B5B7FDE9</string>
+		<string>94DE9338-4681-431B-916D-4E209CF4851D</string>
+		<string>2F5E1B8C-002E-47E4-A85C-EBF2A8C7ABC6</string>
+		<string>AF2C33BA-080D-42D0-87D8-B289BD61B11F</string>
+		<string>4FFFED41-B90E-45AB-8D82-09467656D959</string>
+		<string>CC366021-26D5-4E86-81D1-C21937EAB6D6</string>
+		<string>EF6B1DDE-9C5E-42D0-A49D-77BC16E21D8C</string>
+	</array>
+	<key>uuid</key>
+	<string>C5F73589-7D9B-4E77-9D55-9CF0F4DBA689</string>
+</dict>
+</plist>
