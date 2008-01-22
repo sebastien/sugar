@@ -1,0 +1,5 @@
+# DESC: The conditionals get represented as two ifs...
+# DATE: 22-Jan-2008
+if isExpanded -> contract ()
+else          -> expand   ()
+# EOF
