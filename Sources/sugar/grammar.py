@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   07-Dec-2007
+# Last mod.         :   11-Jan-2008
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -694,7 +694,6 @@ def d_ConditionWhenSingleLine(t):
 	''' ConditionWhenSingleLine: 
 		'if' Expression '->' Line EOL
 	'''
-	print "CONDITION", t
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseMultiLine(t):
@@ -986,7 +985,7 @@ def d_Value(t):
 def d_Instanciation(t,nodes,spec):
 	'''Instanciation: 'new' Expression ( Name | Value | LP (Expression (","  Expression )*)?  RP)
 	'''
-	# This is a dirty hack to preven newXXX to be interpreted assert new XXX
+	# This is a dirty hack to prevent newXXX to be interpreted assert new XXX
 	if spec:
 		node_new  = nodes[0]
 		node_expr = nodes[1]
