@@ -1,0 +1,26 @@
+
+
+>	$("#star_"+i , tar) attr ({	src: SRC_IMG_OVER
+>								id:"star_"+i
+>						})
+
+In this example, the parens could be omitted as the argument is a primitive
+type, and the map given as parameter could be better formatted so that the
+closing brace is aligned with the indentation of its declaration statement. It's
+also more readable when the keys are all at the same indentation, properly
+aligned. Overall, it would be better to write this code like this:
+
+>	$("#star_"+i , tar) attr {
+>		src : SRC_IMG_OVER
+>		id  : "star_"+i
+>	}
+
+
+>	@class Rating
+>		@property SRC_IMG_ON = '/site/images/rating_on.gif'
+>		@property SRC_IMG_OFF = '/site/images/rating_off.gif'
+>		...
+>	@end
+
+For constants such as these ones, '@shared' should be used instead, as it makes
+no sense to have constants slots reserved for each instance.
