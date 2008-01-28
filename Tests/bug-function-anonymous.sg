@@ -1,0 +1,6 @@
+# DESCRIPTION: {|} is not recognized as an anonymous function declaration
+# DATE: 28-Jan-2008
+@function f
+	return {|}
+@end
+# EOF
