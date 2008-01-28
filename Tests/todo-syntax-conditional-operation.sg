@@ -1,0 +1,19 @@
+# DESCRIPTION:
+# Avoid this kind of situation:
+# 
+# >    if on put -> on put { m | TradingShelf addToTradingShelf( item ) }
+# >    if on remove -> on remove { m | TradingShelf removeFromTradingShelf( item ) }
+# >    if on ask -> on ask { m | item tradingStatus ask() }
+# >    if on send -> on send { m | item tradingStatus send() }
+
+on put ? { m | TradingShelf addToTradingShelf (item) }
+
+# And the variant where you directly send a message to 'on put' when it is defined
+
+on put ? doThat ()
+
+# This is not to be confused with, which is an 'if' expression
+
+if on put -> doThat ()
+
+# EOF
