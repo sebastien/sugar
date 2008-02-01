@@ -1,0 +1,2 @@
+# DESCRIPTION: Allow the 'in' operation
+var is_in = (1 in [1,2,4,5])

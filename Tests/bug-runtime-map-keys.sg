@@ -1,0 +1,8 @@
+# DESCRIPTION: Cannot use expressions as keys in dictinoary declaration in
+# JavaScript backend.
+# DATE: 01-Feb-2008
+var d = "pouet"
+var m = {(d):"key should be 'pouet'"}
+var n = {("pouet"):"key should be 'pouet'"}
+var o = {pouet:"key should be 'pouet'"}
+# EOF

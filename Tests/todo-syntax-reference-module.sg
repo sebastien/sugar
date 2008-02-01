@@ -1,0 +1,21 @@
+# DESCRIPTION: It's often useful to reference the given module (or class) for
+# that matter.
+# SOLUTION: Use specific variables/functions to get a reference to the current
+# module or class.
+
+__module__
+__class__
+__function__
+__context__
+
+# However, we could add a specific syntax to denote context variables
+
+var m = @module
+var c = @class
+var f = @function
+var c = @context
+
+# Used within an expression would resolve to the curren module, and not be
+# identified as a declaration. But is seems a bit shady -- so maybe the
+# above globals are better.
+

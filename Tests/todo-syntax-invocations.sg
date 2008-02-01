@@ -6,7 +6,7 @@
 var a = 1
 
 # Shorthand for f()
-f!
+f !
 
 # Shorthand for f(a)
 f 'a

@@ -7,3 +7,4 @@ if  a > b and a <  b + c
 end
 var d = a and not b
 var d = not a and b
+var d = not a or b != c

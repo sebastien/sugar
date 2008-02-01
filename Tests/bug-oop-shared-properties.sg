@@ -1,0 +1,10 @@
+# DESCRIPTION: If a property default value is a reference to a shared value,
+# there is a failure at definition (in JavaScript)
+# DATE: 01-Feb-2008
+
+@class A
+	@shared P
+	@property p = P
+@end 
+
+# EOF
