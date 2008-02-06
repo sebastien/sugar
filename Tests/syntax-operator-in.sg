@@ -1,0 +1,10 @@
+# DESCRIPTION: The 'in' operator tests if an element is in another element.
+
+print ("True:",  (1 in [0,1,2]))
+print ("False:", (1 in [0]))
+print ("True:",  ([0] in [[0]]))
+print ("True:",  (1 in {a:1}))
+print ("True:",  ("h" in "hello world"))
+print ("True:",  ("lo" in "hello world"))
+
+# EOF
