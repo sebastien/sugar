@@ -1,0 +1,6 @@
+# DESCRIPTION: An extension of the iteration into filter
+# DATE: 04-Feb-2008
+
+[1,2,3,4,5] :{x|x>0}: {x|print x}
+
+# EOF

@@ -1,0 +1,13 @@
+# DESCRIPTION: Allows to not use the parens when invoking a single argument
+
+@function f a
+	return a
+@end
+
+var a = 1
+f 'a     == f (a)
+f '[1]   == f ([1])
+f '{a:1} == f {a:1}
+f 'a ()    == f (a) ()
+
+# EOF

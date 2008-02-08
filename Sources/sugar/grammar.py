@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   11-Jan-2008
+# Last mod.         :   08-Feb-2008
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -1011,21 +1011,22 @@ def d_Slicing(t):
 		return F.access(t[0], t[2])
 
 def d_InvocationOrResolution(t):
-	'''InvocationOrResolution: Expression ( Name | Value | InvocationParameters ) '''
-	p = t[1]
+	'''InvocationOrResolution: Expression "'"? ( Name | Value | InvocationParameters ) '''
+	is_escaped = len(t[1]) > 0
+	p = t[2]
 	# NOTE: In some cases (and I don't get why this happens), Invocation
 	# matches but Resoltuion doesn't. So we check if expression is a
 	# reference (a name) and we make the invocation fail
 	if len(p) == 1:
-		if isinstance(p[0], interfaces.IList) and len(p[0].getValues()) == 1:
-			return F.access(t[0], p[0].getValue(0).detach())
-		if isinstance(p[0], interfaces.IReference):
-			return F.resolve(p[0], t[0])
+		if not is_escaped:
+			if isinstance(p[0], interfaces.IList) and len(p[0].getValues()) == 1:
+				return F.access(t[0], p[0].getValue(0).detach())
+			if isinstance(p[0], interfaces.IReference):
+				return F.resolve(p[0], t[0])
+		if type(p[0]) in (tuple, list):
+			return F.invoke(t[0], *p[0])
 		else:
-			if type(p[0]) in (tuple, list):
-				return F.invoke(t[0], *p[0])
-			else:
-				return F.invoke(t[0], F._param(value=p[0]))
+			return F.invoke(t[0], F._param(value=p[0]))
 	else:
 		assert None, "This should not happen !"
 
