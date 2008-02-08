@@ -1405,7 +1405,9 @@ class Parser:
 				
 	def parseModule( self, name, text, sourcepath=None ):
 		# And ensure that there is an EOL
-		if text[-1] != "\n":
+		if not text:
+			self.warn("The given file is empty")
+		if text and text[-1] != "\n":
 			self.warn("No trailing EOL in given code")
 			text += "\n"
 		# We try to parse the file
