@@ -1,0 +1,20 @@
+# DESCRIPTION:
+# syntax error, line:18
+# ...tingPanel .nestedbox")
+#        [syntax error]$ "#TestArea .box" hover ...
+# DATE: 08-Feb-2008
+$(document) ready {
+	testing HTMLReporter Install ()
+	var floating_panel = $(".FloatingPanel")
+	var markers        = placement mark ' $(".FloatingPanel .nestedbox")
+	$ "#TestArea .box" hover ()
+}
+$(document) ready {
+	testing HTMLReporter Install ()
+	var floating_panel = $(".FloatingPanel")
+	# NOTE: Removing the empty line after does not cause any problem
+	var markers        = placement mark ' $(".FloatingPanel .nestedbox")
+
+	$ "#TestArea .box" hover ()
+}
+# EOF

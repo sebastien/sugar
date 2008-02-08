@@ -1402,7 +1402,7 @@ class Parser:
 		for f in "d_parser_mach_gen.g.md5 d_parser_mach_gen.g.d_parser.dat".split():
 			if os.path.exists(f):
 				os.unlink(f)
-				
+
 	def parseModule( self, name, text, sourcepath=None ):
 		# And ensure that there is an EOL
 		if not text:
