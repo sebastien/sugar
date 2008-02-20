@@ -1,0 +1,9 @@
+# DATE: 20-Feb-2008
+# DESCRIPTION:
+#    bugresolutioninvocation.foo().bugresolutioninvocation.foo()
+#     o.bugresolutioninvocation.foo().bugresolutioninvocation.foo().bugresolutioninvocation.foo()
+@function foo
+@end
+foo () foo ()
+o foo () foo () foo ()
+# EOF
