@@ -3,4 +3,8 @@
 
 [1,2,3,4,5] :{x|x>0}: {x|print x}
 
+r = new RegExp "in\\-\\w+"
+"element in-field pouet" :{c|r exec(c)}: {
+}
+
 # EOF

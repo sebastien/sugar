@@ -24,3 +24,67 @@ aligned. Overall, it would be better to write this code like this:
 
 For constants such as these ones, '@shared' should be used instead, as it makes
 no sense to have constants slots reserved for each instance.
+
+
+
+In the following example (using jQuery and the JavaScript backend), the
+developer did not understand why this
+
+>	$ get({
+>		"/PowerSearch/Item/"
+>		{
+>			num           : numResults
+>			from          : startIndex
+>			results_field : resultType
+>			query         : serverQuery
+>		}
+>		{ response |
+>			$( appendTo ) append( response )
+>		}
+>	})
+
+gave the same results as
+
+>	$ get {|}
+
+At that time, Sugar did not issue warnings for stripped values. In this case,
+the developer was thinking he was passing three arguments while he was actually
+passing a closure with no operation (only 3 value definitions, which are not
+operations and got stripped at the translation phase). Although Sugar should
+simply break on that, a good way to avoid this is to apply two simple rules:
+
+ - Omit parens when passing a litteral
+ - Indent properly
+
+ Here, the developer "contracted" the identation, which should have been
+
+>	$ get(
+>		{
+>			"/PowerSearch/Item/"
+>			{
+>				num           : numResults
+>				from          : startIndex
+>				results_field : resultType
+>				query         : serverQuery
+>			}
+>			{ response |
+>				$( appendTo ) append( response )
+>			}
+>		}
+>	)
+
+in which case it's really easy to spot that there is in fact only one argument
+passed. Omitting the parens makes it even more obvious
+
+>	$ get	{
+>		"/PowerSearch/Item/"
+>		{
+>			num           : numResults
+>			from          : startIndex
+>			results_field : resultType
+>			query         : serverQuery
+>		}
+>		{ response |
+>			$( appendTo ) append( response )
+>		}
+>	}

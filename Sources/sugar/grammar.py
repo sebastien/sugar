@@ -74,8 +74,8 @@ def t_setCode( process, code, context=None ):
 			context.setSlot(o.getName(), o)
 		elif type(o) in (list, tuple):
 			t_setCode(process, o, context)
-		else:
-			pass
+		elif isinstance(o, interfaces.IValue):
+			sys.stderr.write("Process is given a value instead of and operation: %s\n" % (o))
 	return process
 
 def t_split( array, element ):

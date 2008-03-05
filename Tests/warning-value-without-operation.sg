@@ -1,0 +1,27 @@
+# DESCRIPTION: Sugar should raise an error indicating that you have only values
+# as statements
+# DATE: 05-Mar-2008
+# --
+# // 8< ---[pouet.js]---
+# function _meta_(v,m){var ms=v['__meta__']||{};for(var k in m){ms[k]=m[k]};v['__meta__']=ms;return v}
+# var pouet={}
+# var __this__=pouet
+# pouet.init=     _meta_(function(){
+#                 var __this__=pouet;
+#                 $.get(_meta_(function(){
+#                 },{arguments:[]}))
+#         },{arguments:[]})
+# pouet.init()
+$ get({
+	"/PowerSearch/Item/"
+	{
+		num           : numResults
+		from          : startIndex
+		results_field : resultType
+		query         : serverQuery
+	}
+	{ response |
+		$( appendTo ) append( response )
+	}
+})
+# EOF
