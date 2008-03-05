@@ -1,0 +1,7 @@
+# DESCRIPTION: Parens are eaten
+# DATE: 05-Mar-2008
+print ("\"" + 'a' + "\"")
+print ("\\" + 'a' + "\\")
+# Gets translated (JS) to
+# var model=eval((("(" + eval((("\\"" + str_model) + "\\""))) + ")
+# EOF
