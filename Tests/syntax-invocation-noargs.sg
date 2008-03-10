@@ -1,0 +1,9 @@
+# DESCRIPTION: You can use '!' as a substitute for ()
+# DATE: 08-Feb-2008
+@function f
+	return 1
+@end
+
+f ! == f ()
+f != 2
+# EOF

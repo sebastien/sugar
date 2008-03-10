@@ -1,0 +1,1 @@
+var name    = (new RegExp("in\\-\\w+")) exec ( input attr "class" ) [3:]

@@ -1062,7 +1062,7 @@ def d_InvocationParameter(t):
 		else:
 			r = F._param(name=t[0],value=t[2])
 	elif is_list and len(t) == 2 and t[0] == "...":
-		r = F._param(value=[1],asList=True)
+		r = F._param(value=t[1],asList=True)
 	else:
 		r = F._param(value=t)
 	return r

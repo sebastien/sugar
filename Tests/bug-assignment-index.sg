@@ -1,0 +1,15 @@
+# DESCRIPTION: This fails with the following error
+#  File "/Users/sebastien/Local/Python/lambdafactory/model.py", line 702, in copy
+#    op_copy.addOpArgument(a.copy().detach())
+#  File "/Users/sebastien/Local/Python/lambdafactory/model.py", line 923, in copy
+#    value_copy=Value._copy(self)
+#  File "/Users/sebastien/Local/Python/lambdafactory/model.py", line 381, in _copy
+#    copy = self.__class__(*arguments)
+#TypeError: __init__() takes exactly 2 arguments (1 given)
+# DATE: 13-Feb-2008
+
+new_cells[-1]  += "%"
+new_cells[-1]  += "."
+new_cells[-1]  += c
+
+# EOF

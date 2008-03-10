@@ -1,0 +1,12 @@
+# DESCRIPTION:
+# Otpimize
+
+@function f
+	if input hasClass("UserModel")
+		model = user
+	if input hasClass("UserProfile")
+		model = profile
+	if input hasClass("UserAddress")
+		model = address
+	end
+@end
