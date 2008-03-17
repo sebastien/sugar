@@ -1,4 +1,4 @@
-SUGAR=python /home/Projects/Sugar/Sources/main.py
+SUGAR=sugar
 
-helloworld.js: helloworld.sc
-	$(SUGAR) -ljs helloworld.sc > helloworld.js
+helloworld.js: helloworld.sg
+	$(SUGAR) -cljavascript helloworld.sg > helloworld.js
