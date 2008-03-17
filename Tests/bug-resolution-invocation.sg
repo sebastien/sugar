@@ -1,5 +1,0 @@
-# DESCRIPTION: new FooBar ( form ) ui  is interpreted as new FooBar(form)(ui)
-# DATE: 11-Jan-2008
-new FooBar ( form ) ui
-FooBar ( form ) ui
-# EOF

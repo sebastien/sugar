@@ -1,5 +1,5 @@
 SUGAR=sugar
-SUGAR_FLAGS="-cRlas"
+SUGAR_FLAGS="-cRlactionscript"
 FLEX=mxmlc
 FLEX_FLAGS= --show-actionscript-warnings=false
 BUILD=.build
@@ -24,7 +24,7 @@ $(BUILD):
 	mkdir $(BUILD)
 
 $(PROGRAM_SWF): $(PROGRAM_MXML) $(SOURCES) $(BUILD)
-	$(SUGAR) -cRlas $(SUGAR_FLAGS) -o$(BUILD) $(SOURCES)
+	$(SUGAR) $(SUGAR_FLAGS) -o$(BUILD) $(SOURCES)
 	cp $(PROGRAM_MXML) $(BUILD)
 	cd $(BUILD) && $(FLEX) $(FLEX_FLAGS) $<
 	cp $(BUILD)/$(PROGRAM_SWF) .

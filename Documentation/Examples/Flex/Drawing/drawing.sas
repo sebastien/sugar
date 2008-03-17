@@ -1,6 +1,6 @@
 @module drawing
-@import flash display *
-@import mx core *
+@import * from flash.display
+@import * from mx.core
 
 @class DrawingTest: UIComponent
 
