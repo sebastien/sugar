@@ -1,7 +1,7 @@
 == Sugar
 == Bringing the pleasure back to JavaScript !
 
-Sugar is a _new programming language_ designed as good replacement to JavaScript
+Sugar is a _new programming language_ designed to replace JavaScript
 for client-side (and server-side) web development. Sugar is inspired by
 languages such as Python, Smalltalk, Pascal, Eiffel and Lisp. Sugar can compile
 to JavaScript, ActionScript and Python.
