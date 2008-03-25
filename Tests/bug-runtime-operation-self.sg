@@ -1,0 +1,19 @@
+# DATE: 27-Feb-2008
+@class Editor
+
+	@shared   INSTANCE
+
+	@property ui
+	@property editedPastie
+	@property editedPastieBox
+
+	@operation GetInstance
+		# NOTE: The problem is that at this point the 'this'
+		# is not the class
+		print ("THIS IS ", self)
+		console log (self)
+		if self INSTANCE is Undefined -> INSTANCE = new self()
+		return self INSTANCE
+	@end
+
+@end

@@ -8,6 +8,7 @@ Requests:
 
 Language Features:
 
+  - '@special' support for specila operations
   - Multile-line strings/embedding of raw content
   - Passing named arguments
   - Casting
