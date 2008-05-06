@@ -1,0 +1,41 @@
+<html
+	<head
+		<title:Todo List demo for Team Cobra
+		<script(language=javascript,type=text/javascript,src=js/extend+sugar.js)
+		<script(language=javascript,type=text/javascript,src=js/html-1.1.js)
+		<script(language=javascript,type=text/javascript,src=js/jquery-1.2.1.js)
+		 
+		# ui.jquery stuff
+		<script(language=javascript,type=text/javascript,src=jquery.ui-1.0/ui.mouse.js)
+		<script(language=javascript,type=text/javascript,src=jquery.ui-1.0/ui.draggable.js)
+		<script(language=javascript,type=text/javascript,src=jquery.ui-1.0/ui.droppable.js)
+		<script(language=javascript,type=text/javascript,src=jquery.ui-1.0/ui.sortable.js)
+		
+		
+		<script(language=javascript,type=text/javascript,src=todo.js)
+		<link(rel=Stylesheet,type=text/css,href=todo.css)
+		
+	<body
+		<h1:Todo demo
+		<form#NewTodoList
+			todo name : 
+			<input.in-todoName(type=text)
+			<input.on-newTodoList(type=submit,value="New List")
+		<div#TodoLists
+		<div#template(style=display:none)
+			<div.TodoList
+				<h2.name: 
+				<ul.list: 
+					# <li
+					# 	<input(type=checkbox)
+					# 	stuff
+				<hr: 
+				<ul.done-list: 
+					# <li
+					# 	<input(type=checkbox,checked=checked)
+					# 	done stuff
+				<form.todoForm
+					<input.in-todo(type=text)
+					<input.on-addAddTodo(type=submit,value=add)
+				<button.on-removeList:Remove List
+#EOF

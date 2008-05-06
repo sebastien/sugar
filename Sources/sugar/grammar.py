@@ -276,7 +276,7 @@ def d_Main(t):
 	return f
 
 def d_Function(t):
-	'''Function: '@function' NAME (':' Type)?  Arguments? EOL
+	'''Function: '@function' NAME (':' Type)? Arguments? EOL
 		  Documentation?
 		  (INDENT
 	      Code
