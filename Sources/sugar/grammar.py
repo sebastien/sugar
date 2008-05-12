@@ -841,11 +841,19 @@ def d_PrefixComputation(t):
 
 # FIXME: Rename Assignment ?
 def d_Assignment(t):
-	''' Assignment: Expression ('='|'-='|'+=') Expression '''
+	''' Assignment: Expression ('='|'-='|'+='|'?=') Expression '''
 	op = t[1][0]
 	if op == "=":
-		
 		return F.assign(t[0], t[2])
+	elif op == "?=":
+		# In this case: A ?= B is the equivalent of
+		# if not (A) -> A = B
+		predicate  = F.compute(F._op('=='), t[0], F._ref("Undefined"))
+		assignment = F.assign(t[0].copy(),t[2])
+		match      = F.matchExpression(predicate, assignment)
+		res        = F.select()
+		res.addRule(match)
+		return res
 	else:
 		op = op[0]
 		# FIXME: We should clone the expressions here
