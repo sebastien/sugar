@@ -1,0 +1,20 @@
+# DESCRIPTION:
+# The A ?= B allows to assign B to A only if the left value is Undefined
+@function f a=Undefined
+	a ?= 5
+	return a
+@end
+
+@function g a={}
+	a field ?= 1
+	a other_field ?= 1
+	return a
+@end
+
+print ( f ()  , 5 )
+print ( f (1) , 1 )
+print ( f (0) , 0 )
+print ( g ()  , {field:1,other_field:1} )
+print ( g {field:10}, {field:10,other_field:1} )
+print ( g {other_field:10}, {field:1,other_field:10} )
+print ( g {field:-10,other_field:10}, {field:-10,other_field:10} )
