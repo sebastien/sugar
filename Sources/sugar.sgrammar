@@ -1,0 +1,85 @@
+# vim: ts=4 textwidth=79
+# -----------------------------------------------------------------------------
+# Project           :   Sugar                         <http://www.ivy.fr/sugar>
+# Author            :   Sebastien Pierre                     <sebastien@ivy.fr>
+# License           :   Lesser GNU Public License
+# -----------------------------------------------------------------------------
+# Creation date     :   30-May-2008
+# Last mod.         :   30-May-2008
+# -----------------------------------------------------------------------------
+#
+@axiom  Module
+@ignore WS
+
+@token WS      "[ \t]+"
+@token EOL     "\n+"
+@token SYMBOL  "[a-zA-Z_\$]\w*"
+@token STRING_SQ "'(\\\\'|[^'])*'"
+@token STRING_DQ '"(\\\\"|[^"])*"'
+@token LP      '('
+@token RP      ')'
+@token LB      '['
+@token RB      ']'
+@token LC      '{'
+@token RC      '}'
+ 
+@rule Module
+	Code
+@end
+
+@rule Code
+	CodeLine*
+@end
+
+@rule CodeLine
+	Statement (';' Statement) * EOL
+@end
+
+@rule Statement
+	Declaration
+@end
+
+@rule Declaration
+	'var' SYMBOL ("=" Expression) ?
+@end
+
+@rule Expression
+	Litteral
+@end
+
+@rule Litteral
+	Number | String
+@end
+
+@rule Number
+	Integer | Float | String | Symbol
+@end
+
+@rule Integer
+	"-?[0-9]+" | "-?0x[A-Fa-f0-9]+"
+@end
+
+@rule Float
+	"-?[0-9]+\.[0-9]+"
+@end
+
+@rule String
+	STRING_SQ | STRING_DQ
+@end
+
+@rule Symbol
+	SYMBOL
+@end
+
+@header
+	@import lambdafactory.interfaces
+	@import lambdafactory.modelbase
+
+	@shared I = lambdafactory interfaces
+	@shared F = new lambdafactory modelbase Factory ()
+@end
+
+@init
+@end
+
+# EOF
