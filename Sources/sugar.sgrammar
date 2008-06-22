@@ -5,17 +5,24 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   30-May-2008
-# Last mod.         :   30-May-2008
+# Last mod.         :   22-Jun-2008
 # -----------------------------------------------------------------------------
-#
+
 @axiom  Module
 @ignore WS
+
+# -----------------------------------------------------------------------------
+#
+# TOKENS
+#
+# -----------------------------------------------------------------------------
 
 @token WS      "[ \t]+"
 @token EOL     "\n+"
 @token SYMBOL  "[a-zA-Z_\$]\w*"
+@token COMMENT "#.*"
 @token STRING_SQ "'(\\\\'|[^'])*'"
-@token STRING_DQ '"(\\\\"|[^"])*"'
+@token STRING_DQ "\"(\\\\\"|[^\"])*\""
 @token LP      '('
 @token RP      ')'
 @token LB      '['
@@ -23,40 +30,100 @@
 @token LC      '{'
 @token RC      '}'
  
+# -----------------------------------------------------------------------------
+#
+# MAIN RULES
+#
+# -----------------------------------------------------------------------------
+
 @rule Module
 	Code
 @end
 
 @rule Code
-	CodeLine*
+	(CodeLine|Comment)*
+@end
+
+@rule Comment
+	(COMMENT EOL)+
 @end
 
 @rule CodeLine
-	Statement (';' Statement) * EOL
+	Statement (';' Statement)* (EOL|Comment)
 @end
+
+# -----------------------------------------------------------------------------
+#
+# STATEMENTS
+#
+# -----------------------------------------------------------------------------
 
 @rule Statement
-	Declaration
+| Statements are instruction that do not necessarily substitute to values, this
+| typically includes control flow operations and declarations, but expressions
+| are also accepted as statements.
+	Literal
 @end
 
-@rule Declaration
+@rule VariableDeclaration
+| Declares a variable, which may also be followed by an assignment or combined
+| assignment and operation.
 	'var' SYMBOL ("=" Expression) ?
 @end
 
-@rule Expression
-	Litteral
+@rule Assignment
+| Assignments are done on _assignable_ elements (variables or slot resolution).
+| The
+	Assignable ('='|'-='|'+='|'?=') Expression
 @end
 
-@rule Litteral
-	Number | String
+@rule Assignable
+| Assignable are elements that support assignment.
+	SYMBOL
+@end
+
+# -----------------------------------------------------------------------------
+#
+# OPERATIONS
+#
+# -----------------------------------------------------------------------------
+
+@rule Resolution
+| A resolution is an operation/expression that travers composition/agregation
+| links between values.
+	Expression ( '\.| ' SYMBOL )+
+@end
+
+# -----------------------------------------------------------------------------
+#
+# EXPRESSIONS
+#
+# -----------------------------------------------------------------------------
+
+@rule Expression
+| Expressions are elements that can be substitued to values
+	Literal
+@end
+
+# -----------------------------------------------------------------------------
+#
+# LITTERALS
+#
+# -----------------------------------------------------------------------------
+
+@rule Literal
+| I'm pretty sure that changing the order (like putting symbol after string may
+| decrease parsing performance (symbols are more likely to happen, rules should
+| be ordered according to 'likeliness' when there is no conflict between the tokens)
+	Symbol | Number | String | Array
 @end
 
 @rule Number
-	Integer | Float | String | Symbol
+	Float | Integer
 @end
 
 @rule Integer
-	"-?[0-9]+" | "-?0x[A-Fa-f0-9]+"
+	"-?0x[A-Fa-f0-9]+" | "-?[0-9]+"
 @end
 
 @rule Float
@@ -71,6 +138,26 @@
 	SYMBOL
 @end
 
+@rule Array
+	LB
+		(Expression (',' Expression)*)?
+	RB
+@end
+
+# -----------------------------------------------------------------------------
+#
+# PROCEDURES
+#
+# -----------------------------------------------------------------------------
+
+
+
+# -----------------------------------------------------------------------------
+#
+# MODULE CODE
+#
+# -----------------------------------------------------------------------------
+
 @header
 	@import lambdafactory.interfaces
 	@import lambdafactory.modelbase
@@ -80,6 +167,7 @@
 @end
 
 @init
+	context indent = 0
 @end
 
-# EOF
+# EOF - vim: ts=4 sw=4 tw=900 syn=sugar noet 
