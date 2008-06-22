@@ -1128,21 +1128,21 @@ def d_Float(t):
 
 def d_String(t):
 	'''String : StringSQ|StringDQ '''
-	return F._string(t[0])
+	return F._string(eval(t[0]))
 
 def d_StringSQ(t, nodes):
 	'''StringSQ : "'" (STR_NOT_SQUOTE|STR_ESC)* "'" '''
 	buf = nodes[0].buf
 	start = nodes[0]
 	end   = nodes[-1]
-	return buf[start.start_loc.s+1:end.end-1]
+	return buf[start.start_loc.s:end.end]
 
 def d_StringDQ(t, nodes):
 	'''StringDQ : '"' (STR_NOT_DQUOTE|STR_ESC)* '"' '''
 	buf = nodes[0].buf
 	start = nodes[0]
 	end   = nodes[-1]
-	return buf[start.start_loc.s+1:end.end-1]
+	return buf[start.start_loc.s:end.end]
 
 def d_Name(t):
 	'''Name : NAME '''
