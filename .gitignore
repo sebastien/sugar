@@ -1,0 +1,5 @@
+Dependencies/d-1.15-patched/make_dparser
+Dependencies/d-1.15-patched/python/build/*
+Dependencies/d-1.15-patched/sample_parser
+Dependencies/d-1.15-patched/test_parser
+Dependencies/dparser/*
