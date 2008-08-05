@@ -18,8 +18,10 @@
 # -----------------------------------------------------------------------------
 
 @token WS      "[ \t]+"
+@token INDENT  "\t*"
 @token EOL     "\n+"
 @token SYMBOL  "[a-zA-Z_\$]\w*"
+@token KEY     "\w+"
 @token COMMENT "#.*"
 @token STRING_SQ "'(\\\\'|[^'])*'"
 @token STRING_DQ "\"(\\\\\"|[^\"])*\""
@@ -62,13 +64,15 @@
 | Statements are instruction that do not necessarily substitute to values, this
 | typically includes control flow operations and declarations, but expressions
 | are also accepted as statements.
-	Literal
+	VariableDeclaration | Expression
 @end
 
 @rule VariableDeclaration
 | Declares a variable, which may also be followed by an assignment or combined
 | assignment and operation.
-	'var' SYMBOL ("=" Expression) ?
+	'var'
+		TypedSymbol     (',' TypedSymbol)*
+		("=" Expression (',' Expression)* ) ?
 @end
 
 @rule Assignment
@@ -94,6 +98,21 @@
 	Expression ( '\.| ' SYMBOL )+
 @end
 
+@rule Computation
+| A computation involves either ONE or TWO operands.
+	(
+		('-'|'not') Expression
+	) | (
+		Expression
+		(
+			'-'  | '+'    | '/'   | '*' | '^'  | '%' |
+			'>'  | '>='   | '<='  | '<' | '==' |
+			'is' | 'like' | 'and' | 'or'
+		)
+		Expression
+	)
+@end
+
 # -----------------------------------------------------------------------------
 #
 # EXPRESSIONS
@@ -102,7 +121,17 @@
 
 @rule Expression
 | Expressions are elements that can be substitued to values
-	Literal
+	Computation | Literal
+@end
+
+# -----------------------------------------------------------------------------
+#
+# TYPE SYSTEM
+#
+# -----------------------------------------------------------------------------
+
+@rule TypeExpression
+	"[\w][\w\.]*" | "<[^>]>"
 @end
 
 # -----------------------------------------------------------------------------
@@ -115,7 +144,7 @@
 | I'm pretty sure that changing the order (like putting symbol after string may
 | decrease parsing performance (symbols are more likely to happen, rules should
 | be ordered according to 'likeliness' when there is no conflict between the tokens)
-	Symbol | Number | String | Array
+	Symbol | Number | String | Array | Map
 @end
 
 @rule Number
@@ -138,11 +167,34 @@
 	SYMBOL
 @end
 
+@rule TypedSymbol
+	SYMBOL (':' TypeExpression)?
+@end
+
 @rule Array
 	LB
 		(Expression (',' Expression)*)?
+			Indent
+			(EOL INDENT Indentation Expression (',' Expression)* )*
+			Dedent
+		EOL?
 	RB
 @end
+
+@rule Map
+	LC
+		(KeyValue (',' KeyValue)*)?
+			Indent
+			(EOL INDENT Indentation KeyValue (',' KeyValue)* )*
+			Dedent
+		EOL?
+	RC
+@end
+
+@rule KeyValue
+	( KEY | String | (LP Expression RP)) ':' Expression
+@end
+
 
 # -----------------------------------------------------------------------------
 #
@@ -150,7 +202,17 @@
 #
 # -----------------------------------------------------------------------------
 
+@condition Indentation
+	return True
+@end
 
+@procedure Indent
+	# context indent += 1
+@end
+
+@procedure Dedent
+	# context indent -= 1
+@end
 
 # -----------------------------------------------------------------------------
 #

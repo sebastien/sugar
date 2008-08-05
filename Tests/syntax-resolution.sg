@@ -1,0 +1,7 @@
+# Slot access resolution (the semantic depends on the target)
+a b
+a b c
+# Direct resolution (direct access to the property)
+a.b
+a.b.c
+# EOF
