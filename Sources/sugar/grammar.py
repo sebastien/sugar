@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   08-Feb-2008
+# Last mod.         :   05-Sep-2008
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -587,6 +587,8 @@ def d_Method(t):
 	  '@end'
 	'''
 	m = F.createMethod(t[1], t[3] and t[3][0] or ())
+	m_type = t[2] and t[2][1] or None
+	if m_type: m.setReturnTypeDescription(m_type)
 	for ann in t[5]:
 		m.annotate(ann)
 	if t[6]: m.setDocumentation(t[6] and t[6][0])
