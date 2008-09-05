@@ -1,0 +1,9 @@
+@class C
+
+	@property _f
+
+	@mutator f v
+		self _f = v
+	@end
+
+@end

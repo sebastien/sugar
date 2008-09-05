@@ -338,6 +338,8 @@ def d_Class(t):
 	      |   ClassMethod
 	      |   AbstractClassMethod
 	      |   Attribute
+		  |   Accessor
+		  |   Mutator
 	      |   Method
 	      |   AbstractMethod
 	      |   Constructor
@@ -556,7 +558,7 @@ def d_MethodGroup(t):
 		Annotation*
 		Documentation?
 	    EOL*
-		(ClassMethod | Method | EOL)* 
+		(Accessor | Mutator | ClassMethod | Method | EOL)* 
 	   '@end'
 	'''
 	annotation = F.annotation('as', t[1])
@@ -608,8 +610,41 @@ def d_AbstractMethod(t):
 	if t[7]: m.setDocumentation(t[7] and t[7][0])
 	return m
 
+def d_Accessor(t):
+	'''Accessor:
+		'@accessor' NAME(':'Type)? EOL
+		   Documentation?
+		   EOL*
+		   (INDENT
+	       Code
+	       DEDENT)?
+	  '@end'
+	'''
+	m = F.createAccessor(t[1],())
+	m_type = t[2] and t[2][1] or None
+	if m_type: m.setReturnTypeDescription(m_type)
+	if t[4]: m.setDocumentation(t[4] and t[4][0])
+	t_setCode(m, t[6] and t[6][1] or ())
+	return m
+
+def d_Mutator(t):
+	'''Mutator:
+		'@mutator' NAME(':'Type)? Arguments? EOL
+		   Documentation?
+		   EOL*
+		   (INDENT
+	       Code
+	       DEDENT)?
+	  '@end'
+	'''
+	m = F.createMutator(t[1], t[3] and t[3][0] or ())
+	if t[6]: m.setDocumentation(t[6] and t[6][0])
+	t_setCode(m, t[8] and t[8][1] or ())
+	return m
+
 def d_ClassMethod(t):
-	'''ClassMethod: '@operation' NAME (':'Type)?  Arguments? EOL
+	'''ClassMethod:
+		'@operation' NAME (':'Type)?  Arguments? EOL
 		   FunctionAnnotation*
 		   Documentation?
 		   EOL*
