@@ -1,11 +1,12 @@
 # vim: ts=4 textwidth=79
 # -----------------------------------------------------------------------------
 # Project           :   Sugar                         <http://www.ivy.fr/sugar>
+# -----------------------------------------------------------------------------
 # Author            :   Sebastien Pierre                     <sebastien@ivy.fr>
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   30-May-2008
-# Last mod.         :   22-Jun-2008
+# Last mod.         :   23-Oct-2008
 # -----------------------------------------------------------------------------
 
 @axiom  Module
@@ -19,6 +20,7 @@
 
 @token WS      "[ \t]+"
 @token INDENT  "\t*"
+@token TAB     "\t*"
 @token EOL     "\n+"
 @token SYMBOL  "[a-zA-Z_\$]\w*"
 @token KEY     "\w+"
@@ -39,7 +41,76 @@
 # -----------------------------------------------------------------------------
 
 @rule Module
+	Class*
+	Function*
 	Code
+@end
+
+@rule Class
+	'@class' SYMBOL (':' SYMBOL (',' SYMBOL)* )?
+		Indent
+		(
+			(Shared*)
+			(Property*)
+			(Constructor?)
+			(Operation*)
+			(Method*)
+		)
+		Dedent
+	'@end' EOL
+@end
+
+@rule Shared
+	'@shared' TypedSymbol ('=' Expression)? EOL
+@end
+
+@rule Property
+	'@property' TypedSymbol ('=' Expression)? EOL
+@end
+
+@rule Constructor
+	'@operation' TypedSymbol Parameters? EOL
+		Indent
+		Code
+		Dedent
+	'@end' EOL
+@end
+
+@rule Operation
+	'@operation' TypedSymbol Parameters? EOL
+		Indent
+		Code
+		Dedent
+	'@end' EOL
+@end
+
+@rule Method
+	'@method' TypedSymbol Parameters? EOL
+		Indent
+		Code
+		Dedent
+	'@end' EOL
+@end
+
+@rule Function
+	'@function' TypedSymbol Parameters? EOL
+		Indent
+		Code
+		Dedent
+	'@end' EOL
+@end
+
+@rule Main
+	'@main'
+		Indent
+		Code
+		Dedent
+	'@end' EOL
+@end
+
+@rule Parameters
+	TypedSymbol
+	(',' TypedSymbol)*
 @end
 
 @rule Code
@@ -64,7 +135,7 @@
 | Statements are instruction that do not necessarily substitute to values, this
 | typically includes control flow operations and declarations, but expressions
 | are also accepted as statements.
-	VariableDeclaration | Expression
+	VariableDeclaration | Assignment | Expression
 @end
 
 @rule VariableDeclaration
@@ -73,6 +144,12 @@
 	'var'
 		TypedSymbol     (',' TypedSymbol)*
 		("=" Expression (',' Expression)* ) ?
+@end
+
+@rule Interruption
+	( ('return'|'yield') Expression)
+	|
+	( 'break' )
 @end
 
 @rule Assignment
@@ -95,7 +172,16 @@
 @rule Resolution
 | A resolution is an operation/expression that travers composition/agregation
 | links between values.
-	Expression ( '\.| ' SYMBOL )+
+| NOTE: Symbol should be Expression, but we need recursion support
+	Symbol ( "\.| " Symbol )+
+@end
+
+@rule Invocation
+	Symbol (
+		( '(' Arguments? ')' )
+		|
+		( '!' )
+	)
 @end
 
 @rule Computation
@@ -110,6 +196,8 @@
 			'is' | 'like' | 'and' | 'or'
 		)
 		Expression
+	) | (
+		'(' Expression ')'
 	)
 @end
 
@@ -121,7 +209,11 @@
 
 @rule Expression
 | Expressions are elements that can be substitued to values
-	Computation | Literal
+	Invocation | Resolution | Literal
+@end
+
+@rule Arguments
+	Expression ( ',' Expression )*
 @end
 
 # -----------------------------------------------------------------------------
