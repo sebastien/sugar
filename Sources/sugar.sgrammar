@@ -6,7 +6,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   30-May-2008
-# Last mod.         :   23-Oct-2008
+# Last mod.         :   15-Nov-2008
 # -----------------------------------------------------------------------------
 
 @axiom  Module
@@ -25,6 +25,7 @@
 @token SYMBOL  "[a-zA-Z_\$]\w*"
 @token KEY     "\w+"
 @token COMMENT "#.*"
+@token DOC     "\|.*"
 @token STRING_SQ "'(\\\\'|[^'])*'"
 @token STRING_DQ "\"(\\\\\"|[^\"])*\""
 @token LP      '('
@@ -41,7 +42,9 @@
 # -----------------------------------------------------------------------------
 
 @rule Module
+	Comment*
 	Class*
+	Comment*
 	Function*
 	Code
 @end
@@ -55,6 +58,7 @@
 			(Constructor?)
 			(Operation*)
 			(Method*)
+			(Comment*)
 		)
 		Dedent
 	'@end' EOL
@@ -62,50 +66,46 @@
 
 @rule Shared
 	'@shared' TypedSymbol ('=' Expression)? EOL
+	Documentation ?
 @end
 
 @rule Property
 	'@property' TypedSymbol ('=' Expression)? EOL
+	Documentation ?
 @end
 
 @rule Constructor
 	'@operation' TypedSymbol Parameters? EOL
-		Indent
-		Code
-		Dedent
+		FunctionBody
 	'@end' EOL
 @end
 
 @rule Operation
 	'@operation' TypedSymbol Parameters? EOL
-		Indent
-		Code
-		Dedent
+		FunctionBody
 	'@end' EOL
 @end
 
 @rule Method
 	'@method' TypedSymbol Parameters? EOL
-		Indent
-		Code
-		Dedent
+		FunctionBody
 	'@end' EOL
 @end
 
 @rule Function
 	'@function' TypedSymbol Parameters? EOL
-		Indent
-		Code
-		Dedent
+		FunctionBody
 	'@end' EOL
 @end
 
 @rule Main
 	'@main'
-		Indent
-		Code
-		Dedent
+		FunctionBody
 	'@end' EOL
+@end
+
+@rule FunctionBody
+	Documentation? Indent Code Dedent
 @end
 
 @rule Parameters
@@ -114,15 +114,19 @@
 @end
 
 @rule Code
-	(CodeLine|Comment)*
+	 (Comment|INDENT Indentation CodeLine (Comment|EOL))*
 @end
 
 @rule Comment
 	(COMMENT EOL)+
 @end
 
+@rule Documentation
+	(DOC EOL)+
+@end
+
 @rule CodeLine
-	Statement (';' Statement)* (EOL|Comment)
+	Statement (';' Statement)*
 @end
 
 # -----------------------------------------------------------------------------
@@ -143,11 +147,11 @@
 | assignment and operation.
 	'var'
 		TypedSymbol     (',' TypedSymbol)*
-		("=" Expression (',' Expression)* ) ?
+		('=' Expression (',' Expression)* ) ?
 @end
 
 @rule Interruption
-	( ('return'|'yield') Expression)
+	( "return|yield" Expression)
 	|
 	( 'break' )
 @end
@@ -155,7 +159,7 @@
 @rule Assignment
 | Assignments are done on _assignable_ elements (variables or slot resolution).
 | The
-	Assignable ('='|'-='|'+='|'?=') Expression
+	Assignable "=|-=|\+=|\?=" Expression
 @end
 
 @rule Assignable
@@ -173,12 +177,14 @@
 | A resolution is an operation/expression that travers composition/agregation
 | links between values.
 | NOTE: Symbol should be Expression, but we need recursion support
-	Symbol ( "\.| " Symbol )+
+	Expression ( "\.| " Symbol )+
 @end
 
 @rule Invocation
-	Symbol (
+	Expression (
 		( '(' Arguments? ')' )
+		|
+		Literal
 		|
 		( '!' )
 	)
@@ -187,14 +193,10 @@
 @rule Computation
 | A computation involves either ONE or TWO operands.
 	(
-		('-'|'not') Expression
+		"\-|not" Expression
 	) | (
 		Expression
-		(
-			'-'  | '+'    | '/'   | '*' | '^'  | '%' |
-			'>'  | '>='   | '<='  | '<' | '==' |
-			'is' | 'like' | 'and' | 'or'
-		)
+		"-|\+|/|\*|\^|%|>|>=|<=|<|==|is|like|and|or"
 		Expression
 	) | (
 		'(' Expression ')'
@@ -236,7 +238,7 @@
 | I'm pretty sure that changing the order (like putting symbol after string may
 | decrease parsing performance (symbols are more likely to happen, rules should
 | be ordered according to 'likeliness' when there is no conflict between the tokens)
-	Symbol | Number | String | Array | Map
+	Symbol | Number | String | Array | Map | Closure
 @end
 
 @rule Number
@@ -287,6 +289,18 @@
 	( KEY | String | (LP Expression RP)) ':' Expression
 @end
 
+@rule Closure
+| FIXME: Closure parsing triggers a lot of parsing as CodeLine will trigger a full parsing
+| each time... using caching we can make sure that CodeLine is only examinated once
+	LC
+		(Parameters '|')?
+		CodeLine?
+		Indent
+		 (EOL INDENT Indentation CodeLine)*
+		Dedent
+		EOL?
+	RC 
+@end
 
 # -----------------------------------------------------------------------------
 #

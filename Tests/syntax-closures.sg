@@ -1,9 +1,3 @@
-
-# NOTE
-# Here is the evolution of the syntaxes
-# 0.5:  (a,b,c)->{...}
-# 0.6:  {a,b,c|...}
-
 var test = {x|}
 test  = {a,b|}
 test  = {a|}

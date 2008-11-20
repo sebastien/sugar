@@ -57,7 +57,7 @@ relies on the [LambdaFactory](http://www.ivy.fr/lambdafactory) lirbary.
 
 If you don't already have _dparser_, you should do the following:
 
->   cd Dependencies ; make make-dparser.sh
+>   cd Dependencies ; bash make-dparser.sh
 
 and then copy the 'Dependencies/dparser' directory to somewhere in your
 'PYTHONPATH'.
