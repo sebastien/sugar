@@ -26,8 +26,8 @@
 @token KEY     "\w+"
 @token COMMENT "#.*"
 @token DOC     "\|.*"
-@token STRING_SQ "'(\\\\'|[^'])*'"
-@token STRING_DQ "\"(\\\\\"|[^\"])*\""
+@token STRING_SQ "'(\\\\'|[^'\\n])*'"
+@token STRING_DQ "\"(\\\\\"|[^\"\\n])*\""
 @token LP      '('
 @token RP      ')'
 @token LB      '['
@@ -46,7 +46,9 @@
 	Class*
 	Comment*
 	Function*
+	Comment*
 	Code
+	Comment*
 @end
 
 @rule Class
@@ -139,7 +141,7 @@
 | Statements are instruction that do not necessarily substitute to values, this
 | typically includes control flow operations and declarations, but expressions
 | are also accepted as statements.
-	VariableDeclaration | Assignment | Expression
+	VariableDeclaration | Assignment | Interruption | Expression
 @end
 
 @rule VariableDeclaration
@@ -196,7 +198,7 @@
 		"\-|not" Expression
 	) | (
 		Expression
-		"-|\+|/|\*|\^|%|>|>=|<=|<|==|is|like|and|or"
+		"-|\+|/|\*|\^|%|>|>=|<=|<|==|has|is|like|and|or"
 		Expression
 	) | (
 		'(' Expression ')'
@@ -211,7 +213,7 @@
 
 @rule Expression
 | Expressions are elements that can be substitued to values
-	Invocation | Resolution | Literal
+	Computation | Invocation | Resolution | Literal
 @end
 
 @rule Arguments
