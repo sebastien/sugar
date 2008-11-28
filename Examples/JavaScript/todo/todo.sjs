@@ -1,36 +1,36 @@
 @class TodoList
 | The todo list
 	
-	| The list's ui
 	@property ui
+	| The list's ui
 	
-	| The list name
 	@property name
+	| The list name
 	
 	@constructor selector, name
-		ui = $( ".TodoList", "#template" ) clone()
-		$( selector ) append( ui )
+		ui = $ (".TodoList", "#template") clone ()
+		$ (selector) append (ui)
 		
 		self name = name
-		makeUI()
-		bindUI()
+		makeUI ()
+		bindUI ()
 	@end
 	
 	@method makeUI
-		$( ".name", ui ) text( name )
+		$ (".name", ui) text (name)
 	@end
 	
 	@method bindUI
 		#binds the add new todo form submit
-		$( ".todoForm", ui ) submit({ event |
-			event preventDefault()
-			addTodo( new Todo( $( ".in-todo", ui ) val(), self ) )
-		})
+		$ (".todoForm", ui) submit { event |
+			event preventDefault ()
+			addTodo (new Todo ($ (".in-todo", ui) val (), self))
+		} 
 		
 		# binds the list delete
-		$( ".on-removeList", ui ) click{
-			if confirm( "Are you sure you want to remove the list : " + name + " ?" )
-				$( ui ) remove()
+		$ (".on-removeList", ui) click {
+			if confirm ("Are you sure you want to remove the list : " + name + " ?")
+				$ (ui) remove ()
 			end
 		}
 	@end
@@ -38,17 +38,17 @@
 	@method addTodo todo
 	| adds a todo to the list and binds the sortable stuff
 		
-		$( ".list", ui ) append( todo ui )
-		$( ".in-todo", ui ) val("")
+		$ (".list", ui) append (todo ui)
+		$ (".in-todo", ui) val "" 
 		
 		# we need to reset the sortable because of the way sortable events are bound
-		resetSortable()
+		resetSortable ()
 	@end
 	
 	@method resetSortable
 	| resets the sortable
-		$( "ul.list", ui ) sortableDestroy()
-		$( "ul.list", ui ) sortable()
+		$ ("ul.list", ui) sortableDestroy ()
+		$ ("ul.list", ui) sortable ()
 	@end
 
 @end
@@ -56,28 +56,28 @@
 @class Todo
 | The todo it self
 	
-	| The todo's ui 
 	@property ui
+	| The todo's ui 
 	
-	| The todo's label 
 	@property label = ""
+	| The todo's label 
 	
-	| true when the todo is done
 	@property checked = False
+	| true when the todo is done
 	
-	| the todo's parent list
 	@property list
+	| the todo's parent list
 	
 	@constructor label, list
 		self label = label
 		self list = list
-		makeUI()
-		bindUI()
+		makeUI ()
+		bindUI ()
 	@end
 	
 	@method makeUI
-		ui = html li(
-			html input( {type:"checkbox"} )
+		ui = html li (
+			html input  {type:"checkbox"}
 			label
 			html button "x"
 		)
@@ -85,38 +85,38 @@
 	
 	@method bindUI
 		# when checking / unchecking a todo
-		$( "input", ui ) click {
+		$ ("input", ui) click {
 			# destroying the sortable before appending to another list 
 			# makes it not sortable when it gets in the "done" list
-			$( "ul.list", list ui ) sortableDestroy()
+			$ ("ul.list", list ui) sortableDestroy ()
 			
 			if checked 
 				checked = False
-				$( ".list", list ui ) append( ui )
+				$ (".list", list ui) append (ui)
 			else
 				checked = True
-				$( ".done-list", list ui ) append( ui )
+				$ (".done-list", list ui) append (ui)
 			end
 
 			# re-making the todo list sortable
-			$( "ul.list", list ui ) sortable()
+			$ ("ul.list", list ui) sortable ()
 		}
 		
 		# when clicking on a remove todo button
-		$( "button", ui ) click {
-			if confirm( "Are you sure you want to remove this todo ?")
-				$( ui ) remove()
+		$ ("button", ui) click {
+			if confirm "Are you sure you want to remove this todo ?"
+				$ (ui) remove ()
 			end
 		}
 	@end
 
 @end
 
-$( document ) ready({
-	$( "#NewTodoList" ) submit { event |
-		event preventDefault()
-		var name = $( ".in-todoName", target ) val()
-		new TodoList( "#TodoLists", name )
-		$( ".in-todoName", target ) val("")
-	}
-})
+$ (document) ready {
+	$ "#NewTodoList" submit {event|
+		event preventDefault ()
+		var name = $ (".in-todoName", target) val ()
+		new TodoList ("#TodoLists", name)
+		$ (".in-todoName", target) val ""
+	}	
+}

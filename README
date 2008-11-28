@@ -1,5 +1,5 @@
 == Sugar
-== Bringing the pleasure back to JavaScript !
+== Making JavaScript a lot sweeter !
 
 Sugar is a _new programming language_ designed to replace JavaScript
 for client-side (and server-side) web development. Sugar is inspired by
@@ -52,15 +52,17 @@ Sugar owes the following languages in different areas:
 Installing sugar
 ================
 
-Sugar is implemented in Python uses the [DParser](http://dparser.sf.net), and
-relies on the [LambdaFactory](http://www.ivy.fr/lambdafactory) lirbary.
+Sugar is implemented in Python (2.4+) and uses the [DParser](http://dparser.sf.net), and
+relies on the [LambdaFactory](http://www.github.com/sebastien/lambdafactory) library.
 
 If you don't already have _dparser_, you should do the following:
 
 >   cd Dependencies ; bash make-dparser.sh
 
 and then copy the 'Dependencies/dparser' directory to somewhere in your
-'PYTHONPATH'.
+'PYTHONPATH' or do
+
+>    export PYTHONPATH=`pwd`/Dependencies/dparser:${PYTHONPATH}
 
 We're slowly getting away from DParser, as it has problems with 64 bits, and is
 not flexible enough for the future of Sugar. In the meantime, please bear with
