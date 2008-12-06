@@ -98,4 +98,15 @@ Add a library (LIBRARY) path to search for Sugar modules
 
 >   sugar -cl -LLIBRARY hello.sjs
 
+Troubleshooting
+===============
+
+I get the following error:
+
+>   fail: unable to open `/usr/local/bin/d_parser_mach_gen.g` for write
+
+This is because Dparser is trying to write a tempoary file along with the
+executable. Move the 'sugar' command to a directory where you have write
+permission (like '~/bin').
+
 # EOF - vim: syn=kiwi ts=2 sw=2 et
