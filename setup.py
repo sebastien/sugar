@@ -58,7 +58,8 @@ setup(
       "Operating System :: POSIX",
       "Operating System :: Microsoft :: Windows",
       "Programming Language :: Python",
-    ]
+    ],
+    scripts      = ["Scripts/sugar"]
 )
 
 # EOF - vim: tw=80 ts=4 sw=4 noet 

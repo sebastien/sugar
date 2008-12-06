@@ -40,8 +40,11 @@ def sourceToJavaScript( text, moduleName=None ):
 	else:
 		return command.runAsString(["-cljavascript", "-ssg", text])
 
+def run(arguments):
+	command = Command("sugar")
+	if not arguments: arguments = ["--help"]
+	command.run(arguments)
+
 if __name__ == "__main__":
 	import sys
-	command = Command("sugar")
-	command.run(sys.argv[1:])
-	
+	run(sys.argv[1:])
