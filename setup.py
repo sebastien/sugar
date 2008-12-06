@@ -42,7 +42,7 @@ setup(
     keywords    = "programmin language, oop, web, javascript",
     url         =  WEBSITE,
     download_url=  WEBSITE + "/%s-%s.tar.gz" % (NAME.lower(), VERSION) ,
-    package_dir = { "": "Distribution" },
+    package_dir = { "": "Sources" },
     package_data= {
     },
     packages    = [
