@@ -42,7 +42,7 @@ setup(
     keywords    = "programmin language, oop, web, javascript",
     url         =  WEBSITE,
     download_url=  WEBSITE + "/%s-%s.tar.gz" % (NAME.lower(), VERSION) ,
-    package_dir = { "": "Distribution" },
+    package_dir = { "": "Sources" },
     package_data= {
     },
     packages    = [
@@ -58,7 +58,8 @@ setup(
       "Operating System :: POSIX",
       "Operating System :: Microsoft :: Windows",
       "Programming Language :: Python",
-    ]
+    ],
+    scripts      = ["Scripts/sugar"]
 )
 
 # EOF - vim: tw=80 ts=4 sw=4 noet 
