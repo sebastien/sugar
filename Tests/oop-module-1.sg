@@ -1,0 +1,10 @@
+@module A
+
+@function f1
+	print "A1.f1"
+@end
+
+@function f2
+	print "Al.f2"
+@end
+

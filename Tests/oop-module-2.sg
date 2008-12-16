@@ -1,0 +1,13 @@
+@module A
+
+@function f1
+	print "A2.f1"
+@end
+
+@function f3
+	print "A2.f3"
+@end
+
+f1()
+f2()
+f3()
