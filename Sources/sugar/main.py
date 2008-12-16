@@ -2,13 +2,11 @@
 # # New implementation for the Sugar Command line
 # 
 from lambdafactory.main import Command as BaseCommand
-from lambdafactory.resolver import AbstractResolver
 import grammar
 
 class Command(BaseCommand):
 
 	def setupEnvironment( self ):
-		self.environment.resolver = AbstractResolver()
 		python_plugin       = self.environment.loadLanguage("python")
 		javascript_plugin   = self.environment.loadLanguage("javascript")
 		actionscript_plugin = self.environment.loadLanguage("actionscript")
