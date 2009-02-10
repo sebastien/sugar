@@ -40,7 +40,6 @@ def sourceToJavaScript( text, moduleName=None, options="" ):
 	opts.extend(options.split())
 	if moduleName:
 		opts.append("-m" + moduleName)
-		opts.append(path)
 	opts.append("-ssg")
 	opts.append(text)
 	return command.runAsString(opts)

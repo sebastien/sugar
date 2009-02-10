@@ -213,7 +213,11 @@
 
 @rule Expression
 | Expressions are elements that can be substitued to values
-	Computation | Invocation | Resolution | Literal
+	# NOTE: For some reason here, if I do
+	# Computation | Resolution | Invocation | Literal
+	# the parser enters an infinite loop, but when I merge
+	# Computation and Resolution into one single rule, it works !
+	Computation | Resolution | Invocation | Literal
 @end
 
 @rule Arguments
@@ -295,7 +299,7 @@
 | FIXME: Closure parsing triggers a lot of parsing as CodeLine will trigger a full parsing
 | each time... using caching we can make sure that CodeLine is only examinated once
 	LC
-		(Parameters '|')?
+		(Parameters? '|')?
 		CodeLine?
 		Indent
 		 (EOL INDENT Indentation CodeLine)*
