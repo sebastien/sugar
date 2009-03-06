@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   05-Sep-2008
+# Last mod.         :   06-Mar-2009
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -118,7 +118,7 @@ def d_Module(t):
 		m = F.createModule(F.CurrentModule)
 	if get_annotation("as"):
 		m.setAbstract(True)
-	map(m.annotate, annotations)
+	map(m.addAnnotation, annotations)
 	if t[2]: m.setDocumentation(t[2] and t[2][0])
 	#FIXME: bind the imported module to the slot
 	code = []
@@ -549,7 +549,7 @@ def d_ClassAttribute(t):
 		Documentation ? 
 	'''
 	a =  F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
-	for ann in t[-2]: a.annotate(ann)
+	for ann in t[-2]: a.addAnnotation(ann)
 	if t[-1]: a.setDocumentation(t[-1] and t[-1][0])
 	return a
 
@@ -564,8 +564,8 @@ def d_MethodGroup(t):
 	annotation = F.annotation('as', t[1])
 	methods    = t_filterOut('', t[6])
 	for m in methods:
-		m.annotate(annotation)
-		for a in t[3]: m.annotate(a)
+		m.addAnnotation(annotation)
+		for a in t[3]: m.addAnnotation(a)
 	return methods
 
 def d_AbstractMethodGroup(t):
@@ -592,7 +592,7 @@ def d_Method(t):
 	m_type = t[2] and t[2][1] or None
 	if m_type: m.setReturnTypeDescription(m_type)
 	for ann in t[5]:
-		m.annotate(ann)
+		m.addAnnotation(ann)
 	if t[6]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
 	return m
@@ -606,7 +606,7 @@ def d_AbstractMethod(t):
 	m = F.createMethod(t[2], t[4] and t[4][0] or ())
 	m.setAbstract(True)
 	for ann in t[6]:
-		m.annotate(ann)
+		m.addAnnotation(ann)
 	if t[7]: m.setDocumentation(t[7] and t[7][0])
 	return m
 
@@ -655,7 +655,7 @@ def d_ClassMethod(t):
 	'''
 	m = F.createClassMethod(t[1], t[3] and t[3][0] or ())
 	for ann in t[5]:
-		m.annotate(ann)
+		m.addAnnotation(ann)
 	if t[5]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
 	return m
@@ -667,7 +667,7 @@ def d_AbstractClassMethod(t):
 	'''
 	m = F.createClassMethod(t[2], t[4] and t[4][0] or ())
 	for ann in t[6]:
-		m.annotate(ann)
+		m.addAnnotation(ann)
 	if t[7]: m.setDocumentation(t[7] and t[7][0])
 	m.setAbstract(True)
 	return m
@@ -683,7 +683,7 @@ def d_Constructor(t):
 	  '@end'
 	'''
 	m = F.createConstructor(t[1] and t[1][0])
-	for ann in t[3]: m.annotate(ann)
+	for ann in t[3]: m.addAnnotation(ann)
 	if t[4]: m.setDocumentation(t[4] and t[4][0])
 	t_setCode(m, t[6] and t[6][1] or ())
 	return m
