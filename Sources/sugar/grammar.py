@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   06-Mar-2009
+# Last mod.         :   22-Apr-2009
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -332,6 +332,7 @@ def d_Exception(t):
 def d_Class(t):
 	# FIXME: Change Name to Reference
 	'''Class: '@abstract'? '@class' NAME (':' TypeSymbol (',' TypeSymbol)* )? EOL
+		  Annotation*
 		  Documentation?
 		  (INDENT
 	      (   ClassAttribute
@@ -359,8 +360,9 @@ def d_Class(t):
 	parents = t_filterOut(",", parents)
 	parents = map(F._ref, parents)
 	c = F.createClass(t[2] , parents)
-	if t[5]: c.setDocumentation(t[5] and t[5][0])
-	t_setCode(None, t[6], c)
+	if t[5]: c.addAnnotation(t[5])
+	if t[6]: c.setDocumentation(t[6] and t[6][0])
+	t_setCode(None, t[7], c)
 	# FIXME
 	if is_abstract: c.setAbstract(True)
 	return c
@@ -410,7 +412,7 @@ def d_ModuleAnnotations(t):
 	return t[0]
 
 def d_Decorator(t):
-	'''Decorator: '@(' "[^\)]+" ')' EOL'''
+	'''Decorator: '@[' "[^\]]+" ']' EOL'''
 	annotation = t[1].strip()
 	name, params = annotation.split(" ",1)
 	return F.annotation(name, params)
