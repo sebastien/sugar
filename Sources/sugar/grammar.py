@@ -414,8 +414,11 @@ def d_ModuleAnnotations(t):
 def d_Decorator(t):
 	'''Decorator: '@[' "[^\]]+" ']' EOL'''
 	annotation = t[1].strip()
-	print "****", annotation
-	name, params = annotation.split(" ",1)
+	i = annotation.find(" ")
+	if i == -1:
+		name, params = annotation, ""
+	else:
+		name, params = annotation.split(" ",1)
 	return F.annotation(name, params)
 
 def d_ModuleAnnotation(t):
