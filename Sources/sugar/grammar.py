@@ -414,6 +414,7 @@ def d_ModuleAnnotations(t):
 def d_Decorator(t):
 	'''Decorator: '@[' "[^\]]+" ']' EOL'''
 	annotation = t[1].strip()
+	print "****", annotation
 	name, params = annotation.split(" ",1)
 	return F.annotation(name, params)
 
@@ -526,12 +527,14 @@ def d_ModuleDeclarations(t):
 def d_Shared(t):
 	'''Shared:
 	    '@shared' NAME (':' Type)? ('=' Expression)?  EOL
+	    Annotation*
 	    Documentation?
 	'''
 	s_name  = t[1]
 	s_type  = t[2] and t[2][1] or None
 	s_value = t[3] and t[3][1] or None
 	s = F._moduleattr(s_name, s_type, s_value)
+	for ann in t[-2]: s.addAnnotation(ann)
 	if t[-1]: s.setDocumentation(t[-1] and t[-1][0])
 	return s
 
