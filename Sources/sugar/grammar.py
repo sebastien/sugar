@@ -710,6 +710,13 @@ def d_Destructor(t):
 	t_setCode(m, t[4] and t[4][1] or ())
 	return m
 
+def d_With(t):
+	''' With: 
+		'with' Expression EOL+ 
+			INDENT Code DEDENT
+	'''
+	return F.with(t[1], t_setCode(F.createBlock(), t[4]))
+
 def d_Condition(t):
 	''' Condition: 
 		( ConditionWhenSingleLine | ConditionWhenMultiLine )*
@@ -734,6 +741,7 @@ def d_ConditionWhenMultiLine(t):
 			INDENT Code DEDENT
 	'''
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[4]))
+
 
 def d_ConditionWhenSingleLine(t):
 	''' ConditionWhenSingleLine: 
