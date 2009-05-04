@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   22-Apr-2009
+# Last mod.         :   04-May-2009
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = modelbase.Factory()
-KEYWORDS = "as and or not has is var new in for return if yield else break raise".split()
+KEYWORDS = "and or not has is var new in for return if yield else break raise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
@@ -711,14 +711,14 @@ def d_Destructor(t):
 	return m
 
 def d_With(t):
-	''' With: 
-		'with' Expression EOL+ 
+	''' With:
+		'with' Expression EOL+
 			INDENT Code DEDENT
 	'''
-	return F.with(t[1], t_setCode(F.createBlock(), t[4]))
+	return F.withBlock(t[1], t_setCode(F.createBlock(), t[4]))
 
 def d_Condition(t):
-	''' Condition: 
+	''' Condition:
 		( ConditionWhenSingleLine | ConditionWhenMultiLine )*
 		( ConditionWhenSingleLine
 		| ConditionOtherwiseSingleLine
