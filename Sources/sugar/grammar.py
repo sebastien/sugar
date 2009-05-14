@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   04-May-2009
+# Last mod.         :   14-May-2009
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -76,6 +76,8 @@ def t_setCode( process, code, context=None ):
 			t_setCode(process, o, context)
 		elif isinstance(o, interfaces.IValue):
 			sys.stderr.write("Process is given a value instead of and operation: %s\n" % (o))
+		elif o and (not isinstance(o, interfaces.IComment)):
+			sys.stderr.write("Unsupported a code value: %s\n" % (o))
 	return process
 
 def t_split( array, element ):
@@ -233,7 +235,7 @@ def d_Specific(t, nodes):
 
 # FIXME: Exchange LINE and STATEMENT
 def d_Line(t):
-	'''Line : (Assignment|Select|Allocation|Interruption|Expression) ( ';' Line )* '''
+	'''Line : (Function|Assignment|Select|Allocation|Interruption|Expression) ( ';' Line )* '''
 	r = [t[0][0]]
 	for e in t[1]:
 		if e != ";": r.extend(e) 
