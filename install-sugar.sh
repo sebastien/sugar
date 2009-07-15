@@ -16,7 +16,7 @@ cd sg-repo/Dependencies ; ./make-dparser.sh ; cd ../..
 
 echo '#!/bin/bash' > sugar
 echo "export PYTHONPATH=${SUGAR_ROOT}/lf-repo/Distribution:${SUGAR_ROOT}/sg-repo/Sources:${SUGAR_ROOT}/sg-repo/Dependencies/dparser" >> sugar
-echo "python2.5 ${SUGAR_ROOT}/sg-repo/Sources/sugar/main.py" >> sugar
+echo "python2.5 ${SUGAR_ROOT}/sg-repo/Sources/sugar/main.py \$@" >> sugar
 chmod +x sugar
 
 cd .. ;  echo "To run sugar: .${SUGAR_ROOT}/sugar"
