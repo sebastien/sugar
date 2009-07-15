@@ -17,7 +17,7 @@ pushd $DPARSER
 popd
 # FIXME: In some cases, there is no PYTHONPATH
 echo ===========================================================
-echo NOTE: Please copy '../../dparser/*' to one of this location
+echo NOTE: Please copy 'dparser/*' to one of this location
 echo ===========================================================
 echo $PPATH | sed 's|:|\n|g' | sort
 echo ===========================================================
