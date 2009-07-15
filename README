@@ -75,6 +75,15 @@ Once you have DParser and LambdaFactory installed, simply type:
 And you'll have sugar install, and will have the 'sugar' command available in
 your path.
 
+Alternatively, if you'd like to hack on Sugar, you could do:
+
+>   export PYTHONPATH=`pwd`/Sources
+>   alias  sugar=`pwd`/Sources/sugar/main
+
+(and you could later include these in your '~/.bash_profile', making sure to
+ replace '`pwd`' by the actual Sugar directory).
+
+
 Using sugar
 ===========
 
@@ -107,6 +116,7 @@ I get the following error:
 
 This is because Dparser is trying to write a tempoary file along with the
 executable. Move the 'sugar' command to a directory where you have write
-permission (like '~/bin').
+permission (like '~/bin'). We know it's annoying, and we're working on a
+new version without dparser.
 
 # EOF - vim: syn=kiwi ts=2 sw=2 et
