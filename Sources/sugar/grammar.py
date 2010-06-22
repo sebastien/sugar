@@ -192,8 +192,8 @@ def d_SpecificTarget(t):
 
 def d_Specific(t, nodes):
 	'''Specific:
-          '@specific' SpecificTarget+ EOL
-          Documentation?
+	      '@specific' SpecificTarget+ EOL
+	      Documentation?
 	      (  
 	         (INDENT
 	         Code
@@ -1078,7 +1078,7 @@ def d_InvocationOrResolution(t):
 	is_escaped = len(t[1]) > 0
 	p = t[2]
 	# NOTE: In some cases (and I don't get why this happens), Invocation
-	# matches but Resoltuion doesn't. So we check if expression is a
+	# matches but Resolution doesn't. So we check if expression is a
 	# reference (a name) and we make the invocation fail
 	if len(p) == 1:
 		if not is_escaped:
@@ -1275,7 +1275,7 @@ def d_NAME(t, spec):
 		return t[0]
 	
 def d_EOL(t):
-	''' EOL: "\\n"+ '''
+	''' EOL: "[\\n|\\r\\n]"+ '''
 	return
 
 def d_STR_ESC(t):
