@@ -1275,7 +1275,7 @@ def d_NAME(t, spec):
 		return t[0]
 	
 def d_EOL(t):
-	''' EOL: "[\\n|\\r\\n]"+ '''
+	''' EOL: "\\n"+ '''
 	return
 
 def d_STR_ESC(t):
@@ -1473,6 +1473,8 @@ class Parser:
 		if text and text[-1] != "\n":
 			self.warn("No trailing EOL in given code")
 			text += "\n"
+		# Forcing dos-to-unix conversion
+		text = text.replace("\r\n", "\n")
 		# We try to parse the file
 		#try:
 		if True:
