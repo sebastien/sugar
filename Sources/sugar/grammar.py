@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   22-Jun-2010
+# Last mod.         :   28-Jun-2010
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -1138,7 +1138,14 @@ def d_Closure(t):
 	'''Closure: LC (Arguments '|')? (Line| (Line|EOL) (INDENT Code DEDENT)? )? RC '''
 	a = t[1] and t[1][0] or ()
 	c = F.createClosure(a)
-	t_setCode(c, t[2])
+	# Here we force a termination in closure, so that they always return a
+	# result
+	code = t_filterOut(None, t_flatten(t[2]))
+	if code:
+		if not isinstance(code[-1], interfaces.ITermination) \
+		and isinstance(code[-1], interfaces.IEvaluable):
+			code[-1] = F.returns(code[-1])
+	t_setCode(c, code)
 	return c
 
 def d_Arguments(t):
