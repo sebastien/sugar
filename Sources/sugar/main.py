@@ -26,11 +26,15 @@ class Command(BaseCommand):
 		self.environment.addParser(python_reader, "sg spy sjs sjava spnuts sas".split())
 	
 	def run( self, *args ):
+		self.cleanup()
 		BaseCommand.run(self, *args)
-		base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+		self.cleanup()
 		# We need to cleanup the cache left by dparser, which creates a core dump on
 		# 64bit architectures
-		for name in ["d_parser_mach_gen.g.d_parser.dat", "d_parser_mach_gen.g.md5"]:
+
+	def cleanup( self ):
+		base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+		for name in ["_parser_mach_gen.g.d_parser.dat", "d_parser_mach_gen.g.md5"]:
 			p = os.path.join(base_dir, name)
 			if os.path.exists(p):
 				os.unlink(p)

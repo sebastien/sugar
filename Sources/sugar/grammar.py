@@ -1382,7 +1382,7 @@ def disambiguate( nodes ):
 # ----------------------------------------------------------------------------
 
 #_PARSER = Parser(make_grammar_file=0)
-_PARSER = DParser()
+_PARSER = DParser(make_grammar_file=0)
 
 def parse( text, verbose=True, options=None, environment=None ):
 	_PARSER.indentStack = []
