@@ -1,0 +1,9 @@
+@module multifile
+| Exercises modules spread over multiple files. To test it, to this:
+| >    sugar -cljs -Loop-module-multifile-b.sg oop-module-multifile-a.sg
+@class MultiFileClass
+	@method doSomething
+		var m = MultiFileClassHelper ()
+		m foo ()
+	@end
+@end

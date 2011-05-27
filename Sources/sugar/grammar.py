@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   10-Aug-2005
-# Last mod.         :   28-Jun-2010
+# Last mod.         :   05-Oct-2010
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -1140,8 +1140,12 @@ def d_Closure(t):
 	c = F.createClosure(a)
 	# Here we force a termination in closure, so that they always return a
 	# result
-	code = t_filterOut(None, t_flatten(t[2]))
-	if code:
+	#code = t_filterOut(None, t_flatten(t[2]))
+	code = t[2]
+	# FIXME: This is an attempt at automaticaly inserting a returns from
+	# evaluables
+	if False and code:
+		print code[-1]
 		if not isinstance(code[-1], interfaces.ITermination) \
 		and isinstance(code[-1], interfaces.IEvaluable):
 			code[-1] = F.returns(code[-1])

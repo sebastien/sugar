@@ -42,7 +42,6 @@
 
 	@constructor 
 		super ()
-		0..4 :: { points add(new Point()) }
 	@end
 
 @end

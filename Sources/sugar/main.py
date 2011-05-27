@@ -2,7 +2,7 @@
 # # New implementation for the Sugar Command line
 # 
 from lambdafactory.main import Command as BaseCommand
-import grammar
+import grammar, os, sys
 
 class Command(BaseCommand):
 
@@ -24,6 +24,16 @@ class Command(BaseCommand):
 		python_reader._program = self.environment.getProgram()
 		# FIXME: This should be done by the Parser itself
 		self.environment.addParser(python_reader, "sg spy sjs sjava spnuts sas".split())
+	
+	def run( self, *args ):
+		BaseCommand.run(self, *args)
+		base_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+		# We need to cleanup the cache left by dparser, which creates a core dump on
+		# 64bit architectures
+		for name in ["d_parser_mach_gen.g.d_parser.dat", "d_parser_mach_gen.g.md5"]:
+			p = os.path.join(base_dir, name)
+			if os.path.exists(p):
+				os.unlink(p)
 
 def sourceFileToJavaScript( path, moduleName=None, options="" ):
 	command = Command()
@@ -31,7 +41,11 @@ def sourceFileToJavaScript( path, moduleName=None, options="" ):
 	opts.extend(options.split())
 	if moduleName:
 		opts.append("-m" + moduleName)
-	opts.append(path)
+	if type(path) in (list,tuple):
+		for p in path:
+			opts.append(p)
+	else:
+		opts.append(path)
 	return command.runAsString(opts)
 
 def sourceToJavaScript( text, moduleName=None, options="" ):

@@ -1,2 +1,9 @@
-test  = {print("Hello"); var a=10 ; print("a:", a)}
-
+{|}
+{1}
+{foo(1)}
+{foo(1);foo(2)}
+{var a = 1}
+{var a = 1 ; var b = 2}
+{return 1}
+{print("Hello")}
+{print("Hello"); var a=10 ; print("a:", a)}
