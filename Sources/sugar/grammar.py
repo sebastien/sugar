@@ -272,7 +272,7 @@ def d_Main(t):
 	   '@end'
 	'''
 	args = t[1] or ["args"]
-	args = map(F._arg, args)
+	args = map(F._param, args)
 	f = F.createFunction(F.MainFunction , args)
 	t_setCode(f, t[3] and t[3][1] or ())
 	return f
@@ -990,7 +990,7 @@ def d_Interception(t):
 	try_code = F.createBlock()
 	t_setCode(try_code, t[3])
 	if try_catch:
-		arg        = F._arg(try_catch[1])
+		arg        = F._param(try_catch[1])
 		closure    = F.createClosure([arg])
 		t_setCode(closure, try_catch[4])
 		try_catch  = closure
@@ -1089,7 +1089,7 @@ def d_InvocationOrResolution(t):
 		if type(p[0]) in (tuple, list):
 			return F.invoke(t[0], *p[0])
 		else:
-			return F.invoke(t[0], F._param(value=p[0]))
+			return F.invoke(t[0], F._arg(value=p[0]))
 	else:
 		assert None, "This should not happen !"
 
@@ -1121,13 +1121,13 @@ def d_InvocationParameter(t):
 	is_list = type(t) is list
 	if is_list and len(t) == 3 and t[1] == "=":
 		if t[0] == "...":
-			r = F._param(name=t[0],value=t[2],asMap=True)
+			r = F._arg(name=t[0],value=t[2],asMap=True)
 		else:
-			r = F._param(name=t[0],value=t[2])
+			r = F._arg(name=t[0],value=t[2])
 	elif is_list and len(t) == 2 and t[0] == "...":
-		r = F._param(value=t[1],asList=True)
+		r = F._arg(value=t[1],asList=True)
 	else:
-		r = F._param(value=t)
+		r = F._arg(value=t)
 	return r
 
 # ----------------------------------------------------------------------------
@@ -1165,7 +1165,7 @@ def d_Argument(t):
 	is_kwrest   = t[2] and t[2][0] == '=...'
 	has_value   = t[2] and t[2][0] == '='
 	arg_type    = t[1] and t[1][1] or None
-	arg = F._arg(t[0], arg_type)
+	arg = F._param(t[0], arg_type)
 	if is_optional: arg.setOptional(True)
 	if is_rest: arg.setRest(True)
 	if is_kwrest: arg.setKeywordsRest(True)
