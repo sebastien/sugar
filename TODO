@@ -5,9 +5,12 @@ Requests:
  - Importing modules (automatic resolution)
  - 'elif' in conditionals
  - 'is' should be '===' in JS (I think, thanks to Simon)
+ - Streamlined mappings: _ :: connector Project fold :: {_| (group[_ discipline [-1]] ?= []) push (_)}
 
 Language Features:
 
+  - Support overloading based on type
+  - Add standard library
   - '@special' support for specila operations
   - Multile-line strings/embedding of raw content
   - Passing named arguments
@@ -20,26 +23,31 @@ Language Features:
     >	end
     >	==, !=, <=, >=, <, >, "and", "or", "is", "not"
 							
-
-  
-
-	with  (value | assignation | declaration) :
+	with  (value | assignation | declaration)
 		DotValue *
 	end
 
+Use map/filter/... operators:
+
+		# TODO: Could be re-expressed with lambdas with implicit parameters and operators
+		# ::=  map
+		# ::<  filter
+		# in   find
+		# len(selection) != len(previous_selection) or len(selection ::= _ in previous_selection ::< {_ == -1})required 
+
 Add default/named arguments:
 	
-	function i ( a=0, b=1, c=2 ):
+	function i a=0, b=1, c=2
 	end
 
-	function i ( a, b, rest... ):
+	function i a, b, rest...
 	end
 
-	function i ( a, b, rest..., options=... ):
+	function i a, b, rest..., options=...
 	end
 
 
-	function i ( a, b, rest..., options=... ):
+	function i a, b, rest..., options=...
 	end
 
 Macros:
@@ -50,13 +58,16 @@ Macros:
 >		$c = pouet
 >	@end
 >	
->	@name(a,b,c)
+>	@function f
+>		@name(a,b,c)
+>	@end
+>	
 >	will produce the code $a, $b, $c
 >	
->		function( a, b, c ):
->			a = pouet
->			b = pouet
->			c = pouet
->		end
+>	@function f
+>		a = pouet
+>		b = pouet
+>		c = pouet
+>	@end
 
 

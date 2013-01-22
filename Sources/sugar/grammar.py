@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = modelbase.Factory()
-KEYWORDS = "and or not has is var new in for return if yield else break raise".split()
+KEYWORDS = "and or not has is var new in for return if else break raise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
@@ -1074,7 +1074,7 @@ def d_Slicing(t):
 		return F.access(t[0], t[2])
 
 def d_InvocationOrResolution(t):
-	'''InvocationOrResolution: Expression "'"? ( Name | Value | InvocationParameters ) '''
+	'''InvocationOrResolution: Expression "\|"? ( Name | Value | InvocationParameters ) '''
 	is_escaped = len(t[1]) > 0
 	p = t[2]
 	# NOTE: In some cases (and I don't get why this happens), Invocation
