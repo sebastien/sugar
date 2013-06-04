@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = modelbase.Factory()
-KEYWORDS = "and or not has is var new in for return if else break raise".split()
+KEYWORDS = "and or not is var new in for return if else break raise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]

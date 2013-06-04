@@ -1,11 +1,15 @@
 Requests:
 
+ - String interpolation
+ - tuples vs lists
  - Modules in multiple files
  - Support module.submodule
  - Importing modules (automatic resolution)
  - 'elif' in conditionals
  - 'is' should be '===' in JS (I think, thanks to Simon)
  - Streamlined mappings: _ :: connector Project fold :: {_| (group[_ discipline [-1]] ?= []) push (_)}
+ - list comprehensions
+ - generators
 
 Language Features:
 
