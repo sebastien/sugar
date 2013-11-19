@@ -872,7 +872,8 @@ def d_Computation(t):
 		# we iterate on the right operations
 		for i in range(len(t) / 2):
 			op    = t[i*2+1]
-			if type(op) not in (str, unicode): op = " ".join(op)
+			if type(op) not in (str, unicode):
+				op = " ".join(op)
 			op = op.strip()
 			right = t[i*2+2]
 			# If the priority of the current operator is superior to the

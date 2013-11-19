@@ -1,14 +1,21 @@
 Requests:
 
- - String interpolation
- - tuples vs lists
+ - String interpolation "asadasdsa {} {1}" % (asdasd)
+ - Expression in string "asdas {1 + 2}"
+ - Multi-line strings
+ - tuples vs lists: (asda,vasdas,vadasd)
  - Modules in multiple files
  - Support module.submodule
  - Importing modules (automatic resolution)
  - 'elif' in conditionals
- - 'is' should be '===' in JS (I think, thanks to Simon)
  - Streamlined mappings: _ :: connector Project fold :: {_| (group[_ discipline [-1]] ?= []) push (_)}
- - list comprehensions
+
+ - Filter VALUE :<: PREDICATE
+ - Map    VALUE :=: EXTRACTOR
+ - Reduce VALUE :|: EXTRACTOR
+
+ - Infix functions @infix @function fold XXXX fold XXXX -> fold (XXX,XXX)
+ - list comprehensions: [x * 2 for x in COLLECTION if CONDITION]
  - generators
 
 Language Features:
@@ -31,28 +38,112 @@ Language Features:
 		DotValue *
 	end
 
+Hex/Bit notation:
+
+	0xFF
+	0b011010101
+
+Bit-logic operator
+	
+	&&
+	||
+	!
+
+Infix operator:
+
+	e ~map extractor 
+
+	would be rewritten as
+
+	map (e, extractor)
+
+Automatic variables
+
+	_  == arguments[0]
+	_0 == arguments[0]
+	_1 == arguments[1]
+	_2 == arguments[2]
+
+Like operation
+	
+	v like (_, _, _)
+
+	like takes a structural expression that will tell if the left-hand value
+	is "like" the right hand value
+
+Select/match:
+
+	match value as f
+		case 1.0
+			code
+		case f like (_, _, _)
+			code
+		else
+			code
+	
 Use map/filter/... operators:
 
 		# TODO: Could be re-expressed with lambdas with implicit parameters and operators
 		# ::=  map
 		# ::<  filter
+		# ::|  reduce
 		# in   find
 		# len(selection) != len(previous_selection) or len(selection ::= _ in previous_selection ::< {_ == -1})required 
 
+Dictionary setdefault/assign if not null
+
+	a[1] ?= 1.0
+	
+	equals to
+
+	if not isDefined(a[1]) -> a[1] = 1.0
+
+
+Support @singleton
+
+Add chaining:
+
+	value:
+		a ()
+		b ()
+	
+	is equal to
+
+	value a ()
+	value b ()
+
+	and you can also affect that
+
+	var r = value:
+		a ()
+		b ()
+
+	and chain it
+
+	var r = value:
+		a ()
+		b () :
+			c ()
+	
+	which equals to
+
+	var _ = value () a () b ()
+	var r = _ c ()
+
 Add default/named arguments:
 	
-	function i a=0, b=1, c=2
-	end
+	@function i a=0, b=1, c=2
+	@end
 
-	function i a, b, rest...
-	end
+	@function i a, b, rest...
+	@end
 
-	function i a, b, rest..., options=...
-	end
+	@function i a, b, rest..., options=...
+	@end
 
 
-	function i a, b, rest..., options=...
-	end
+	@function i a, b, rest..., options=...
+	@end
 
 Macros:
 
