@@ -739,7 +739,7 @@ def d_Condition(t):
 
 def d_ConditionWhenMultiLine(t):
 	''' ConditionWhenMultiLine:
-		'if' Expression EOL+
+		"(el)?if" Expression EOL+
 			INDENT Code DEDENT
 	'''
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[4]))
