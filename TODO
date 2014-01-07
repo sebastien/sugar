@@ -38,6 +38,12 @@ Language Features:
 		DotValue *
 	end
 
+String interpolation
+
+	"{0:d} {1:d}" (uses the local scope)
+
+	"{0:d} {1:d}" % {dict}
+
 Hex/Bit notation:
 
 	0xFF
@@ -90,6 +96,12 @@ Use map/filter/... operators:
 		# in   find
 		# len(selection) != len(previous_selection) or len(selection ::= _ in previous_selection ::< {_ == -1})required 
 
+Assert/pre/post/error
+
+	@pre  expresssion error message
+	@post expression  error message
+	assert expression error message
+
 Dictionary setdefault/assign if not null
 
 	a[1] ?= 1.0
@@ -98,6 +110,55 @@ Dictionary setdefault/assign if not null
 
 	if not isDefined(a[1]) -> a[1] = 1.0
 
+
+Support continue/break
+
+	for a,b in 0..10
+		if a == 5
+			continue
+		elif a > 7
+			break
+		end
+	end
+
+Support generators (that might not be easy)
+
+	var f = {
+		for a in 0..100
+			yield a
+		end
+	}
+
+
+
+Add special variables
+
+	__scope_name__ (ex: widgets.Widget.ensure)
+	__scope__ 
+
+	__module__
+	__module_name__
+
+	__class__
+	__class_name__
+
+	__method__
+	__method_name__
+
+	__function__
+	__function_name__
+
+	__class__
+	__class_name__
+
+	__line__
+	__file__
+
+
+	and so in code
+
+
+	error ("{__scope_name__:__line}: Error message")
 
 Support @singleton
 
@@ -145,6 +206,9 @@ Add default/named arguments:
 	@function i a, b, rest..., options=...
 	@end
 
+Implicit return
+
+	{_| _ + 1}
 Macros:
 
 >	@macro name( a, b, c )
