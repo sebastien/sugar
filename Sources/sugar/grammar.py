@@ -99,7 +99,7 @@ def t_split( array, element ):
 # ----------------------------------------------------------------------------
 
 def d_Module(t):
-	'''Module: 
+	'''Module:
 		(Comment | EOL) *
 		ModuleAnnotations?
 		Documentation?
@@ -163,7 +163,7 @@ def d_Embed(t, nodes):
 def d_Rewrite(t, nodes):
 	'''Rewrite:
 		'@rewrite' '(' NAME ')' (
-			":[^\\n]*" 
+			":[^\\n]*"
 		|	EOL
 			( '|' "[^\\n]*" EOL )+
 			'@end'
@@ -183,7 +183,7 @@ def d_Rewrite(t, nodes):
 	else:
 		template = template[0][1:]
 	return F.embedTemplate(target, template)
-	
+
 def d_SpecificTarget(t):
 	'''SpecificTarget: "[\+\-]"? NAME'''
 	if t[0]: target=t[0][0] + t[1]
@@ -194,7 +194,7 @@ def d_Specific(t, nodes):
 	'''Specific:
 	      '@specific' SpecificTarget+ EOL
 	      Documentation?
-	      (  
+	      (
 	         (INDENT
 	         Code
 	         DEDENT)
@@ -238,7 +238,7 @@ def d_Line(t):
 	'''Line : (Function|Assignment|Select|Allocation|Interruption|Expression) ( ';' Line )* '''
 	r = [t[0][0]]
 	for e in t[1]:
-		if e != ";": r.extend(e) 
+		if e != ";": r.extend(e)
 	return r
 
 def d_Comment(t):
@@ -470,7 +470,7 @@ def d_ImportOperations(t):
 
 def d_TypeSymbol(t):
 	'''
-	TypeSymbol: ('*'|NAME ('.' NAME)*) 
+	TypeSymbol: ('*'|NAME ('.' NAME)*)
 	'''
 	return "".join(t_flatten(t))
 
@@ -499,7 +499,7 @@ def d_ImportAllSymbols(t):
 	'''
 	import_origin    = t[3]
 	return F.importSymbols("*", import_origin)
-	
+
 def d_ImportModule(t):
 	'''ImportModule:
 		'@import' TypeSymbol ('as' NAME)? EOL
@@ -514,9 +514,9 @@ def d_ImportModules(t):
 	'''
 	modules = t_filterOut(",",t_flatten(t[1:-1]))
 	return F.importModules(modules)
-	
+
 def d_ImportOperation(t):
-	'''ImportOperation: 
+	'''ImportOperation:
 		ImportSymbols
 	|	ImportSymbol
 	|	ImportModule
@@ -544,7 +544,7 @@ def d_Shared(t):
 	return s
 
 def d_Attribute(t):
-	'''Attribute: 
+	'''Attribute:
 		'@property' NAME (':' Type)? ('=' (Value | Expression))?  EOL
 		Documentation ?
 	 '''
@@ -553,10 +553,10 @@ def d_Attribute(t):
 	return a
 
 def d_ClassAttribute(t):
-	'''ClassAttribute: 
+	'''ClassAttribute:
 		'@shared' NAME (':' Type)?  ('=' Expression)? EOL
 		Annotation*
-		Documentation ? 
+		Documentation ?
 	'''
 	a =  F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 	for ann in t[-2]: a.addAnnotation(ann)
@@ -568,7 +568,7 @@ def d_MethodGroup(t):
 		Annotation*
 		Documentation?
 	    EOL*
-		(Accessor | Mutator | ClassMethod | Method | EOL)* 
+		(Accessor | Mutator | ClassMethod | Method | EOL)*
 	   '@end'
 	'''
 	annotation = F.annotation('as', t[1])
@@ -583,11 +583,11 @@ def d_AbstractMethodGroup(t):
 		Annotation*
 		Documentation?
 	    EOL*
-		(AbstractClassMethod | AbstractMethod | Comment | EOL)* 
+		(AbstractClassMethod | AbstractMethod | Comment | EOL)*
 	   '@end'
 	'''
 	return d_MethodGroup(t)
-	
+
 def d_Method(t):
 	'''Method: '@method' NAME (':' Type)? Arguments? EOL
 	       FunctionAnnotation*
@@ -738,28 +738,28 @@ def d_Condition(t):
 	return res
 
 def d_ConditionWhenMultiLine(t):
-	''' ConditionWhenMultiLine: 
-		'if' Expression EOL+ 
+	''' ConditionWhenMultiLine:
+		"(el)?if" Expression EOL+
 			INDENT Code DEDENT
 	'''
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[4]))
 
 
 def d_ConditionWhenSingleLine(t):
-	''' ConditionWhenSingleLine: 
+	''' ConditionWhenSingleLine:
 		'if' Expression '->' Line EOL
 	'''
 	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseMultiLine(t):
-	''' ConditionOtherwiseMultiLine: 
-		'else' EOL+ 
+	''' ConditionOtherwiseMultiLine:
+		'else' EOL+
 			INDENT Code DEDENT
 	'''
 	return F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[3]))
 
 def d_ConditionOtherwiseSingleLine(t):
-	''' ConditionOtherwiseSingleLine: 
+	''' ConditionOtherwiseSingleLine:
 		'else' '->' Line EOL?
 	'''
 	return F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[2]))
@@ -854,7 +854,7 @@ def d_Computation(t):
 					'+'|'-'|'*'|'/'|'%'|'//'|'and '|'or '
 					|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
 					|'in '  | 'has ' |'not ' 'in '  | 'is ' |'is not '
-				) 
+				)
 				Expression
 			)+
 		)
@@ -880,7 +880,7 @@ def d_Computation(t):
 			# priority of the previous expresion we reshape the computation from
 			#     (A op B) op C
 			# into
-			#      A op (B op C) 
+			#      A op (B op C)
 			if isinstance(left, interfaces.IComputation) and \
 			getPriority(op) > left.getOperator().getPriority():
 				left.setRightOperand(F.compute(F._op(op, getPriority(op)), left.getRightOperand().detach(), right))
@@ -919,7 +919,7 @@ def d_Assignment(t):
 def d_Allocation(t):
 	'''Allocation: AllocationSingle|AllocationMultiple'''
 	return t[0]
-	
+
 def d_AllocationSingle(t):
 	'''AllocationSingle: 'var' NAME (':' Type)?  ('=' Expression)? '''
 	return F.allocate(F._slot(t[1],t[2] and t[2][1] or None), t[3] and t[3][1] or None)
@@ -951,7 +951,7 @@ def d_AllocationMultiple(t):
 		var = heads[0]
 		var = var.split(":") ; vartype = None
 		if len(var) == 1:var = var[0]
-		else:var, vartype = var 
+		else:var, vartype = var
 		return F.allocate(F._slot(var, vartype), expression)
 	# FIXME: Here we should use an intemediate slot to store the expression, or
 	# maybe better, define a multiple assignment element in the program model
@@ -960,7 +960,7 @@ def d_AllocationMultiple(t):
 		var = var.split(":") ; vartype = None
 		# FIXME: We should have a element for that
 		if len(var) == 1:
-			code.append(F.allocate(F._slot(var[0], None),F.access(expression.copy(), F._number(i)))) 
+			code.append(F.allocate(F._slot(var[0], None),F.access(expression.copy(), F._number(i))))
 		else:
 			code.append(F.allocate(F._slot(var[0], var[1]),F.access(expression.copy(), F._number(i))))
 		i += 1
@@ -970,7 +970,7 @@ def d_AllocationMultiple(t):
 		if len(var) == 1:
 			var = var[0]
 		else:
-			var, vartype = var 
+			var, vartype = var
 		code.append(F.allocate(F._slot(var, vartype),F.slice(expression, F._number(i))))
 	return code
 
@@ -995,7 +995,7 @@ def d_Interception(t):
 		closure    = F.createClosure([arg])
 		t_setCode(closure, try_catch[4])
 		try_catch  = closure
-	if try_finally: 
+	if try_finally:
 		try_finally = F.createBlock()
 		t_setCode(try_finally, t[6][3])
 	return F.intercept(try_code, try_catch, try_finally)
@@ -1246,7 +1246,7 @@ def d_DictPair(t):
 	return key, t[2]
 
 def d_DictKey(t):
-	'''DictKey: "[$A-Za-z_]+[\\-$0-9A-Za-z_]*" 
+	'''DictKey: "[$A-Za-z_]+[\\-$0-9A-Za-z_]*"
 	'''
 	return F._string(t[0])
 
@@ -1285,7 +1285,7 @@ def d_NAME(t, spec):
 	else:
 		if t[0][0] == "\\": return t[0][1:]
 		return t[0]
-	
+
 def d_EOL(t):
 	''' EOL: "\\n"+ '''
 	return
@@ -1306,15 +1306,15 @@ def d_INDENT(t, spec):
 	''' INDENT: '''
 	st = _PARSER.indentStack
 	if spec:
-		if len(st) < 2 or not (st[-1] > st[-2]): 
+		if len(st) < 2 or not (st[-1] > st[-2]):
 			return Reject
 		_PARSER.requiredIndent = st[-1]
-		
+
 def d_DEDENT(t, spec):
 	''' DEDENT: '''
 	st = _PARSER.indentStack
 	if spec:
-		if len(st) < 2 or not (st[-1] < st[-2]): 
+		if len(st) < 2 or not (st[-1] < st[-2]):
 			return Reject
 		_PARSER.requiredIndent = st[-1]
 
@@ -1375,7 +1375,7 @@ def disambiguate( nodes ):
 	else:
 		#print "Ambiguity not supported " + str(names) + "\n" + str(map(get_code,nodes))
 		return nodes[0]
-	
+
 # ----------------------------------------------------------------------------
 #
 # EXTERNAL API
@@ -1419,7 +1419,7 @@ def parseModule(name, text, verbose=False, options=None, environment=None):
 # ------------------------------------------------------------------------------
 
 class Options:
-	
+
 	def __init__(self):
 		self.targets = []
 
@@ -1428,12 +1428,12 @@ class Options:
 		name = name.upper()
 		if name not in self.targets:
 				self.targets.append(name)
-	
+
 	def hasTarget(self, name):
 		"""Returns True of the given target name is present in the options."""
 		name = name.upper()
 		return name in self.targets
-	
+
 class Parser:
 	"""The parser is a simple API that can be used as an entry point
 	to manipulate SweetC source code."""
@@ -1456,13 +1456,13 @@ class Parser:
 		"""Reads and parses the content given of the given file and returns a
 		couple (original source code, AST), where AST is None if there was
 		any error.
-		
+
 		Using the AST, you can directly access the program model elements bound
 		to the AST declarations. For instance, to access the Module program
 		element bound to the ModuleDeclaration, you have to get the ModuleDeclaration
 		from the AST (using ast.child(ofType='ModuleDeclaration')), and then
 		access the model element by calling modelElement().
-		
+
 		The whole program is accessible as interpreter.parser.pb.program (PB
 		stands for ProgramBuilder, which is the factory object that constructs
 		the program)."""
@@ -1472,6 +1472,9 @@ class Parser:
 
 	def parseSource( self, source, moduleName=None ):
 		return self.parseModule(moduleName, source)
+
+	def parseString( self, source, moduleName=None, sourcepath=None ):
+		return self.parseModule(moduleName, source, sourcepath)
 
 	def clean(self):
 		for f in "d_parser_mach_gen.g.md5 d_parser_mach_gen.g.d_parser.dat".split():
@@ -1496,7 +1499,8 @@ class Parser:
 			if sourcepath:
 				res.setSource("file://" + os.path.abspath(sourcepath))
 			# FIXME: Add support for modules which are part of other modules
-			self._program.addModule(res)
+			if self._program:
+				self._program.addModule(res)
 			self.clean()
 			return ( text, res )
 		else:

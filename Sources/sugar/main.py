@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # # New implementation for the Sugar Command line
-# 
+#
 from lambdafactory.main import Command as BaseCommand
 import grammar, os, sys
 
@@ -21,10 +21,11 @@ class Command(BaseCommand):
 		python_reader = python_plugin.reader()
 		python_reader.environment = self.environment
 		# FIXME: This is temporary, until we use the proper reader interface
-		python_reader._program = self.environment.getProgram()
+		if hasattr(self.environment, "getProgram"):
+			python_reader._program = self.environment.getProgram()
 		# FIXME: This should be done by the Parser itself
 		self.environment.addParser(python_reader, "sg spy sjs sjava spnuts sas".split())
-	
+
 	def run( self, *args ):
 		self.cleanup()
 		BaseCommand.run(self, *args)
@@ -70,7 +71,7 @@ def run(arguments):
 if __name__ == "__main__":
 	import sys
 	if False:
-		# This is the main function for profiling 
+		# This is the main function for profiling
 		# We've renamed our original main() above to real_main()
 		import cProfile, pstats
 		prof  = cProfile.Profile()
