@@ -4,7 +4,7 @@ DPARSER=d-1.15-patched
 if [ $PYTHONPATH ]; then
 	PPATH=$PYTHONPATH
 else
-	PPATH=`python -c "import sys;print ':'.join(filter(lambda x:x and x.find('.egg') == -1,sys.path))"`
+	PPATH=`python2.7 -c "import sys;print ':'.join(filter(lambda x:x and x.find('.egg') == -1,sys.path))"`
 fi
 
 mkdir dparser

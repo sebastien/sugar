@@ -29,7 +29,7 @@ KEYWORDS = "and or not is var new in for return if else break raise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
-OPERATORS_PRIORITY_2 = "not > >= < <= != is has in ==".split() ; OPERATORS_PRIORITY_2.append("is not")
+OPERATORS_PRIORITY_2 = "not > >= < <= != is in ==".split() ; OPERATORS_PRIORITY_2.append("is not")
 OPERATORS_PRIORITY_3 = "+ -".split()
 OPERATORS_PRIORITY_4 = "/ * % //".split()
 OPERATORS_PRIORITY_5 = "+= -=".split()
@@ -853,7 +853,7 @@ def d_Computation(t):
 				(
 					'+'|'-'|'*'|'/'|'%'|'//'|'and '|'or '
 					|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
-					|'in '  | 'has ' |'not ' 'in '  | 'is ' |'is not '
+					|'in '  | 'not ' 'in '  | 'is ' |'is not '
 				)
 				Expression
 			)+

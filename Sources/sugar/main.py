@@ -2,7 +2,8 @@
 # # New implementation for the Sugar Command line
 #
 from lambdafactory.main import Command as BaseCommand
-import grammar, os, sys
+import sugar.grammar as grammar
+import os, sys, tempfile
 
 class Command(BaseCommand):
 
@@ -68,8 +69,21 @@ def run(arguments):
 	if not arguments: arguments = ["--help"]
 	command.run(arguments)
 
+def parseFile( path, moduleName=None, options="" ):
+	command = Command()
+	opts = ["-cljavascript"]
+	opts.extend(options.split())
+	if moduleName:
+		opts.append("-m" + moduleName)
+	if type(path) in (list,tuple):
+		for p in path:
+			opts.append(p)
+	else:
+		opts.append(path)
+	command.runAsString(opts)
+	return command.environment.program
+
 if __name__ == "__main__":
-	import sys
 	if False:
 		# This is the main function for profiling
 		# We've renamed our original main() above to real_main()
