@@ -833,6 +833,7 @@ def d_ForIteration(t):
 	args    = t[1]
 	body    = t[5] and t[5][1] or ()
 	process = F.createClosure(args)
+	process.addAnnotation(F.annotation("iteration", True))
 	t_setCode(process, body)
 	return F.iterate(expr, process)
 
@@ -845,6 +846,7 @@ def d_WhileIteration(t):
 	cond    = t[1]
 	body    = t[3] and t[3][1] or ()
 	process = F.createBlock()
+	process.addAnnotation(F.annotation("iteration", True))
 	t_setCode(process, body)
 	return F.repeat(cond, process)
 
