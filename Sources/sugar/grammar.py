@@ -25,7 +25,7 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = modelbase.Factory()
-KEYWORDS = "and or not is var new in for return if else break raise".split()
+KEYWORDS = "and or not is var new in for return if else break continue raise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
@@ -794,7 +794,7 @@ def d_Match(t):
 # ----------------------------------------------------------------------------
 
 def d_Interruption(t):
-	'''Interruption: Termination|Breaking|Except'''
+	'''Interruption: Termination|Breaking|Continue|Except'''
 	return t[0]
 
 def d_Termination(t):
@@ -804,6 +804,10 @@ def d_Termination(t):
 def d_Breaking(t):
 	'''Breaking : 'break' '''
 	return F.breaks()
+
+def d_Continue(t):
+	'''Continue : 'continue' '''
+	return F.continues()
 
 def d_Except(t):
 	'''Except: 'raise' Expression '''
@@ -852,7 +856,7 @@ def d_Computation(t):
 			Expression ( ( ";\s*\n+\t*" )?
 				(
 					'+'|'-'|'*'|'/'|'%'|'//'|'and '|'or '
-					|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!='
+					|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!=' | '.?'
 					|'in '  | 'not ' 'in '  | 'is ' |'is not '
 				)
 				Expression
@@ -881,7 +885,9 @@ def d_Computation(t):
 			#     (A op B) op C
 			# into
 			#      A op (B op C)
-			if isinstance(left, interfaces.IComputation) and \
+			if op == ".?":
+				result = F.conditionalResolution( left, right )
+			elif isinstance(left, interfaces.IComputation) and \
 			getPriority(op) > left.getOperator().getPriority():
 				left.setRightOperand(F.compute(F._op(op, getPriority(op)), left.getRightOperand().detach(), right))
 				result = left
