@@ -6,8 +6,8 @@
 # Author            :   Sebastien Pierre                     <sebastien@ivy.fr>
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
-# Creation date     :   10-Aug-2005
-# Last mod.         :   05-Oct-2010
+# Creation date     :   2005-08-10
+# Last mod.         :   2016-04-11
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -62,8 +62,7 @@ def t_filterOut( c, l ):
 	return filter(lambda e:e!=None and e!=c, l)
 
 def t_setCode( process, code, context=None ):
-	for o in code:
-		#print "SETTING",o,
+	for i,o in enumerate(code):
 		if isinstance(o, interfaces.IOperation):
 		#	print "as operation"
 			process.addOperation(o)
@@ -75,9 +74,30 @@ def t_setCode( process, code, context=None ):
 		elif type(o) in (list, tuple):
 			t_setCode(process, o, context)
 		elif isinstance(o, interfaces.IValue):
-			sys.stderr.write("Process is given a value instead of and operation: %s\n" % (o))
+			process.addOperation(F.evaluate(o))
 		elif o and (not isinstance(o, interfaces.IComment)):
 			sys.stderr.write("Unsupported a code value: %s\n" % (o))
+	return process
+
+def p_ensureReturns( process ):
+	if not isinstance(process, interfaces.IProcess) or not process.operations: return process
+	last_operation = process.operations[-1]
+	if last_operation:
+		if isinstance(last_operation, interfaces.ITermination):
+			return process
+		elif isinstance(last_operation, interfaces.ISelection):
+			# We have a selection, so we iterate over the ruels
+			for r in last_operation.getRules():
+				p_ensureReturns(r.getProcess())
+		elif isinstance(last_operation, interfaces.IRepetition) or isinstance(last_operation, interfaces.IIteration):
+			# We don't do anything with a repetition, but we annotate them as # last
+			last_operation.addAnnotation("last")
+		elif isinstance(last_operation, interfaces.IAssignation):
+			process.addOperation(F.returns(last_operation.getTarget()))
+		elif isinstance(last_operation, interfaces.IOperation):
+			process.removeOperationAt(-1)
+			ret = F.returns(last_operation)
+			process.addOperation (ret)
 	return process
 
 def t_split( array, element ):
@@ -291,6 +311,7 @@ def d_Function(t):
 	f = F.createFunction(name, args)
 	if t[5]: f.setDocumentation(t[5] and t[5][0])
 	t_setCode(f, t[6] and t[6][1] or ())
+	p_ensureReturns(f)
 	return f
 
 def d_AbstractFunction(t):
@@ -605,6 +626,7 @@ def d_Method(t):
 		m.addAnnotation(ann)
 	if t[6]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
+	p_ensureReturns(m)
 	return m
 
 def d_AbstractMethod(t):
@@ -668,6 +690,7 @@ def d_ClassMethod(t):
 		m.addAnnotation(ann)
 	if t[5]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
+	p_ensureReturns(m)
 	return m
 
 def d_AbstractClassMethod(t):
@@ -1043,7 +1066,9 @@ def d_ConditionExpression(t):
 		res.addRule(F.matchExpression(predicate, expression))
 		rules = rules[4:]
 	if t[5]:
-		res.addRule(F.matchExpression(F._ref("True"), t[5][1]))
+		e = F.matchExpression(F._ref("True"), t[5][1])
+		e.addAnnotation("else")
+		res.addRule()
 	return res
 
 def d_Value(t):
@@ -1151,14 +1176,8 @@ def d_Closure(t):
 	# result
 	#code = t_filterOut(None, t_flatten(t[2]))
 	code = t[2]
-	# FIXME: This is an attempt at automaticaly inserting a returns from
-	# evaluables
-	if False and code:
-		print code[-1]
-		if not isinstance(code[-1], interfaces.ITermination) \
-		and isinstance(code[-1], interfaces.IEvaluable):
-			code[-1] = F.returns(code[-1])
 	t_setCode(c, code)
+	p_ensureReturns(t)
 	return c
 
 def d_Arguments(t):
