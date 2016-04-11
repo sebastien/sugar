@@ -935,7 +935,7 @@ def d_Assignment(t):
 	elif op == "?=":
 		# In this case: A ?= B is the equivalent of
 		# if not (A) -> A = B
-		predicate  = F.compute(F._op('=='), t[0], F._ref("Undefined"))
+		predicate  = F.compute(F._op('is'), t[0], F._ref("Undefined"))
 		assignment = F.assign(t[0].copy(),t[2])
 		match      = F.matchExpression(predicate, assignment)
 		res        = F.select()
@@ -961,6 +961,7 @@ def d_AllocationMultiple(t):
 		(',' (NAME (':' Type)?) )*
 		('|' (NAME (':' Type)?) )?
 	  '=' Expression'''
+	# This first bit is to extract our heads and tails from the parsed data
 	d = t[:t.index("=")]
 	expression   = t[t.index("=")+1]
 	heads = [d[1]]
@@ -975,7 +976,6 @@ def d_AllocationMultiple(t):
 	else:
 		tail = None
 	code = []
-	i    = 0
 	# NOTE: The grammar rule we wrote may override AllocationSingle in many
 	# situations, so we've got to take it into account
 	if len(heads) == 1 and not tail:
@@ -984,25 +984,29 @@ def d_AllocationMultiple(t):
 		if len(var) == 1:var = var[0]
 		else:var, vartype = var
 		return F.allocate(F._slot(var, vartype), expression)
-	# FIXME: Here we should use an intemediate slot to store the expression, or
-	# maybe better, define a multiple assignment element in the program model
-	# Here we have heads
-	for var in heads:
-		var = var.split(":") ; vartype = None
-		# FIXME: We should have a element for that
-		if len(var) == 1:
-			code.append(F.allocate(F._slot(var[0], None),F.access(expression.copy(), F._number(i))))
+	# Here we're in the situation where we have a multiple allocation with
+	# decomposition. The decomposition has many heads and maybe a tail. We'll
+	# do a trick and get the tail or last head, and use the last variable
+	# as a temporary slot.
+	# FIXME: This does not preserve consistent typing
+	last_var = (tail or heads[-1]).split(":", 1)
+	code.append(F.allocate(F._slot(last_var[0], None), expression.copy()))
+	for i, var in enumerate(heads):
+		var    = var.split(":", 1) ; var_type = None
+		if len(var) == 2: var, var_type = var
+		access = F.access(F.resolve(F._ref(last_var)), F._number(i))
+		if var == last_var:
+			code.append(F.assign(F._ref(var), access))
 		else:
-			code.append(F.allocate(F._slot(var[0], var[1]),F.access(expression.copy(), F._number(i))))
-		i += 1
+			code.append(F.allocate(F._slot(var, var_type), access))
 	# And maybe a tail too
-	if tail:
-		var = tail.split(":") ; vartype = None
-		if len(var) == 1:
-			var = var[0]
-		else:
-			var, vartype = var
-		code.append(F.allocate(F._slot(var, vartype),F.slice(expression, F._number(i))))
+	# if tail:
+	# 	#var = tail.split(":") ; vartype = None
+	# 	#if len(var) == 1:
+	# 	#	var = var[0]
+	# 	#else:
+	# 	#	var, vartype = var
+	# 	code.append(F.assign(F._ref(last_var),F.slice(F.resolve(F._ref(last_var)), F._number(i))))
 	return code
 
 def d_Interception(t):
