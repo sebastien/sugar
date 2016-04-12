@@ -1,0 +1,266 @@
+Sugar
+=====
+
+Overview
+========
+
+Sugar is a source-to-source compiler that targets JavaScript. It is designed
+with the following principles in mind:
+
+- indentation-based syntax
+- remove non-essential syntax (`.`, `;`, etc)
+- offer syntax sugar for complex operations
+- focus on architecture/program structure
+- minimize personal differences in style between programmers
+
+Basic example
+-------------
+
+```
+console log "Hello, World!"
+```
+
+Class example
+-------------
+
+```
+@class Animal
+
+	@property name
+
+	@constructor name
+		self name = name
+	@end
+
+	@method getName
+		return name
+	@end
+
+@end
+
+@class Dog: Animal
+	@property name = "dog"
+@end
+
+```
+
+Module example
+-------------
+
+```
+@module  hello
+@version 0.0.0
+
+# Shared variables are module-level variables
+@shared MESSAGE = "Hello, World!"
+
+# You can define functions/classes here
+@function say message=MESSAGE
+	console log (message)
+@end
+
+# This is the initialization function
+say ()
+
+```
+
+Data types
+==========
+
+
+Variables
+=========
+
+Allocations
+-----------
+
+```
+var a=0, b=0, c=0 
+```
+
+```
+# a=0, b=1, b=2
+var a, b, c = [0, 1, 2]
+```
+
+```
+# a=0, b=1, c=[2]
+var a, b | c = [0, 1, ,2]
+```
+
+Assignment
+----------
+
+Conditional::
+
+	Assigns a default value to the lvalue if it is not defined
+
+	```
+	# <expression> <slot> ?= <expression>
+	user name ?= "anonymous"
+	``
+
+Operations
+==========
+
+Conditionals
+============
+
+Expressions::
+	
+	The following expression can be assigned anywhere
+
+	```
+	(if <predicate> -> <expression> | <predicate> -> <expression> | <expression>)
+	```
+
+One-liners::
+
+	```
+	if   <predicate> -> <statement>
+	elif <predicate> -> <statement>
+	else <expression>
+	```
+
+Full-blocks::
+
+	```
+	if   <predicate>
+		<statement>
+		...
+	elif <predicate>
+		<statement>
+		...
+	else
+		<statement>
+		...
+	end
+	```
+
+Iterations
+==========
+
+For loops::
+
+	```
+	# for <variable> in <expression>
+	for i in 0..10
+		<statement>
+		...
+	end
+	```
+
+For loops one-liner::
+
+	Iterations have a compact format
+
+	```
+	0..10 :: {<statement>;...}
+	```
+
+Mapping one-liner::
+
+	Iterations can also produce a value, which can then be used 
+	as an expression.
+
+	```
+	console log (0..10 ::= {<statement>;...})
+	```
+
+Filter one-liner::
+
+	```
+	0..10 ::? {_|_ > 5}
+	```
+
+Filter+map one-liner::
+
+	```
+	0..10 ::? {<statement>;...} = {<statement>;...}
+	```
+
+Invocation
+==========
+
+Closures
+========
+
+No arguments::
+
+	```{<statement>...}```
+
+With arguments:: 
+
+	```
+	{arg,...|
+		<statement>
+		...
+	}
+	```
+
+Implicit arguments:
+
+	Any closure/function can have implicit arguments. They are `_`, `_1`, ... `_N`,
+	where `_` == `_0` and `N` corresponds to the index of the argument.
+
+	``` 
+	{_ + _1 + _2 + _3}
+	``` 
+
+Functions
+=========
+
+```
+@function f a, b=1, c=2, ...rest
+	<statement>
+	...
+@end
+```
+
+When annotation::
+
+	Functions can be _guarded_ against execution in case a condition is not
+	met using the `@when` annotation.
+
+	```
+	@function f a
+	@when a > 10
+		return True
+	@end
+	```
+
+Pre/post decoration::
+
+	Design-by-contract annotations `@pre` and `@post` allow to express pre
+	and post conditions that will be asserted at function start and before
+	termination.
+
+	```
+	@function f i
+	@pre  i > 0
+	@post i > 10
+		i += 10
+		return i
+	@end
+	```
+
+As annotation::
+
+	It is possible to _tag_ a function as belonging to a specific group using
+	the `@as` annotation. This has no effect on the code but is used as 
+	meta-information.
+
+	```
+	@function f i
+	@as helper
+		return i + 1
+	@end
+	```
+
+Classes
+=======
+
+Modules
+======
+
+# EOF

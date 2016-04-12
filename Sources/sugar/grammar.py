@@ -866,8 +866,8 @@ def d_MapExpression(t):
 	return F.map(t[0], t[2])
 
 def d_FilterExpression(t):
-	'''FilterExpression : Expression '::?' Expression '=' Expression'''
-	return F.filter(t[0], t[2], t[4])
+	'''FilterExpression : Expression '::?' Expression ('=' Expression)?'''
+	return F.filter(t[0], t[2], t[4][1] if t[4] else None)
 
 # FIXME: This should not be argumnets, but the same thing as the l-value for an
 # assignment
