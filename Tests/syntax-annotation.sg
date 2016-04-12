@@ -1,7 +1,9 @@
 @class Foo
 	@method bar a
-	@when   a > 5
-		print a
+	@when   a >  5
+	@pre    console log ("PRE")
+	@post   console log ("POST")
+		print `a
 	@end
 @end
 

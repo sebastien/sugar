@@ -10,9 +10,10 @@ a b      += 1
 a[0]     += 2
 a[1+10]  += 2
 
-
 a        -= 1
 a b      -= 1
 a[0]     -= 2
 a[1+10]  -= 2
 
+# Should this be allowed?
+a() b    += 3

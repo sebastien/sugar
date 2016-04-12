@@ -1,0 +1,6 @@
+var o = {a:{print 1},b:{print 2},c:{print 3}}
+with o
+	a
+	b
+end
+var j = 1
