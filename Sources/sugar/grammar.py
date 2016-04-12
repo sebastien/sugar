@@ -63,8 +63,11 @@ def t_filterOut( c, l ):
 
 def t_setCode( process, code, context=None ):
 	for i,o in enumerate(code):
-		if isinstance(o, interfaces.IOperation):
-		#	print "as operation"
+		if isinstance(o, interfaces.ISelection) and o.hasAnnotation("if-expression"):
+			# We only allow if-expressions within an expression
+			o.removeAnnotation("if-expression")
+			process.addOperation(o)
+		elif isinstance(o, interfaces.IOperation):
 			process.addOperation(o)
 		elif context \
 		and  isinstance(o, interfaces.IAssignable) \
@@ -91,29 +94,20 @@ def p_ensureReturns( process ):
 		elif isinstance(last_operation, interfaces.ITermination):
 			return process
 		elif isinstance(last_operation, interfaces.ISelection):
-			# We have a selection, so we iterate over the ruels
-			if last_operation.hasAnnotation("if-expression"):
-				process.removeOperationAt(-1)
-				ret = F.returns(last_operation)
-			else:
-				for r in last_operation.getRules():
-					if isinstance(r, interfaces.IMatchExpressionOperation):
-						p_ensureReturns(r.getExpression())
-					else:
-						p_ensureReturns(r.getProcess())
+			return process
 		elif isinstance(last_operation, interfaces.IInterception):
-			p_ensureReturns(last_operation.getProcess())
-			p_ensureReturns(last_operation.getIntercept())
-			p_ensureReturns(last_operation.getConclusion())
+			return process
+		elif isinstance(last_operation, interfaces.IInterruption):
+			return process
+		elif isinstance(last_operation, interfaces.IEmbed):
+			return process
 		elif isinstance(last_operation, interfaces.IRepetition) or isinstance(last_operation, interfaces.IIteration):
 			# We don't do anything with a repetition, but we annotate them as # last
 			last_operation.addAnnotation("last")
+			return process
 		elif isinstance(last_operation, interfaces.IAssignment):
 			ret = F.returns(last_operation.getTarget())
 			ret.addAnnotation("implicit-remove")
-		elif isinstance(last_operation, interfaces.IEmbed) or isinstance(last_operation, interfaces.IInterruption):
-			# We skip embeds and interruptions
-			pass
 		elif isinstance(last_operation, interfaces.IAllocation):
 			ret = F.returns(F.resolve(F._ref(last_operation.getSlotName())))
 		elif isinstance(last_operation, interfaces.IOperation):
