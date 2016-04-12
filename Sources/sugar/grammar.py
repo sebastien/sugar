@@ -87,8 +87,16 @@ def p_ensureReturns( process ):
 			return process
 		elif isinstance(last_operation, interfaces.ISelection):
 			# We have a selection, so we iterate over the ruels
-			for r in last_operation.getRules():
-				p_ensureReturns(r.getProcess())
+			if last_operation.hasAnnotation("if-expression"):
+				process.removeOperationAt(-1)
+				ret = F.returns(last_operation)
+				process.addOperation (ret)
+			else:
+				for r in last_operation.getRules():
+					if isinstance(r, interfaces.IMatchExpressionOperation):
+						p_ensureReturns(r.getExpression())
+					else:
+						p_ensureReturns(r.getProcess())
 		elif isinstance(last_operation, interfaces.IRepetition) or isinstance(last_operation, interfaces.IIteration):
 			# We don't do anything with a repetition, but we annotate them as # last
 			last_operation.addAnnotation("last")
@@ -1035,7 +1043,7 @@ def d_Interception(t):
 	return F.intercept(try_code, try_catch, try_finally)
 
 # ----------------------------------------------------------------------------
-# Expressions
+# EXPRESSIONS
 # ----------------------------------------------------------------------------
 
 def d_Expression(t):
@@ -1071,7 +1079,9 @@ def d_ConditionExpression(t):
 	if t[5]:
 		e = F.matchExpression(F._ref("True"), t[5][1])
 		e.addAnnotation("else")
-		res.addRule()
+		res.addRule(e)
+	# TODO: Should probably have a separate model element
+	res.addAnnotation("if-expression")
 	return res
 
 def d_Value(t):
@@ -1111,7 +1121,7 @@ def d_Slicing(t):
 		return F.access(t[0], t[2])
 
 def d_InvocationOrResolution(t):
-	'''InvocationOrResolution: Expression "\|"? ( Name | Value | InvocationParameters ) '''
+	'''InvocationOrResolution: Expression "\`"? ( Name | Value | InvocationParameters ) '''
 	is_escaped = len(t[1]) > 0
 	p = t[2]
 	# NOTE: In some cases (and I don't get why this happens), Invocation
@@ -1180,7 +1190,7 @@ def d_Closure(t):
 	#code = t_filterOut(None, t_flatten(t[2]))
 	code = t[2]
 	t_setCode(c, code)
-	p_ensureReturns(t)
+	p_ensureReturns(c)
 	return c
 
 def d_Arguments(t):
