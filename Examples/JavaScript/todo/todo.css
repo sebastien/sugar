@@ -1,7 +1,0 @@
-.list, .done-list {
-	list-style : none;
-}
-
-#todo .list li {
-	cursor: move;
-}
