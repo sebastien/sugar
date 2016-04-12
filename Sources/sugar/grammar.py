@@ -102,6 +102,9 @@ def p_ensureReturns( process ):
 			last_operation.addAnnotation("last")
 		elif isinstance(last_operation, interfaces.IAssignation):
 			process.addOperation(F.returns(last_operation.getTarget()))
+		elif isinstance(last_operation, interfaces.IEmbed) or isinstance(last_operation, interfaces.IInterruption):
+			# We skip embeds and interruptions
+			pass
 		elif isinstance(last_operation, interfaces.IOperation):
 			process.removeOperationAt(-1)
 			ret = F.returns(last_operation)
@@ -123,7 +126,7 @@ def t_split( array, element ):
 	return res
 
 # ----------------------------------------------------------------------------
-# Statements
+# STATEMENTS
 # ----------------------------------------------------------------------------
 
 def d_Module(t):
@@ -165,7 +168,7 @@ def d_Module(t):
 	return m
 
 def d_Code(t, spec):
-	'''Code : (EOL | Embed | Specific | Rewrite | (CHECK (Declaration|Condition|Statement|Comment)))* '''
+	'''Code : (EOL | Embed | Specific | Rewrite | (CHECK (Declaration|Condition|With|Statement|Comment)))* '''
 	# FIXME: Declarations should not go into code
 	return t_filterOut(None, t[0])
 
@@ -424,11 +427,11 @@ def d_Interface(t):
 	return f
 
 def d_Annotation(t):
-	'''Annotation: (WhenAnnotation | PostAnnotation| AsAnnotation | Decorator)'''
+	'''Annotation: (WhenAnnotation|PreAnnotation|PostAnnotation|AsAnnotation|Decorator)'''
 	return t[0][0]
 
 def d_FunctionAnnotation(t):
-	'''FunctionAnnotation: (WhenAnnotation|PostAnnotation|AsAnnotation)'''
+	'''FunctionAnnotation: (WhenAnnotation|PreAnnotation|PostAnnotation|AsAnnotation)'''
 	return t[0][0]
 
 def d_ModuleAnnotations(t):
@@ -484,6 +487,10 @@ def d_TargetAnnotation(t):
 def d_WhenAnnotation(t):
 	'''WhenAnnotation: '@when' Expression EOL'''
 	return F.annotation('when', t[1])
+
+def d_PreAnnotation(t):
+	'''PreAnnotation: '@pre' Expression EOL'''
+	return F.annotation('pre', t[1])
 
 def d_PostAnnotation(t):
 	'''PostAnnotation: '@post' Expression EOL'''
@@ -715,6 +722,7 @@ def d_AbstractClassMethod(t):
 
 def d_Constructor(t):
 	'''Constructor: '@constructor'  Arguments? EOL
+	       (PreAnnotation)*
 	       (PostAnnotation)*
 	       Documentation?
 	       EOL*
@@ -725,8 +733,9 @@ def d_Constructor(t):
 	'''
 	m = F.createConstructor(t[1] and t[1][0])
 	for ann in t[3]: m.addAnnotation(ann)
-	if t[4]: m.setDocumentation(t[4] and t[4][0])
-	t_setCode(m, t[6] and t[6][1] or ())
+	for ann in t[4]: m.addAnnotation(ann)
+	if t[5]: m.setDocumentation(t[5] and t[5][0])
+	t_setCode(m, t[7] and t[7][1] or ())
 	return m
 
 def d_Destructor(t):
@@ -744,11 +753,11 @@ def d_Destructor(t):
 	return m
 
 def d_With(t):
-	''' With:
-		'with' Expression EOL+
-			INDENT Code DEDENT
+	''' With: 'with' Expression EOL+
+			(INDENT Code DEDENT) ?
+			'end'
 	'''
-	return F.withBlock(t[1], t_setCode(F.createBlock(), t[4]))
+	return F.withBlock(t[1], t_setCode(F.createBlock(), t[3]))
 
 def d_Condition(t):
 	''' Condition:
@@ -845,12 +854,20 @@ def d_Except(t):
 	return F.exception(t[1])
 
 def d_Iteration(t):
-	'''Iteration : IterationExpression | ForIteration|WhileIteration'''
+	'''Iteration : FilterExpression|MapExpression|IterationExpression|ForIteration|WhileIteration'''
 	return t[0]
 
 def d_IterationExpression(t):
 	'''IterationExpression : Expression '::' Expression'''
 	return F.iterate(t[0], t[2])
+
+def d_MapExpression(t):
+	'''MapExpression : Expression '::=' Expression'''
+	return F.map(t[0], t[2])
+
+def d_FilterExpression(t):
+	'''FilterExpression : Expression '::?' Expression '=' Expression'''
+	return F.filter(t[0], t[2], t[4])
 
 # FIXME: This should not be argumnets, but the same thing as the l-value for an
 # assignment
