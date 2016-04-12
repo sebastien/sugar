@@ -101,15 +101,14 @@ def p_ensureReturns( process ):
 			return process
 		elif isinstance(last_operation, interfaces.IEmbed):
 			return process
+		elif isinstance(last_operation, interfaces.IAllocation):
+			return process
+		elif isinstance(last_operation, interfaces.IAssignment):
+			return process
 		elif isinstance(last_operation, interfaces.IRepetition) or isinstance(last_operation, interfaces.IIteration):
 			# We don't do anything with a repetition, but we annotate them as # last
 			last_operation.addAnnotation("last")
 			return process
-		elif isinstance(last_operation, interfaces.IAssignment):
-			ret = F.returns(last_operation.getTarget())
-			ret.addAnnotation("implicit-remove")
-		elif isinstance(last_operation, interfaces.IAllocation):
-			ret = F.returns(F.resolve(F._ref(last_operation.getSlotName())))
 		elif isinstance(last_operation, interfaces.IOperation):
 			process.removeOperationAt(-1)
 			ret = F.returns(last_operation)
