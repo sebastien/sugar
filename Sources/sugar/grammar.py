@@ -994,19 +994,18 @@ def d_AllocationMultiple(t):
 	for i, var in enumerate(heads):
 		var    = var.split(":", 1) ; var_type = None
 		if len(var) == 2: var, var_type = var
-		access = F.access(F.resolve(F._ref(last_var)), F._number(i))
-		if var == last_var:
+		else: var=var[0]
+		access = F.access(F.resolve(F._ref(last_var[0])), F._number(i))
+		if var == last_var[0]:
 			code.append(F.assign(F._ref(var), access))
 		else:
 			code.append(F.allocate(F._slot(var, var_type), access))
 	# And maybe a tail too
-	# if tail:
-	# 	#var = tail.split(":") ; vartype = None
-	# 	#if len(var) == 1:
-	# 	#	var = var[0]
-	# 	#else:
-	# 	#	var, vartype = var
-	# 	code.append(F.assign(F._ref(last_var),F.slice(F.resolve(F._ref(last_var)), F._number(i))))
+	if tail:
+		var = tail.split(":") ; vartype = None
+		if len(var) == 2: var, var_type = var
+		else: var=var[0]
+		code.append(F.assign(F._ref(var),F.slice(F.resolve(F._ref(var)), F._number(len(heads)))))
 	return code
 
 def d_Interception(t):
