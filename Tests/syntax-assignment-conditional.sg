@@ -1,0 +1,22 @@
+# DESCRIPTION:
+# The A ?= B allows to assign B to A only if the left value is Undefined
+@function f a=Undefined
+	a ?= 5
+	return a
+@end
+
+@function g a={}
+	a field ?= 1
+	a other_field ?= 1
+	a ?= 1
+	a b c ?= 2
+	return a
+@end
+
+console log ( f ()  , 5 )
+console log ( f (1) , 1 )
+console log ( f (0) , 0 )
+console log ( g ()  , {field:1,other_field:1} )
+console log ( g {field:10}, {field:10,other_field:1} )
+console log ( g {other_field:10}, {field:1,other_field:10} )
+console log ( g {field:-10,other_field:10}, {field:-10,other_field:10} )
