@@ -83,13 +83,18 @@ def p_ensureReturns( process ):
 	if not isinstance(process, interfaces.IProcess) or not process.operations: return process
 	last_operation = process.operations[-1]
 	if last_operation:
-		if isinstance(last_operation, interfaces.ITermination):
+		if isinstance(last_operation, interfaces.INOP):
+			return process
+		elif isinstance(last_operation, interfaces.IIteration):
+			return process
+		elif isinstance(last_operation, interfaces.ITermination):
 			return process
 		elif isinstance(last_operation, interfaces.ISelection):
 			# We have a selection, so we iterate over the ruels
 			if last_operation.hasAnnotation("if-expression"):
 				process.removeOperationAt(-1)
 				ret = F.returns(last_operation)
+				ret.addAnnotation("implicit")
 				process.addOperation (ret)
 			else:
 				for r in last_operation.getRules():
@@ -97,18 +102,36 @@ def p_ensureReturns( process ):
 						p_ensureReturns(r.getExpression())
 					else:
 						p_ensureReturns(r.getProcess())
+		elif isinstance(last_operation, interfaces.IInterception):
+			p_ensureReturns(last_operation.getProcess())
+			p_ensureReturns(last_operation.getIntercept())
+			p_ensureReturns(last_operation.getConclusion())
 		elif isinstance(last_operation, interfaces.IRepetition) or isinstance(last_operation, interfaces.IIteration):
 			# We don't do anything with a repetition, but we annotate them as # last
 			last_operation.addAnnotation("last")
-		elif isinstance(last_operation, interfaces.IAssignation):
+		elif isinstance(last_operation, interfaces.IAssignment):
 			process.addOperation(F.returns(last_operation.getTarget()))
 		elif isinstance(last_operation, interfaces.IEmbed) or isinstance(last_operation, interfaces.IInterruption):
 			# We skip embeds and interruptions
 			pass
+		elif isinstance(last_operation, interfaces.IAllocation):
+			ret = F.returns(F.resolve(F._ref(last_operation.getSlotName())))
+			ret.addAnnotation("implicit")
+			process.addOperation (ret)
 		elif isinstance(last_operation, interfaces.IOperation):
 			process.removeOperationAt(-1)
 			ret = F.returns(last_operation)
+			ret.addAnnotation("implicit")
 			process.addOperation (ret)
+	return process
+
+def p_cullImplicitReturns( process ):
+	"""Removes implicit returns from the given process."""
+	if not isinstance(process, interfaces.IProcess): return process
+	last_operation = process.operations[-1]
+	if last_operation and isinstance(last_operation, interfaces.ITermination) and last_operation.hasAnnotation("implicit"):
+		process.removeOperationAt(-1)
+		process.addOperation(last_operation.getReturnedEvaluable().copy())
 	return process
 
 def t_split( array, element ):
@@ -322,7 +345,6 @@ def d_Function(t):
 	f = F.createFunction(name, args)
 	if t[5]: f.setDocumentation(t[5] and t[5][0])
 	t_setCode(f, t[6] and t[6][1] or ())
-	p_ensureReturns(f)
 	return f
 
 def d_AbstractFunction(t):
@@ -641,7 +663,6 @@ def d_Method(t):
 		m.addAnnotation(ann)
 	if t[6]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
-	p_ensureReturns(m)
 	return m
 
 def d_AbstractMethod(t):
@@ -705,7 +726,6 @@ def d_ClassMethod(t):
 		m.addAnnotation(ann)
 	if t[5]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
-	p_ensureReturns(m)
 	return m
 
 def d_AbstractClassMethod(t):
@@ -834,7 +854,7 @@ def d_Match(t):
 # ----------------------------------------------------------------------------
 
 def d_Interruption(t):
-	'''Interruption: Termination|Breaking|Continue|Except'''
+	'''Interruption: Termination|Breaking|Continue|Pass|Except'''
 	return t[0]
 
 def d_Termination(t):
@@ -849,6 +869,10 @@ def d_Continue(t):
 	'''Continue : 'continue' '''
 	return F.continues()
 
+def d_Pass(t):
+	'''Pass : 'pass' '''
+	return F.nop()
+
 def d_Except(t):
 	'''Except: 'raise' Expression '''
 	return F.exception(t[1])
@@ -859,7 +883,7 @@ def d_Iteration(t):
 
 def d_IterationExpression(t):
 	'''IterationExpression : Expression '::' Expression'''
-	return F.iterate(t[0], t[2])
+	return F.iterate(t[0], p_cullImplicitReturns(t[2]))
 
 def d_MapExpression(t):
 	'''MapExpression : Expression '::=' Expression'''
@@ -1085,6 +1109,7 @@ def d_ConditionExpression(t):
 		('|' Expression '->' Expression) *
 		('|' Expression) ?
 	'''
+	# NOTE: Assignment can be an expression too!
 	res = F.select()
 	m   = F.matchExpression(t[1], t[3])
 	res.addRule(m)
