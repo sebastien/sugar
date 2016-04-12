@@ -82,6 +82,7 @@ def t_setCode( process, code, context=None ):
 def p_ensureReturns( process ):
 	if not isinstance(process, interfaces.IProcess) or not process.operations: return process
 	last_operation = process.operations[-1]
+	ret            = None
 	if last_operation:
 		if isinstance(last_operation, interfaces.INOP):
 			return process
@@ -94,8 +95,6 @@ def p_ensureReturns( process ):
 			if last_operation.hasAnnotation("if-expression"):
 				process.removeOperationAt(-1)
 				ret = F.returns(last_operation)
-				ret.addAnnotation("implicit")
-				process.addOperation (ret)
 			else:
 				for r in last_operation.getRules():
 					if isinstance(r, interfaces.IMatchExpressionOperation):
@@ -110,19 +109,19 @@ def p_ensureReturns( process ):
 			# We don't do anything with a repetition, but we annotate them as # last
 			last_operation.addAnnotation("last")
 		elif isinstance(last_operation, interfaces.IAssignment):
-			process.addOperation(F.returns(last_operation.getTarget()))
+			ret = F.returns(last_operation.getTarget())
+			ret.addAnnotation("implicit-remove")
 		elif isinstance(last_operation, interfaces.IEmbed) or isinstance(last_operation, interfaces.IInterruption):
 			# We skip embeds and interruptions
 			pass
 		elif isinstance(last_operation, interfaces.IAllocation):
 			ret = F.returns(F.resolve(F._ref(last_operation.getSlotName())))
-			ret.addAnnotation("implicit")
-			process.addOperation (ret)
 		elif isinstance(last_operation, interfaces.IOperation):
 			process.removeOperationAt(-1)
 			ret = F.returns(last_operation)
-			ret.addAnnotation("implicit")
-			process.addOperation (ret)
+	if ret:
+		ret.addAnnotation("implicit")
+		process.addOperation(ret)
 	return process
 
 def p_cullImplicitReturns( process ):
@@ -131,7 +130,8 @@ def p_cullImplicitReturns( process ):
 	last_operation = process.operations[-1]
 	if last_operation and isinstance(last_operation, interfaces.ITermination) and last_operation.hasAnnotation("implicit"):
 		process.removeOperationAt(-1)
-		process.addOperation(last_operation.getReturnedEvaluable().copy())
+		if not last_operation.hasAnnotation("implicit-remove"):
+			process.addOperation(last_operation.getReturnedEvaluable().copy())
 	return process
 
 def t_split( array, element ):
