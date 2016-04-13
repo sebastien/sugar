@@ -990,12 +990,18 @@ def d_Assignment(t):
 		return F.assign(t[0].copy().detach(),c)
 
 def d_Allocation(t):
-	'''Allocation: AllocationSingle|AllocationMultiple'''
+	'''Allocation: AllocationList|AllocationMultiple'''
 	return t[0]
 
+def d_AllocationList(t):
+	'''AllocationList: 'var' AllocationSingle (',' AllocationSingle)*'''
+	head = t[1]
+	tail = [t[2][_ * 2 + 1] for _ in range(len(t[2])/2)]
+	return [head] + tail if tail else head
+
 def d_AllocationSingle(t):
-	'''AllocationSingle: 'var' NAME (':' Type)?  ('=' Expression)? '''
-	return F.allocate(F._slot(t[1],t[2] and t[2][1] or None), t[3] and t[3][1] or None)
+	'''AllocationSingle: NAME (':' Type)?  ('=' Expression)?'''
+	return F.allocate(F._slot(t[0],t[1] and t[1][1] or None), t[2] and t[2][1] or None)
 
 def d_AllocationMultiple(t):
 	'''AllocationMultiple: 'var'
