@@ -263,4 +263,74 @@ Classes
 Modules
 ======
 
+History
+=======
+
+New features in 2016-04
+-----------------------
+
+Multiple allocation::
+
+	`var a=0, b=1`
+
+Decomposition allocation::
+
+	```
+	var a, b     = [0, 1]                # a=0, b=1
+	var a, b | c = [0, 1, 3, 4]          # a=0, b=1, c=[3,4]
+	```
+
+Implicit returns in closures::
+
+	The last operation's value will be implicitely returned in closures
+
+	```
+	var a = {10 + 20}()                 # Is equivalent to {return 10 + 20}
+	```
+
+Implicit arguments in functions::
+
+	If `_`, `_1`, ..., `_N` is referenced but not resolves, it will automatically
+	resolve to the nth argument of the current closure/function.
+
+	```
+	{ _ + _1 + _2}                      # Equivalent to {_,_1,_2|_ + _1 + -2}
+	```
+
+Map/filter syntax::
+
+	```
+	var a = 0..10 ::= {_ + 1}            # Produces [1,2,3,4,5,6,7,8,9,10]
+	var b = 0..10 ::? {_ > 5}            # Produces [6,7,8,9]
+	var b = 0..10 ::? {_ > 5} = {_ * 10} # Produces [60,70,80,90]
+	```
+
+New `__scope__` and `__name__` automatic variables::
+
+	```
+	@module m
+	@function f
+		console log (__name__)    # prints `f`
+		console log (__scope__)   # prints `m.f`
+	@end
+	```
+
+`assert` improvement::
+
+	Failing assertions now show both the scope and the original predicate,
+
+	```
+	@module m
+	@function f
+		# prints "m.f: 10 * 10 < 50 failed"
+		assert (10 * 10 < 50, "failed!")# 
+	@end
+	```
+
+Native `for` loops::
+
+	For loops and iterations now use the native JavaScript `for` iteration,
+	closing over variables to prevent hoisting. As a result, iterations
+	don't use `extend.iterate` anymore.
+
 # EOF
