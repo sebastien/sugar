@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   2005-08-10
-# Last mod.         :   2016-04-11
+# Last mod.         :   2016-04-15
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -25,6 +25,9 @@ library. This module uses the fantastic D parser Python library.
 # grammar production rules to create model elements.
 
 F = modelbase.Factory()
+
+SOURCE_PATH = None
+
 KEYWORDS = "and or not is var new in for return if else break continue raise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
@@ -33,6 +36,7 @@ OPERATORS_PRIORITY_2 = "not > >= < <= != is in ==".split() ; OPERATORS_PRIORITY_
 OPERATORS_PRIORITY_3 = "+ -".split()
 OPERATORS_PRIORITY_4 = "/ * % //".split()
 OPERATORS_PRIORITY_5 = "+= -=".split()
+
 def getPriority( op ):
 	"""Returns the priority for the given operator"""
 	if not( type(op) in (str, unicode)) and isinstance(op, interfaces.IOperator):
@@ -141,11 +145,23 @@ def t_split( array, element ):
 	if cur != None:	res.append(cur)
 	return res
 
+def t_setLocation(e, nodes):
+	"""Sets the source location for the given element."""
+	if type(nodes) in (list, tuple):
+		so = nodes[0].start_loc.s
+		eo = nodes[-1].end
+	else:
+		so = nodes.start_loc.s
+		eo = nodes.end
+	e.setOffset(so, eo)
+	e.setSourcePath(SOURCE_PATH)
+	return e
+
 # ----------------------------------------------------------------------------
 # STATEMENTS
 # ----------------------------------------------------------------------------
 
-def d_Module(t):
+def d_Module(t, nodes):
 	'''Module:
 		(Comment | EOL) *
 		ModuleAnnotations?
@@ -181,9 +197,9 @@ def d_Module(t):
 		# FIXME: Rename to addStatements
 		t_setCode(f,code,m)
 		m.setSlot(F.ModuleInit, f, True)
-	return m
+	return t_setLocation(m, nodes)
 
-def d_Code(t, spec):
+def d_Code(t, spec, nodes):
 	'''Code : (EOL | Embed | Specific | Rewrite | (CHECK (Declaration|Condition|With|Statement|Comment)))* '''
 	# FIXME: Declarations should not go into code
 	return t_filterOut(None, t[0])
@@ -205,7 +221,7 @@ def d_Embed(t, nodes):
 	lines = []
 	for line in code.split("\n"):
 		lines.append(line[line.find("|")+1:])
-	return F.embed(language, "\n".join(lines))
+	return t_setLocation(F.embed(language, "\n".join(lines)), nodes)
 
 def d_Rewrite(t, nodes):
 	'''Rewrite:
@@ -229,7 +245,7 @@ def d_Rewrite(t, nodes):
 	# Or we have a single line
 	else:
 		template = template[0][1:]
-	return F.embedTemplate(target, template)
+	return t_setLocation(F.embedTemplate(target, template), nodes)
 
 def d_SpecificTarget(t):
 	'''SpecificTarget: "[\+\-]"? NAME'''
@@ -288,15 +304,15 @@ def d_Line(t):
 		if e != ";": r.extend(e)
 	return r
 
-def d_Comment(t):
+def d_Comment(t, nodes):
 	'''Comment : '#' "[^\\n]*" EOL'''
-	return F.comment(t[1])
+	return t_setLocation(F.comment(t[1]), nodes)
 
-def d_Documentation(t):
+def d_Documentation(t, nodes):
 	'''Documentation : ('|' "[^\\n]*" EOL)+'''
 	d = t[0]
 	d = t_filterOut('|',d)
-	return F.doc("\n".join(d))
+	return t_setLocation(F.doc("\n".join(d)), nodes)
 
 def d_Statement(t):
 	'''Statement : Line EOL '''
@@ -311,7 +327,7 @@ def d_Declaration(t):
 # Declarations
 # ----------------------------------------------------------------------------
 
-def d_Main(t):
+def d_Main(t, nodes):
 	'''Main: '@main' NAME? EOL
 		  (INDENT
 	      Code
@@ -322,9 +338,9 @@ def d_Main(t):
 	args = map(F._param, args)
 	f = F.createFunction(F.MainFunction , args)
 	t_setCode(f, t[3] and t[3][1] or ())
-	return f
+	return t_setLocation(f, nodes)
 
-def d_Function(t):
+def d_Function(t, nodes):
 	'''Function: '@function' NAME (':' Type)? Arguments? EOL
 		  Documentation?
 		  (INDENT
@@ -338,9 +354,9 @@ def d_Function(t):
 	f = F.createFunction(name, args)
 	if t[5]: f.setDocumentation(t[5] and t[5][0])
 	t_setCode(f, t[6] and t[6][1] or ())
-	return f
+	return t_setLocation(f, nodes)
 
-def d_AbstractFunction(t):
+def d_AbstractFunction(t, nodes):
 	'''AbstractFunction:
 		'@abstract' '@function' NAME (':' Type)?  Arguments? EOL
 		Documentation?
@@ -350,9 +366,9 @@ def d_AbstractFunction(t):
 	f = F.createFunction(name, args)
 	if t[6]: f.setDocumentation(t[5] and t[6][0])
 	f.setAbstract(True)
-	return f
+	return t_setLocation(f, nodes)
 
-def d_Exception(t):
+def d_Exception(t, nodes):
 	'''Exception:
 		'@exception' NAME (':' Expression)? EOL
 		Documentation?
@@ -372,13 +388,14 @@ def d_Exception(t):
 	parents = t_filterOut(",", parents)
 	# FIXME: Doesn't work
 	# if not parents: parents.append(F.resolve(F._ref("Exception")))
-	c = F.createClass(t[1] , parents)
+	c = t_setLocation(F.createClass(t[1] , parents), nodes[1])
 	if t[4]: c.setDocumentation(t[4] and t[4][0])
 	t_setCode(None, t[5], c)
+	return t_setLocation(c, nodes)
 	return c
 
 
-def d_Class(t):
+def d_Class(t, nodes):
 	# FIXME: Change Name to Reference
 	'''Class: '@abstract'? '@class' NAME (':' TypeSymbol (',' TypeSymbol)* )? EOL
 		  Annotation*
@@ -414,9 +431,9 @@ def d_Class(t):
 	t_setCode(None, t[7], c)
 	# FIXME
 	if is_abstract: c.setAbstract(True)
-	return c
+	return t_setLocation(c, nodes)
 
-def d_Interface(t):
+def d_Interface(t, nodes):
 	'''Interface: '@protocol' NAME (':' Expression (',' Expression)* )?  EOL
 		Documentation?
 		(INDENT
@@ -439,7 +456,7 @@ def d_Interface(t):
 	f = F.createInterface(t[1] , parents)
 	if t[4]: f.setDocumentation(t[4] and t[4][0])
 	t_setCode(None, t[5], f)
-	return f
+	return t_setLocation(f, nodes)
 
 def d_Annotation(t):
 	'''Annotation: (WhenAnnotation|PreAnnotation|PostAnnotation|AsAnnotation|Decorator)'''
@@ -460,7 +477,7 @@ def d_ModuleAnnotations(t):
 	'''
 	return t[0]
 
-def d_Decorator(t):
+def d_Decorator(t, nodes):
 	'''Decorator: '@[' "[^\]]+" ']' EOL'''
 	annotation = t[1].strip()
 	i = annotation.find(" ")
@@ -468,15 +485,15 @@ def d_Decorator(t):
 		name, params = annotation, ""
 	else:
 		name, params = annotation.split(" ",1)
-	return F.annotation(name, params)
+	return t_setLocation(F.annotation(name, params), nodes)
 
-def d_ModuleAnnotation(t):
+def d_ModuleAnnotation(t, nodes):
 	'''ModuleAnnotation: '@module' (NAME ('.' NAME)*) EOL'''
-	return F.annotation('module', "".join(t_flatten(t[1])))
+	return t_setLocation(F.annotation('module', "".join(t_flatten(t[1]))), nodes)
 
-def d_VersionAnnotation(t):
+def d_VersionAnnotation(t, nodes):
 	'''VersionAnnotation: '@version' VERSION EOL'''
-	return F.annotation('version', t[1])
+	return t_setLocation(F.annotation('version', t[1]), nodes)
 
 def d_VERSION(t):
 	'''VERSION:
@@ -487,33 +504,33 @@ def d_VERSION(t):
 	'''
 	return t[0]
 
-def d_RequiresAnnotation(t):
+def d_RequiresAnnotation(t, nodes):
 	'''RequiresAnnotation: '@requires' DEPENDENCY (',' DEPENDENCY)* EOL'''
-	return F.annotation('requires', t[1:-1])
+	return t_setLocation(F.annotation('requires', t[1:-1]), nodes)
 
 def d_DEPENDENCY(t):
 	'''DEPENDENCY: NAME ('(' VERSION ')')? '''
 	return t
 
-def d_TargetAnnotation(t):
+def d_TargetAnnotation(t, nodes):
 	'''TargetAnnotation: '@target' NAME+  EOL'''
-	return F.annotation('target', t[1:-1])
+	return t_setLocation(F.annotation('target', t[1:-1]), nodes)
 
-def d_WhenAnnotation(t):
+def d_WhenAnnotation(t, nodes):
 	'''WhenAnnotation: '@when' Expression EOL'''
-	return F.annotation('when', t[1])
+	return t_setLocation(F.annotation('when', t[1]), nodes)
 
-def d_PreAnnotation(t):
+def d_PreAnnotation(t, nodes):
 	'''PreAnnotation: '@pre' Expression EOL'''
-	return F.annotation('pre', t[1])
+	return t_setLocation(F.annotation('pre', t[1]), nodes)
 
-def d_PostAnnotation(t):
+def d_PostAnnotation(t, nodes):
 	'''PostAnnotation: '@post' Expression EOL'''
-	return F.annotation('post', t[1])
+	return t_setLocation(F.annotation('post', t[1]), nodes)
 
-def d_AsAnnotation(t):
+def d_AsAnnotation(t, nodes):
 	'''AsAnnotation: '@as' ("[a-zA-Z0-9_\-]+")+ EOL'''
-	return F.annotation('as', t[1])
+	return t_setLocation(F.annotation('as', t[1]), nodes)
 
 def d_ImportOperations(t):
 	'''ImportOperations: (ImportOperation)* '''
@@ -525,7 +542,7 @@ def d_TypeSymbol(t):
 	'''
 	return "".join(t_flatten(t))
 
-def d_ImportSymbol(t):
+def d_ImportSymbol(t, nodes):
 	''' ImportSymbol:
 		'@import' NAME 'from' TypeSymbol ('as' NAME)? EOL
 	'''
@@ -533,38 +550,38 @@ def d_ImportSymbol(t):
 	import_origin   = t[3]
 	import_alias    = t[4]
 	if import_alias: import_alias = import_alias[-1]
-	return F.importSymbol(imported_symbol, import_origin, import_alias)
+	return t_setLocation(F.importSymbol(imported_symbol, import_origin, import_alias), nodes)
 
-def d_ImportSymbols(t):
+def d_ImportSymbols(t, nodes):
 	''' ImportSymbols:
 		'@import' (NAME (',' NAME)*) 'from' TypeSymbol EOL
 	'''
 	imported_symbols = t_filterOut(",", t_flatten(t[1]))
 	import_origin    = t[-2]
 	if import_origin and type(import_origin)==list: import_origin = import_origin[-1]
-	return F.importSymbols(imported_symbols, import_origin)
+	return t_setLocation(F.importSymbols(imported_symbols, import_origin), nodes)
 
-def d_ImportAllSymbols(t):
+def d_ImportAllSymbols(t, nodes):
 	''' ImportAllSymbols:
 		'@import' '*' 'from' TypeSymbol EOL
 	'''
 	import_origin    = t[3]
-	return F.importSymbols("*", import_origin)
+	return t_setLocation(F.importSymbols("*", import_origin), nodes)
 
-def d_ImportModule(t):
+def d_ImportModule(t, nodes):
 	'''ImportModule:
 		'@import' TypeSymbol ('as' NAME)? EOL
 	'''
 	module_name = t[1]
 	module_alias = t[2] and t[2][-1]
-	return F.importModule(module_name, module_alias)
+	return t_setLocation(F.importModule(module_name, module_alias), nodes)
 
-def d_ImportModules(t):
+def d_ImportModules(t, nodes):
 	'''ImportModules:
 		'@import' TypeSymbol (',' TypeSymbol)* EOL
 	'''
 	modules = t_filterOut(",",t_flatten(t[1:-1]))
-	return F.importModules(modules)
+	return t_setLocation(F.importModules(modules), nodes)
 
 def d_ImportOperation(t):
 	'''ImportOperation:
@@ -580,7 +597,7 @@ def d_ModuleDeclarations(t):
 	'''ModuleDeclarations: Shared+'''
 	return t[0]
 
-def d_Shared(t):
+def d_Shared(t, nodes):
 	'''Shared:
 	    '@shared' NAME (':' Type)? ('=' Expression)?  EOL
 	    Annotation*
@@ -592,18 +609,18 @@ def d_Shared(t):
 	s = F._moduleattr(s_name, s_type, s_value)
 	for ann in t[-2]: s.addAnnotation(ann)
 	if t[-1]: s.setDocumentation(t[-1] and t[-1][0])
-	return s
+	return t_setLocation(s, nodes)
 
-def d_Attribute(t):
+def d_Attribute(t, nodes):
 	'''Attribute:
 		'@property' NAME (':' Type)? ('=' (Value | Expression))?  EOL
 		Documentation ?
 	 '''
 	a = F._attr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 	if t[-1]: a.setDocumentation(t[-1] and t[-1][0])
-	return a
+	return t_setLocation(a, nodes)
 
-def d_ClassAttribute(t):
+def d_ClassAttribute(t, nodes):
 	'''ClassAttribute:
 		'@shared' NAME (':' Type)?  ('=' Expression)? EOL
 		Annotation*
@@ -612,7 +629,7 @@ def d_ClassAttribute(t):
 	a =  F._classattr(t[1], t[2] and t[2][1] or None, t[3] and t[3][1] or None)
 	for ann in t[-2]: a.addAnnotation(ann)
 	if t[-1]: a.setDocumentation(t[-1] and t[-1][0])
-	return a
+	return t_setLocation(a, nodes)
 
 def d_MethodGroup(t):
 	'''MethodGroup: '@group' "[a-zA-Z0-9_\-]+" EOL
@@ -629,7 +646,7 @@ def d_MethodGroup(t):
 		for a in t[3]: m.addAnnotation(a)
 	return methods
 
-def d_AbstractMethodGroup(t):
+def d_AbstractMethodGroup(t, nodes):
 	'''AbstractMethodGroup: '@group' "[a-zA-Z0-9_\-]+" EOL
 		Annotation*
 		Documentation?
@@ -637,9 +654,9 @@ def d_AbstractMethodGroup(t):
 		(AbstractClassMethod | AbstractMethod | Comment | EOL)*
 	   '@end'
 	'''
-	return d_MethodGroup(t)
+	return t_setLocation(d_MethodGroup(t), nodes)
 
-def d_Method(t):
+def d_Method(t, nodes):
 	'''Method: '@method' NAME (':' Type)? Arguments? EOL
 	       FunctionAnnotation*
 	       Documentation?
@@ -656,9 +673,9 @@ def d_Method(t):
 		m.addAnnotation(ann)
 	if t[6]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
-	return m
+	return t_setLocation(m, nodes)
 
-def d_AbstractMethod(t):
+def d_AbstractMethod(t, nodes):
 	'''AbstractMethod:
 		'@abstract' '@method' NAME(':'Type)? Arguments?  EOL
 		FunctionAnnotation*
@@ -669,9 +686,9 @@ def d_AbstractMethod(t):
 	for ann in t[6]:
 		m.addAnnotation(ann)
 	if t[7]: m.setDocumentation(t[7] and t[7][0])
-	return m
+	return t_setLocation(m, nodes)
 
-def d_Accessor(t):
+def d_Accessor(t, nodes):
 	'''Accessor:
 		'@accessor' NAME(':'Type)? EOL
 		   Documentation?
@@ -686,9 +703,9 @@ def d_Accessor(t):
 	if m_type: m.setReturnTypeDescription(m_type)
 	if t[4]: m.setDocumentation(t[4] and t[4][0])
 	t_setCode(m, t[6] and t[6][1] or ())
-	return m
+	return t_setLocation(m, nodes)
 
-def d_Mutator(t):
+def d_Mutator(t, nodes):
 	'''Mutator:
 		'@mutator' NAME(':'Type)? Arguments? EOL
 		   Documentation?
@@ -701,9 +718,9 @@ def d_Mutator(t):
 	m = F.createMutator(t[1], t[3] and t[3][0] or ())
 	if t[6]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
-	return m
+	return t_setLocation(m, nodes)
 
-def d_ClassMethod(t):
+def d_ClassMethod(t, nodes):
 	'''ClassMethod:
 		'@operation' NAME (':'Type)?  Arguments? EOL
 		   FunctionAnnotation*
@@ -719,9 +736,9 @@ def d_ClassMethod(t):
 		m.addAnnotation(ann)
 	if t[5]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
-	return m
+	return t_setLocation(m, nodes)
 
-def d_AbstractClassMethod(t):
+def d_AbstractClassMethod(t, nodes):
 	'''AbstractClassMethod:  '@abstract' '@operation' NAME (':'Type)?  Arguments? EOL
 		   FunctionAnnotation*
 		   Documentation?
@@ -731,9 +748,9 @@ def d_AbstractClassMethod(t):
 		m.addAnnotation(ann)
 	if t[7]: m.setDocumentation(t[7] and t[7][0])
 	m.setAbstract(True)
-	return m
+	return t_setLocation(m, nodes)
 
-def d_Constructor(t):
+def d_Constructor(t, nodes):
 	'''Constructor: '@constructor'  Arguments? EOL
 	       (PreAnnotation)*
 	       (PostAnnotation)*
@@ -749,9 +766,9 @@ def d_Constructor(t):
 	for ann in t[4]: m.addAnnotation(ann)
 	if t[5]: m.setDocumentation(t[5] and t[5][0])
 	t_setCode(m, t[7] and t[7][1] or ())
-	return m
+	return t_setLocation(m, nodes)
 
-def d_Destructor(t):
+def d_Destructor(t, nodes):
 	'''Destructor: '@destructor' EOL
 	       Documentation?
 	       EOL*
@@ -763,16 +780,16 @@ def d_Destructor(t):
 	m = F.createDestructor()
 	if t[2]: m.setDocumentation(t[2] and t[2][0])
 	t_setCode(m, t[4] and t[4][1] or ())
-	return m
+	return t_setLocation(m, nodes)
 
-def d_With(t):
+def d_With(t, nodes):
 	''' With: 'with' Expression EOL+
 			(INDENT Code DEDENT) ?
 			'end'
 	'''
-	return F.withBlock(t[1], t_setCode(F.createBlock(), t[3]))
+	return t_setLocation(F.withBlock(t[1], t_setCode(F.createBlock(), t[3])), nodes)
 
-def d_Condition(t):
+def d_Condition(t, nodes):
 	''' Condition:
 		( ConditionWhenSingleLine | ConditionWhenMultiLine )*
 		( ConditionWhenSingleLine
@@ -781,7 +798,7 @@ def d_Condition(t):
 		| 'end' EOL
 		)
 	'''
-	res = F.select()
+	res = t_setLocation(F.select(), nodes)
 	for when in t[0]:
 		res.addRule(when)
 	r = t[1] and t_filterOut('end', t[1]) or ()
@@ -790,39 +807,39 @@ def d_Condition(t):
 	#res.addRule(match)
 	return res
 
-def d_ConditionWhenMultiLine(t):
+def d_ConditionWhenMultiLine(t, nodes):
 	''' ConditionWhenMultiLine:
 		"(el)?if" Expression EOL+
 			INDENT Code DEDENT
 	'''
-	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[4]))
+	return t_setLocation(F.matchProcess(t[1], t_setCode(F.createBlock(), t[4])), nodes)
 
 
-def d_ConditionWhenSingleLine(t):
+def d_ConditionWhenSingleLine(t, nodes):
 	''' ConditionWhenSingleLine:
 		'if' Expression '->' Line EOL
 	'''
-	return F.matchProcess(t[1], t_setCode(F.createBlock(), t[3]))
+	return t_setLocation(F.matchProcess(t[1], t_setCode(F.createBlock(), t[3])), nodes)
 
-def d_ConditionOtherwiseMultiLine(t):
+def d_ConditionOtherwiseMultiLine(t, nodes):
 	''' ConditionOtherwiseMultiLine:
 		'else' EOL+
 			INDENT Code DEDENT
 	'''
-	return F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[3]))
+	return t_setLocation(F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[3])), nodes)
 
-def d_ConditionOtherwiseSingleLine(t):
+def d_ConditionOtherwiseSingleLine(t, nodes):
 	''' ConditionOtherwiseSingleLine:
 		'else' '->' Line EOL?
 	'''
-	return F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[2]))
+	return t_setLocation(F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[2])), nodes)
 
-def d_Select(t):
+def d_Select(t, nodes):
 	''' Select: 'select' Expression? EOL
 				INDENT (EOL|Condition)* DEDENT
 	            'end'
 	'''
-	res = F.select()
+	res = t_setLocation(F.select(), nodes)
 	conditions = t_filterOut(None, t[4])
 	for condition in conditions:
 		for rule in condition.getRules():
@@ -969,7 +986,7 @@ def d_PrefixComputation(t):
 	return F.compute(F._op(t[0][0]),t[1])
 
 # FIXME: Rename Assignment ?
-def d_Assignment(t):
+def d_Assignment(t, nodes):
 	''' Assignment: Expression ('='|'-='|'+='|'?=') Expression '''
 	op = t[1][0]
 	if op == "=":
@@ -1563,6 +1580,8 @@ class Parser:
 				os.unlink(f)
 
 	def parseModule( self, name, text, sourcepath=None ):
+		global SOURCE_PATH
+		SOURCE_PATH = sourcepath
 		# And ensure that there is an EOL
 		if not text:
 			self.warn("The given file is empty")
