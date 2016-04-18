@@ -901,7 +901,7 @@ def d_MapExpression(t):
 
 def d_FilterExpression(t):
 	'''FilterExpression : Expression '::?' Expression ('=' Expression)?'''
-	return F.filter(t[0], t[2], t[4][1] if t[4] else None)
+	return F.filter(t[0], t[2], t[3][1] if t[3] else None)
 
 # FIXME: This should not be argumnets, but the same thing as the l-value for an
 # assignment
