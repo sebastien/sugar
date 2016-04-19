@@ -1107,6 +1107,7 @@ def d_Expression(t):
 	'''Expression : Interception | Iteration | Instanciation | Slicing |
 	   InvocationOrResolution |
 	   ConditionExpression |
+	   ConditionExpression2 |
 	   Assignment |
 	   Computation | Value | LP Expression RP
 	'''
@@ -1118,6 +1119,29 @@ def d_Expression(t):
 		if isinstance(t[1], interfaces.IComputation):
 			t[1].getOperator().setPriority(interfaces.Constants.PARENS_PRIORITY)
 		return t[1]
+
+def d_ConditionExpression2(t):
+	''' ConditionExpression2:
+		Expression '?' Expression
+		('|' Expression '?' Expression) *
+		('|' Expression) ?
+	'''
+	# NOTE: Assignment can be an expression too!
+	res = F.select()
+	m   = F.matchExpression(t[0], t[2])
+	res.addRule(m)
+	rules = t[3]
+	while rules:
+		predicate, _, expression = rules[1:4]
+		res.addRule(F.matchExpression(predicate, expression))
+		rules = rules[4:]
+	if t[4]:
+		e = F.matchExpression(F._ref("True"), t[4][1])
+		e.addAnnotation("else")
+		res.addRule(e)
+	# TODO: Should probably have a separate model element
+	res.addAnnotation("if-expression")
+	return res
 
 def d_ConditionExpression(t):
 	''' ConditionExpression:
