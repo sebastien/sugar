@@ -1107,7 +1107,6 @@ def d_Expression(t):
 	'''Expression : Interception | Iteration | Instanciation | Slicing |
 	   InvocationOrResolution |
 	   ConditionExpression |
-	   ConditionExpression2 |
 	   Assignment |
 	   Computation | Value | LP Expression RP
 	'''
@@ -1120,11 +1119,12 @@ def d_Expression(t):
 			t[1].getOperator().setPriority(interfaces.Constants.PARENS_PRIORITY)
 		return t[1]
 
+# NOTE: This is not working, so I removed it
 def d_ConditionExpression2(t):
 	''' ConditionExpression2:
 		Expression '?' Expression
 		('|' Expression '?' Expression) *
-		('|' Expression) ?
+		('|' (Expression) +) ?
 	'''
 	# NOTE: Assignment can be an expression too!
 	res = F.select()
