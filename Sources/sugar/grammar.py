@@ -1347,13 +1347,14 @@ def d_Range(t):
 	return F.enumerate(t[0], t[2])
 
 def d_List(t):
-	'''List : LB ( (Expression (',' Expression)*)? (EOL INDENT (Expression (',' Expression)* EOL)* DEDENT )? ) RB '''
+	'''List : LB ( (Expression (',' Expression)*)? (CEOL INDENT (Expression (',' Expression)* CEOL)* DEDENT )? ) RB '''
 	r = t_filterOut(",", t[1])
 	l = F._list(*r)
 	return l
 
 def d_Dict(t):
-	'''Dict : LC ( (DictPair (',' DictPair)*)? (EOL INDENT (DictPair (',' DictPair)* EOL)* DEDENT )? ) RC '''
+	'''Dict : LC ( (DictPair (',' DictPair)*)? (CEOL INDENT (DictPair (','
+	DictPair)* CEOL)* DEDENT )? ) RC '''
 	p = t_filterOut(",", t[1])
 	d = F._dict()
 	for k,v in p:
@@ -1410,6 +1411,10 @@ def d_NAME(t, spec):
 
 def d_EOL(t):
 	''' EOL: "\\n"+ '''
+	return
+
+def d_CEOL(t):
+	''' CEOL: "\\s*(#[^\\n]*)?\\n"+ '''
 	return
 
 def d_STR_ESC(t):
