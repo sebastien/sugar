@@ -34,5 +34,10 @@ not 1
 not 1 and 2
 not 1 and 2 or 3
 not 1 and 2 or 3 and 4
-pouet has that and 3 * 4 == 2
-1 or 2 or 3 or 4 or 5 or 1 
+pouet is that and 3 * 4 == 2
+1 or 2 or 3 or 4 or 5 or 1
+1 << 2
+1 >> 3
+1 || 2
+1 && 2
+# 1 .? 2

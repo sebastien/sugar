@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   2005-08-10
-# Last mod.         :   2016-04-15
+# Last mod.         :   2016-05-05
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -33,9 +33,14 @@ KEYWORDS = "and or not is var new in for return if else break continue raise".sp
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
 OPERATORS_PRIORITY_2 = "not > >= < <= != is in ==".split() ; OPERATORS_PRIORITY_2.append("is not")
-OPERATORS_PRIORITY_3 = "+ -".split()
-OPERATORS_PRIORITY_4 = "/ * % //".split()
-OPERATORS_PRIORITY_5 = "+= -=".split()
+OPERATORS_PRIORITY_3 = "<< >> || &&".split()
+OPERATORS_PRIORITY_4 = "+ -".split()
+OPERATORS_PRIORITY_5 = "/ * % //".split()
+OPERATORS_PRIORITY_6 = "+= -=".split()
+OPERATOR_NORM = {
+	"||":"|",
+	"&&":"&",
+}
 
 def getPriority( op ):
 	"""Returns the priority for the given operator"""
@@ -46,7 +51,8 @@ def getPriority( op ):
 	if op in OPERATORS_PRIORITY_2: return 2
 	if op in OPERATORS_PRIORITY_3: return 3
 	if op in OPERATORS_PRIORITY_4: return 4
-	if op in OPERATORS_PRIORITY_4: return 5
+	if op in OPERATORS_PRIORITY_5: return 5
+	if op in OPERATORS_PRIORITY_6: return 6
 	raise Exception("Unknown operator: %s" % (op))
 
 # ----------------------------------------------------------------------------
@@ -940,6 +946,7 @@ def d_Computation(t):
 			Expression ( ( ";\s*\n+\t*" )?
 				(
 					'+'|'-'|'*'|'/'|'%'|'//'|'and '|'or '
+					|'<<' | '>>' | '&&' | '||'
 					|'<' | '>' | '==' | '>=' | '<=' | '<>' | '!=' | '.?'
 					|'in '  | 'not ' 'in '  | 'is ' |'is not '
 				)
@@ -969,14 +976,15 @@ def d_Computation(t):
 			#     (A op B) op C
 			# into
 			#      A op (B op C)
+			nop = OPERATOR_NORM.get(op) or op
 			if op == ".?":
 				result = F.conditionalResolution( left, right )
 			elif isinstance(left, interfaces.IComputation) and \
 			getPriority(op) > left.getOperator().getPriority():
-				left.setRightOperand(F.compute(F._op(op, getPriority(op)), left.getRightOperand().detach(), right))
+				left.setRightOperand(F.compute(F._op(nop, getPriority(op)), left.getRightOperand().detach(), right))
 				result = left
 			else:
-				result = F.compute(F._op(op, getPriority(op)), left, right)
+				result = F.compute(F._op(nop, getPriority(op)), left, right)
 				left   = result
 		return result
 
