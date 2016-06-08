@@ -7,7 +7,7 @@
 # License           :   Lesser GNU Public License
 # -----------------------------------------------------------------------------
 # Creation date     :   2005-08-10
-# Last mod.         :   2016-05-05
+# Last mod.         :   2016-06-08
 # -----------------------------------------------------------------------------
 
 import os,sys
@@ -1312,12 +1312,32 @@ def d_Type(t):
 # ----------------------------------------------------------------------------
 
 def d_Litteral(t):
-	'''Litteral : Integer|Float|String|Name '''
+	'''Litteral : Time|Integer|Float|String|Name '''
 	return t[0]
 
 def d_Integer(t):
 	'''Integer : "-?[0-9]+" | "-?0x[A-Fa-f0-9]+"'''
 	return F._number(eval(t[0]))
+
+def d_Time(t):
+	'''Time : "[0-9]+(\.[0-9]+)?(ms|s|m|h|d|w)"'''
+	t = t[0]
+	v = 0
+	if  t.endswith("ms"):
+		v = float(t[0:-2])
+	elif t.endswith("s"):
+		v = float(t[0:-1]) * 1000
+	elif t.endswith("m"):
+		v = float(t[0:-1]) * 1000 * 60
+	elif t.endswith("h"):
+		v = float(t[0:-1]) * 1000 * 60 * 60
+	elif t.endswith("d"):
+		v = float(t[0:-1]) * 1000 * 60 * 60 * 24
+	elif t.endswith("w"):
+		v = float(t[0:-1]) * 1000 * 60 * 60 * 24 * 7
+	else:
+		assert None, "Does not recognizes time format {0}".format(t)
+	return F._number(v)
 
 def d_Float(t):
 	'''Float : "-?[0-9]+\.[0-9]+" '''

@@ -14,6 +14,8 @@ Requests:
  - Map    VALUE :=: EXTRACTOR
  - Reduce VALUE :|: EXTRACTOR
 
+- Time units 10s 10ms 10m 10h, etc
+
  - Infix functions @infix @function fold XXXX fold XXXX -> fold (XXX,XXX)
  - list comprehensions: [x * 2 for x in COLLECTION if CONDITION]
  - generators
