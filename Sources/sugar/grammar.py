@@ -28,7 +28,7 @@ F = modelbase.Factory()
 
 SOURCE_PATH = None
 
-KEYWORDS = "and or not is var new in for return if else break continue raise".split()
+KEYWORDS = "and or not is var let new in for return if else break continue raise".split()
 
 OPERATORS_PRIORITY_0 = ["or"]
 OPERATORS_PRIORITY_1 = ["and"]
@@ -1019,7 +1019,7 @@ def d_Allocation(t):
 	return t[0]
 
 def d_AllocationList(t):
-	'''AllocationList: 'var' AllocationSingle (',' AllocationSingle)*'''
+	'''AllocationList: ('var'|'let') AllocationSingle (',' AllocationSingle)*'''
 	head = t[1]
 	tail = [t[2][_ * 2 + 1] for _ in range(len(t[2])/2)]
 	return [head] + tail if tail else head
@@ -1029,7 +1029,7 @@ def d_AllocationSingle(t):
 	return F.allocate(F._slot(t[0],t[1] and t[1][1] or None), t[2] and t[2][1] or None)
 
 def d_AllocationMultiple(t):
-	'''AllocationMultiple: 'var'
+	'''AllocationMultiple: ('var'|'let')
 		NAME (':' Type)?
 		(',' (NAME (':' Type)?) )*
 		('|' (NAME (':' Type)?) )?
