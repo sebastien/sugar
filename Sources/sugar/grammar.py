@@ -1381,19 +1381,28 @@ def d_List(t):
 	return l
 
 def d_Dict(t):
-	'''Dict : LC ( (DictPair (',' DictPair)*)? (CEOL INDENT (DictPair (','
-	DictPair)* CEOL)* DEDENT )? ) RC '''
+	'''Dict : LC ( (DictEntry (',' DictEntry)*)? (CEOL INDENT (DictEntry (','
+	DictEntry)* CEOL)* DEDENT )? ) RC '''
 	p = t_filterOut(",", t[1])
 	d = F._dict()
 	for k,v in p:
 		d.setValue(k,v)
 	return d
 
+def d_DictEntry(t):
+	'''DictEntry: DictPair|NAME'''
+	assert len(t) == 1
+	t = t[0]
+	if type(t) in (str,unicode):
+		return F._string(t), F.resolve(F._ref(t))
+	else:
+		return t[0], t[1]
+
 def d_DictPair(t):
 	'''DictPair : (DictKey|LP Expression RP) ':' Expression '''
 	key =  t[0]
 	if len(key) == 1: key = key[0]
-	else: key = key[1]
+	else:             key = key[1]
 	return key, t[2]
 
 def d_DictKey(t):
