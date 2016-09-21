@@ -176,7 +176,7 @@ Filter one-liner::
 Filter+map one-liner::
 
 	```
-	0..10 ::? {<statement>;...} = {<statement>;...}
+	0..10 ::? {<statement>;...} ::= {<statement>;...}
 	```
 
 Invocation
