@@ -68,6 +68,8 @@ def run(arguments):
 	command = Command("sugar")
 	if not arguments: arguments = ["--help"]
 	command.run(arguments)
+	return command.environment.program
+
 
 def parseFile( path, moduleName=None, options="" ):
 	command = Command()
