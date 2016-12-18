@@ -832,13 +832,17 @@ def d_ConditionOtherwiseMultiLine(t, nodes):
 		'else' EOL+
 			INDENT Code DEDENT
 	'''
-	return t_setLocation(F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[3])), nodes)
+	e = F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[3]))
+	e.addAnnotation("else")
+	return t_setLocation(e, nodes)
 
 def d_ConditionOtherwiseSingleLine(t, nodes):
 	''' ConditionOtherwiseSingleLine:
 		'else' '->' Line EOL?
 	'''
-	return t_setLocation(F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[2])), nodes)
+	e = F.matchProcess(F._ref('True'), t_setCode(F.createBlock(), t[2]))
+	e.addAnnotation("else")
+	return t_setLocation(e, nodes)
 
 def d_Select(t, nodes):
 	''' Select: 'select' Expression? EOL
