@@ -1010,6 +1010,7 @@ def d_Assignment(t, nodes):
 		assignment = F.assign(t[0].copy(),t[2])
 		match      = F.matchExpression(predicate, assignment)
 		res        = F.select()
+		res.addAnnotation("assignment")
 		res.addRule(match)
 		return res
 	else:
