@@ -740,7 +740,7 @@ def d_ClassMethod(t, nodes):
 	m = F.createClassMethod(t[1], t[3] and t[3][0] or ())
 	for ann in t[5]:
 		m.addAnnotation(ann)
-	if t[5]: m.setDocumentation(t[6] and t[6][0])
+	if t[6]: m.setDocumentation(t[6] and t[6][0])
 	t_setCode(m, t[8] and t[8][1] or ())
 	return t_setLocation(m, nodes)
 
@@ -1179,9 +1179,9 @@ def d_ConditionExpression(t):
 	res.addAnnotation("if-expression")
 	return res
 
-def d_Value(t):
+def d_Value(t, nodes):
 	'''Value : Litteral|List|Dict|Range|Closure'''
-	return t[0]
+	return t_setLocation(t[0], nodes)
 
 # ----------------------------------------------------------------------------
 # Operations
