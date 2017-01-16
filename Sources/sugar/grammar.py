@@ -1130,7 +1130,7 @@ def d_Expression(t):
 		# here (I did not manage to do it in a cleaner way)
 		if isinstance(t[1], interfaces.IComputation):
 			t[1].getOperator().setPriority(interfaces.Constants.PARENS_PRIORITY)
-		return t[1]
+		return t[1].addAnnotation("parens")
 
 # NOTE: This is not working, so I removed it
 def d_ConditionExpression2(t):
