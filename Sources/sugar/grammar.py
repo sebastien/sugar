@@ -1002,12 +1002,12 @@ def d_Assignment(t, nodes):
 	''' Assignment: Expression ('='|'-='|'+='|'?=') Expression '''
 	op = t[1][0]
 	if op == "=":
-		return F.assign(t[0], t[2])
+		return F.assign(t[0].addAnnotation("lvalue"), t[2])
 	elif op == "?=":
 		# In this case: A ?= B is the equivalent of
 		# if not (A) -> A = B
 		predicate  = F.compute(F._op('is'), t[0], F._ref("Undefined"))
-		assignment = F.assign(t[0].copy(),t[2])
+		assignment = F.assign(t[0].copy().addAnnotation("lvalue"),t[2])
 		match      = F.matchExpression(predicate, assignment)
 		res        = F.select()
 		res.addAnnotation("assignment")
@@ -1017,7 +1017,7 @@ def d_Assignment(t, nodes):
 		op = op[0]
 		# FIXME: We should clone the expressions here
 		c  =  F.compute(F._op(op, getPriority(op)), t[0], t[2])
-		return F.assign(t[0].copy().detach(),c)
+		return F.assign(t[0].copy().detach().addAnnotation("lvalue"),c)
 
 def d_Allocation(t):
 	'''Allocation: AllocationList|AllocationMultiple'''
